@@ -4,11 +4,11 @@
             <h3>Contact Tech Team</h3>
             <div class="contact-row">
                 <i class="fa-solid fa-phone"></i>
-                <span>+91 90000 12345</span>
+                <span>{{ siteSetting('ADMIN_phone', config('app.name')) }}</span>
             </div>
             <div class="contact-row">
                 <i class="fa-solid fa-envelope"></i>
-                <span>support@technova.io</span>
+                <span>{{ siteSetting('ADMIN_EMAIL', config('app.name')) }}</span>
             </div>
         </div>
 
@@ -20,5 +20,8 @@
                 <li><a href="#">Code of Conduct</a></li>
             </ul>
         </div>
-    </div>
+
+        <div class="footer-bottom">
+            {{ siteSetting('footer_text', config('app.name')) }}
+        </div>
 </footer>

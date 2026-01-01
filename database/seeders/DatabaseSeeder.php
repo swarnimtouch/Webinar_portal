@@ -27,6 +27,8 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->call(General_Setting_Seeder::class);
         $this->call(ContentSeeder::class);
+        $this->call(AddDropdownInputSeeder::class);
+        $this->call(AttributeInputIconsSeeder::class);
         $this->call([
             DaynamicFieldsSeeder::class,
         ]);

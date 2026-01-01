@@ -55,9 +55,23 @@
 @endpush
 
 @section('body')
+    @php
+        $siteLogo = siteSetting('site_logo');
+        $siteName = siteSetting('site_name', config('app.name'));
+    @endphp
+
     <nav class="navbar">
         <div class="logo">
-            <h2>TECH<span>NOVA</span></h2>
+            @if($siteLogo)
+                <img src="{{ asset('storage/site_settings/' . $siteLogo) }}"
+                     alt="{{ $siteName }}"
+                     class="site-logo-img"
+                     style="width:50px; height:50px; object-fit:contain;">
+            @else
+                <h2>TECH<span>NOVA</span></h2>
+            @endif
+
+
         </div>
         <div class="nav-links">
             <a href="#">About Event</a>

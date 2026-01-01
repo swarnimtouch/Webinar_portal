@@ -6,6 +6,17 @@
     <title>
         {{ siteSetting('site_name', config('app.name')) }}
     </title>
+    @php
+        $favicon = siteSetting('Favicon');
+    @endphp
+
+    @if($favicon)
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/site_settings/' . $favicon) }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/site_settings/' . $favicon) }}">
+        <link rel="apple-touch-icon" href="{{ asset('storage/site_settings/' . $favicon) }}">
+    @else
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    @endif
 
     <link rel="stylesheet" href="{{ asset('assets/css/Website/style.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/Website/media.css') }}" />
