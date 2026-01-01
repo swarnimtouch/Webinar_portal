@@ -18,15 +18,15 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-//        User::factory()->create([
-//            'name' => 'Admin',
-//            'email' => 'admin@gmail.com',
-//            'password' => bcrypt('123456'),
-//            'type' => 'admin',
-//            'username' => 'admin',
-//        ]);
-//        $this->call(General_Setting_Seeder::class);
-//        $this->call(ContentSeeder::class);
+        User::factory()->create([
+            'name' => 'Admin',
+            'email' => 'admin@gmail.com',
+            'password' => bcrypt('123456'),
+            'type' => 'admin',
+            'username' => 'admin',
+        ]);
+        $this->call(General_Setting_Seeder::class);
+        $this->call(ContentSeeder::class);
         $this->call([
             DaynamicFieldsSeeder::class,
         ]);

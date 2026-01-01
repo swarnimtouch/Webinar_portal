@@ -95,9 +95,14 @@ class HomeController
 
         // ❌ USER NOT FOUND → REGISTRATION
         if (!$user) {
-            return redirect()->route('website.register')
-                ->with('error', 'User not found. Please register first.');
+            return back()
+                ->withErrors([
+                    'email' => 'User not found. Please register first.'
+                ])
+                ->withInput()
+                ->with('open_login_modal', true);
         }
+
 
         // ✅ LOGIN
         Auth::login($user);

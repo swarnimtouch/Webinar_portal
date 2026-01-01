@@ -1,13 +1,14 @@
 @extends('layouts.website')
 
 @section('title', 'TechNova IT Summit 2025')
+
 @push('styles')
     <style>
         .error-text {
             color: #d93025;
             font-size: 13px;
             margin-top: 4px;
-            display: flex;
+            display: none;
             align-items: center;
             gap: 6px;
         }
@@ -17,11 +18,42 @@
         }
 
         .is-invalid {
-            border-color: #d93025;
+            border-color: #d93025 !important;
+            background-color: #fff5f5;
         }
 
+        .is-invalid:focus {
+            border-color: #d93025 !important;
+            box-shadow: 0 0 0 0.2rem rgba(217, 48, 37, 0.25);
+        }
+
+        /* Email Input Group Styling */
+        .email-input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .email-input-group input {
+            transition: all 0.3s ease;
+        }
+
+        /* Animation for error messages */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-text {
+            animation: slideDown 0.3s ease;
+        }
     </style>
 @endpush
+
 @section('body')
     <nav class="navbar">
         <div class="logo">
@@ -32,17 +64,16 @@
             <a href="#">Speakers</a>
             <a href="#">Brands</a>
         </div>
-        <button class="btn btn-gold">Login</button>
+        <button class="btn btn-gold" id="openLoginModal">Login</button>
     </nav>
+
     <main>
-
-
         <div class="container">
             <div class="header-section">
                 <h1>TechNova IT Summit 2025 by CodeMasters Hub</h1>
                 <button class="btn btn-gold" id="openRegisterModal">Register</button>
-
             </div>
+
             <div class="intro-card">
                 <div class="hero-banner">
                     <div class="slider-wrapper">
@@ -83,23 +114,17 @@
 
             <div class="content-grid">
                 <div class="about-section">
-                    <h3>{!! $contents['about-us']->title ?? '' !!}</h3>
-                    <p>
-                        {!! $contents['about-us']->content ?? '' !!}
-
-                    </p>
-
+                    <h3>{!! $contents['about-us']->title ?? 'About Us' !!}</h3>
+                    <p>{!! $contents['about-us']->content ?? '' !!}</p>
                 </div>
 
                 <div class="sidebar">
                     <div class="sidebar-card organizer-card-layout">
                         <div class="org-top-row">
                             <span class="org-label">Powered By</span>
-                            <img
-                                src="{{asset('assets/Website/images/organizer-logo.png')}}"
-                                alt="CodeMasters Logo"
-                                class="org-logo-small"
-                            />
+                            <img src="{{asset('assets/Website/images/organizer-logo.png')}}"
+                                 alt="CodeMasters Logo"
+                                 class="org-logo-small" />
                         </div>
 
                         <div class="org-divider"></div>
@@ -113,18 +138,10 @@
                         <div class="org-social-row">
                             <span class="org-label">Join Community</span>
                             <div class="org-social-icons">
-                                <a href="#" class="social-btn youtube"
-                                ><i class="fa-brands fa-youtube"></i
-                                    ></a>
-                                <a href="#" class="social-btn linkedin"
-                                ><i class="fa-brands fa-linkedin-in"></i
-                                    ></a>
-                                <a href="#" class="social-btn instagram"
-                                ><i class="fa-brands fa-instagram"></i
-                                    ></a>
-                                <a href="#" class="social-btn facebook"
-                                ><i class="fa-brands fa-github"></i
-                                    ></a>
+                                <a href="#" class="social-btn youtube"><i class="fa-brands fa-youtube"></i></a>
+                                <a href="#" class="social-btn linkedin"><i class="fa-brands fa-linkedin-in"></i></a>
+                                <a href="#" class="social-btn instagram"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="#" class="social-btn facebook"><i class="fa-brands fa-github"></i></a>
                             </div>
                         </div>
                     </div>
@@ -143,18 +160,9 @@
 
                         <div class="venue-map-container">
                             <div class="map-frame">
-                                <iframe
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3667.3187229380155!2d72.63344267408078!3d23.19505250987198!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395c2a39d06fe04f%3A0xa5c52a12a1286368!2sInfocity%20-%20The%20Global%20IT%20Park%20in%20Gujarat!5e0!3m2!1sen!2sin!4v1766053887093!5m2!1sen!2sin"
-                                    width="100%"
-                                    height="100%"
-                                    style="border: 0"
-                                    allowfullscreen=""
-                                    loading="lazy"
-                                    referrerpolicy="no-referrer-when-downgrade"
-                                >
-                                </iframe>
+                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3667.3187229380155!2d72.63344267408078!3d23.19505250987198!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395c2a39d06fe04f%3A0xa5c52a12a1286368!2sInfocity%20-%20The%20Global%20IT%20Park%20in%20Gujarat!5e0!3m2!1sen!2sin!4v1766053887093!5m2!1sen!2sin"
+                                        width="100%" height="100%" style="border: 0" allowfullscreen="" loading="lazy"></iframe>
                             </div>
-
                             <button class="btn btn-gold full-width">Locate Venue</button>
                         </div>
                     </div>
@@ -167,14 +175,10 @@
                     @forelse($speakers as $speaker)
                         <div class="speaker-profile-card">
                             <div class="sp-img-container">
-                                <img
-                                    src="{{ asset('storage/speakers/' . $speaker->filename) }}"
-                                    alt="{{ $speaker->name }}"
-                                />
+                                <img src="{{ asset('storage/speakers/' . $speaker->filename) }}"
+                                     alt="{{ $speaker->name }}" />
                             </div>
-
                             <h4>{{ $speaker->name }}</h4>
-
                             <p>{{ $speaker->line1 }}</p>
                             <p>{{ $speaker->line2 }}</p>
                             <p>{{ $speaker->line3 }}</p>
@@ -187,252 +191,97 @@
 
             <div class="sponsors-section">
                 <h3>Brands</h3>
-
                 <div class="sponsors-grid">
                     @forelse($brands as $brand)
                         <div class="sponsor-card">
-                            <img
-                                src="{{ asset('storage/brands/' . $brand->filename) }}"
-                                alt="{{ $brand->name ?? 'Brand Logo' }}"
-                            />
+                            <img src="{{ asset('storage/brands/' . $brand->filename) }}"
+                                 alt="{{ $brand->name ?? 'Brand Logo' }}" />
                         </div>
                     @empty
                         <p>No brands available.</p>
                     @endforelse
                 </div>
             </div>
-
         </div>
     </main>
-        <div id="loginModal" class="modal-overlay">
-            <div class="modal-content">
-                <span class="close-modal-btn">×</span>
-                <h2>Welcome</h2>
-                <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
-                    @csrf
 
-                    @foreach($loginFields as $field)
-                        <div class="email-input-group">
-                            <div class="icon-box">
-                                <i class="{{ $field->icon ?? 'fa-solid fa-user' }}"></i>
-                            </div>
-
-                            <input
-                                type="{{ $field->field_type }}"
-                                name="{{ $field->field_name }}"
-                                placeholder="{{ $field->label }}"
-                                data-field="{{ $field->field_name }}"
-                            />
-
-                            <div class="error-text" style="color:red;font-size:13px;"></div>
-                        </div>
-                    @endforeach
-
-                    <button type="submit" class="btn btn-gold full-width">Login</button>
-                </form>
-
-
-
-            </div>
-        </div>
-
-    <div id="registerModal" class="modal-overlay" style="display:none;">
+    {{-- Login Modal --}}
+    <div id="loginModal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-register-btn">×</span>
-            <h2>Doctor Registration</h2>
-
-            <form method="POST"
-                  action="{{ route('website.register.submit') }}"
-                  id="registerForm">
+            <span class="close-modal-btn">×</span>
+            <h2>Welcome</h2>
+            <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
                 @csrf
-
-                @foreach($registerFields as $field)
-
-                    @php
-                        // map dynamic field → users table column
-                        $inputName = $field->field_name === 'mobile_number'
-                            ? 'mobile'
-                            : $field->field_name;
-                    @endphp
-
+                @foreach($loginFields as $field)
                     <div class="email-input-group">
                         <div class="icon-box">
                             <i class="{{ $field->icon ?? 'fa-solid fa-user' }}"></i>
                         </div>
+                        <input type="{{ $field->field_type }}"
+                               name="{{ $field->field_name }}"
+                               placeholder="{{ $field->label }}"
+                               data-field="{{ $field->field_name }}"
+                               data-label="{{ $field->label }}"
+                               data-is-required="1" />
+                        <div class="error-text js-error"></div>
+                    </div>
+                @endforeach
+                @error($field->field_name)
+                <div class="error-text" style="display:flex">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    {{ $message }}
+                </div>
+                @enderror
 
-                        <input
-                            type="{{ $field->field_type }}"
-                            name="{{ $inputName }}"
-                            placeholder="{{ $field->label }}"
-                            data-field="{{ $field->field_name }}"
-                            data-label="{{ $field->label }}"
-                            data-is-required="{{ $field->is_required }}"
-                            class="@error($inputName) is-invalid @enderror"
-                        />
+                <button type="submit" class="btn btn-gold full-width">Login</button>
+            </form>
+        </div>
+    </div>
 
-                        {{-- ✅ SERVER SIDE ERROR (Laravel) --}}
+    {{-- Register Modal --}}
+    <div id="registerModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <span class="close-register-btn">×</span>
+            <h2>Doctor Registration</h2>
+            <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm">
+                @csrf
+                @foreach($registerFields as $field)
+                    @php
+                        $inputName = $field->field_name === 'mobile_number' ? 'mobile' : $field->field_name;
+                    @endphp
+                    <div class="email-input-group">
+                        <div class="icon-box">
+                            <i class="{{ $field->icon ?? 'fa-solid fa-user' }}"></i>
+                        </div>
+                        <input type="{{ $field->field_type }}"
+                               name="{{ $inputName }}"
+                               placeholder="{{ $field->label }}"
+                               data-field="{{ $field->field_name }}"
+                               data-label="{{ $field->label }}"
+                               data-is-required="{{ $field->is_required }}"
+                               class="@error($inputName) is-invalid @enderror"
+                               value="{{ old($inputName) }}" />
+
                         @error($inputName)
-                        <div class="error-text">
+                        <div class="error-text" style="display: flex;">
                             <i class="fa-solid fa-circle-exclamation"></i>
                             {{ $message }}
                         </div>
                         @enderror
 
-                        {{-- ✅ JS ERROR (empty by default) --}}
                         <div class="error-text js-error"></div>
                     </div>
-
                 @endforeach
-
-                <button type="submit" class="btn btn-gold full-width">
-                    Register
-                </button>
+                <button type="submit" class="btn btn-gold full-width">Register</button>
             </form>
-
-
         </div>
     </div>
 
     @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-
-                const form = document.getElementById('loginForm');
-                if (!form) return;
-
-                form.addEventListener('submit', function (e) {
-
-                    let isValid = true;
-
-                    // ✅ ONLY LOGIN FORM FIELDS
-                    form.querySelectorAll('.email-input-group').forEach(group => {
-
-                        const input = group.querySelector('input');
-                        const error = group.querySelector('.error-text');
-
-                        error.innerText = '';
-
-                        const value = input.value.trim();
-                        const field = input.dataset.field;
-
-                        // REQUIRED
-                        if (value === '') {
-                            error.innerText = 'This field is required';
-                            isValid = false;
-                            return;
-                        }
-
-                        // MOBILE
-                        if (field && field.includes('mobile')) {
-                            if (!/^[0-9]{10}$/.test(value)) {
-                                error.innerText = 'Mobile number must be 10 digits';
-                                isValid = false;
-                            }
-                        }
-
-                        // EMAIL
-                        if (field && field.includes('email')) {
-                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                            if (!emailRegex.test(value)) {
-                                error.innerText = 'Enter valid email address';
-                                isValid = false;
-                            }
-                        }
-                    });
-
-                    if (!isValid) {
-                        e.preventDefault(); // ⛔ STOP submit
-                    }
-                });
-
-            });
-        </script>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-
-                const form = document.getElementById('registerForm');
-                if (!form) return;
-
-                form.addEventListener('submit', function (e) {
-
-                    let isValid = true;
-
-                    form.querySelectorAll('.email-input-group').forEach(group => {
-
-                        const input = group.querySelector('input');
-                        const jsError = group.querySelector('.js-error');
-
-                        jsError.innerHTML = '';
-
-                        const value = input.value.trim();
-                        const field = input.dataset.field;      // mobile_number
-                        const label = input.dataset.label;
-                        const isRequired = input.dataset.isRequired === "1";
-
-                        // REQUIRED
-                        if (isRequired && value === '') {
-                            jsError.innerHTML =
-                                `<i class="fa-solid fa-circle-exclamation"></i> ${label} is required`;
-                            isValid = false;
-                            return;
-                        }
-
-                        // MOBILE
-                        if (value !== '' && field === 'mobile_number') {
-                            if (!/^[0-9]{10}$/.test(value)) {
-                                jsError.innerHTML =
-                                    `<i class="fa-solid fa-circle-exclamation"></i> ${label} must be 10 digits`;
-                                isValid = false;
-                            }
-                        }
-
-                        // EMAIL
-                        if (value !== '' && field.includes('email')) {
-                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                            if (!emailRegex.test(value)) {
-                                jsError.innerHTML =
-                                    `<i class="fa-solid fa-circle-exclamation"></i> Enter valid ${label}`;
-                                isValid = false;
-                            }
-                        }
-
-                    });
-
-                    if (!isValid) {
-                        e.preventDefault(); // ⛔ STOP SUBMIT
-                    }
-                });
-
-            });
-        </script>
+        {{-- Include FormValidator --}}
 
 
 
-
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-
-                const registerBtn = document.getElementById('openRegisterModal');
-                const registerModal = document.getElementById('registerModal');
-
-                document.querySelectorAll('.close-register-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        registerModal.style.display = 'none';
-                        document.body.style.overflow = 'auto';
-                    });
-                });
-
-                if (registerBtn) {
-                    registerBtn.addEventListener('click', function () {
-                        registerModal.style.display = 'flex';
-                        document.body.style.overflow = 'hidden';
-                    });
-                }
-
-            });
-        </script>
         @if ($errors->any())
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
@@ -447,5 +296,4 @@
 
     @endpush
 
-
-
+@endsection
