@@ -92,6 +92,18 @@ class General_Setting_Seeder extends Seeder
                 ]),
                 'Please Enter Email Address For Admin'
             ],
+            [
+                'Admin Phone',
+                'ADMIN_phone',
+                'number',
+                '1234567890',
+                null,
+                json_encode([
+                    'maxlength' => "20",
+                    'required' => 'required',
+                ]),
+                'Please Enter Phone Number For Admin'
+            ],
         ];
         foreach ($values as $key => $value) {
             $data = $keys->combine($value);

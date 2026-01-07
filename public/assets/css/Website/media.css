@@ -531,7 +531,8 @@
   }
 
   .slider-wrapper {
-    width: 95%;
+    width: 100%; /* Mobile me Full Width */
+    aspect-ratio: 4 / 3; /* Mobile ke liye square-ish ratio */
   }
   .slider-wrapper img {
     width: 100%;
@@ -549,13 +550,21 @@
     border-radius: 15px;
   }
 
-  .footer-content {
+  /* Mobile section ke andar hi rahega ye change */
+.footer-content {
     flex-direction: column;
     gap: 25px;
     text-align: center;
     padding: 0 10px;
     align-items: center;
-  }
+}
+
+/* ✅ YE ADD KAREIN Mobile Query ke andar: Mobile me margin thoda kam */
+.footer-bottom {
+    margin-top: 20px;
+    padding-top: 15px;
+    font-size: 13px;
+}
 
   .footer-section {
     width: 100%;
@@ -707,71 +716,6 @@
 }
 
 /* ============================================
-   7. LANDSCAPE MODE (Mobile & Tablet)
-============================================ */
-@media (max-height: 600px) and (orientation: landscape) {
-  main {
-    padding-top: 60px;
-  }
-
-  .navbar {
-    padding: 8px 20px;
-  }
-
-  .hero-banner {
-    height: 200px;
-  }
-
-  .hero-banner img {
-    max-height: 180px;
-  }
-
-  .speakers-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .sponsors-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .info-bar {
-    padding: 15px 20px;
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* ============================================
-   8. PRINT STYLES
-============================================ */
-@media print {
-  .navbar,
-  .btn,
-  .modal-overlay,
-  .site-footer,
-  .hero-banner::before {
-    display: none !important;
-  }
-
-  main {
-    padding-top: 20px;
-  }
-
-  .container {
-    box-shadow: none;
-    border: 1px solid #000;
-  }
-
-  .hero-banner img {
-    filter: grayscale(100%);
-  }
-
-  a {
-    text-decoration: none;
-    color: #000 !important;
-  }
-}
-
-/* ============================================
    9. HIGH-DPI / RETINA DISPLAYS
 ============================================ */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
@@ -796,4 +740,17 @@
     filter: grayscale(0%);
     opacity: 1;
   }
+}
+
+/* ==============================
+   SLIDER FINAL FIX (NO CUT)
+================================ */
+.slider-wrapper .slide img,
+.slider-wrapper .slide video {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  display: block;
 }

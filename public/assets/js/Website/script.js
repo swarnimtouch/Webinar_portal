@@ -18,7 +18,7 @@ function showPopup(type, message) {
 }
 
 /* =========================================
-   1. MODAL & LOGIN LOGIC (No Changes Here)
+   1. MODAL & LOGIN LOGIC
    ========================================= */
 const modal = document.getElementById("loginModal");
 const loginBtn = document.querySelector(".navbar .btn-gold");
@@ -55,129 +55,114 @@ window.addEventListener("click", function (event) {
 
 const loginForm = document.getElementById("loginForm");
 
-
-
-
-
 /* =========================================
-   2. DYNAMIC SLIDER LOGIC (New Industry Standard)
+   2. SLIDER LOGIC (OPTIMIZED & STABLE)
    ========================================= */
+$(document).ready(function() {
+    
+    // --- VARIABLES ---
+    const $track = $("#sliderTrack");
+    const $heroBanner = $(".hero-banner");
+    const sliderData = window.sliderData || [];
+    let slideIndex = 0;
+    let slideInterval;
+    const slideDuration = 3000; // ✅ 3 Seconds Timer
 
-// --- CONFIGURATION (Backend se data yaha aayega) ---
-// Note: Video ke liye 'poster' zaroor dalein, wo background blur ke liye use hoga.
-const sliderData = window.sliderData || [];
+    // Agar track ya data nahi hai to return
+    if ($track.length === 0 || sliderData.length === 0) return;
 
+    // --- 1. INITIALIZATION ---
+    function initSlider() {
+        $track.empty(); // Purana content clear
 
-// --- ELEMENTS SELECTION ---
-const track = document.getElementById("sliderTrack");
-const heroBanner = document.querySelector(".hero-banner");
+        // Slides create karein
+        $.each(sliderData, function(index, item) {
+            let mediaElement = '';
 
-// --- INITIALIZATION FUNCTION ---
-function initSlider() {
-  // Agar HTML me track nahi mila ya data empty hai, to run mat karo
-  if (!track || sliderData.length === 0) return;
+            if (item.type === 'image') {
+                // Image
+                mediaElement = `<img src="${item.src}" alt="Event Banner">`;
+            } else if (item.type === 'video') {
+                // Video (Muted, PlaysInline important for autoplay)
+                mediaElement = `
+                    <video poster="${item.poster || ''}" muted playsinline loop>
+                        <source src="${item.src}" type="video/mp4">
+                    </video>`;
+            }
 
-  // 1. Purana content clear karein
-  track.innerHTML = "";
+            const slideHtml = `<div class="slide">${mediaElement}</div>`;
+            $track.append(slideHtml);
+        });
 
-  // 2. Loop chala kar Slides Create karein
-  sliderData.forEach((item) => {
-    const slideDiv = document.createElement("div");
-    slideDiv.classList.add("slide");
-
-    if (item.type === "image") {
-      // Image Element Create
-      const img = document.createElement("img");
-      img.src = item.src;
-      img.alt = "Event Banner";
-      slideDiv.appendChild(img);
-    } else if (item.type === "video") {
-      // Video Element Create
-      const video = document.createElement("video");
-      video.src = item.src;
-      video.poster = item.poster || ""; // Fallback image
-      video.muted = true; // Browser policy: Auto-play ke liye mute zaroori hai
-      video.loop = false;
-      video.autoplay = true;
-      video.playsInline = true; // Mobile fix
-      // Initially pause rakhenge, active hone par play karenge
-      video.pause();
-      slideDiv.appendChild(video);
+        // Start Slider
+        updateSlider();
+        startAutoSlide();
     }
 
-    track.appendChild(slideDiv);
-  });
+    // --- 2. UPDATE SLIDER (Movement & Background) ---
+    function updateSlider() {
+        // A. Track Move karein
+        $track.css("transform", `translateX(-${slideIndex * 100}%)`);
 
-  // 3. Slider Logic Start karein
-  startSliderAnimation();
-}
+        // B. Background Blur Effect Update karein
+        updateBackground(slideIndex);
 
-// --- SLIDER ANIMATION & CONTROL ---
-function startSliderAnimation() {
-  const slides = document.querySelectorAll(".slide");
-  const totalSlides = slides.length;
-  let slideIndex = 0;
+        // C. Video Handling (Current video play, baaki pause)
+        const $allVideos = $(".slide video");
+        $allVideos.each(function() {
+            $(this).get(0).pause();
+            $(this).get(0).currentTime = 0;
+        });
 
-  // Timing Settings
-  const slideDuration = 4000; // 4 Seconds per slide
-  let slideInterval;
+        const $currentSlide = $(".slide").eq(slideIndex);
+        const $activeVideo = $currentSlide.find("video");
 
-  // Function: Update Slide & Background
-  const updateSlider = () => {
-    // A. Track ko move karo
-    track.style.transform = `translateX(-${slideIndex * 100}%)`;
-
-    // B. Background Blur Image Update karo
-    updateBackground(slideIndex);
-
-    // C. Video Handling (Performance Optimization)
-    // Jo slide active hai sirf wahi play ho, baki pause rahein
-    slides.forEach((slide, index) => {
-      const video = slide.querySelector("video");
-      if (video) {
-        if (index === slideIndex) {
-          video.currentTime = 0; // Shuru se start karein
-          video.play().catch(e => console.log("Auto-play blocked:", e));
-        } else {
-          video.pause();
+        if ($activeVideo.length > 0) {
+            // Video hai to play karein
+            const playPromise = $activeVideo.get(0).play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => console.log("Auto-play blocked:", error));
+            }
         }
-      }
-    });
-  };
-
-  // Function: Background Blur Logic
-  const updateBackground = (index) => {
-    if (!heroBanner) return;
-
-    const data = sliderData[index];
-    let bgUrl = "";
-
-    if (data.type === "image") {
-      bgUrl = data.src;
-    } else if (data.type === "video") {
-      // Video ka background uska 'poster' image hoga
-      bgUrl = data.poster || "images/banner-image.jpg";
     }
 
-    heroBanner.style.setProperty("--banner-bg", `url('${bgUrl}')`);
-  };
+    // --- 3. BACKGROUND UPDATER (Blur Effect) ---
+    function updateBackground(index) {
+        if ($heroBanner.length === 0) return;
 
-  // Function: Move to Next Slide
-  const nextSlide = () => {
-    slideIndex++;
-    if (slideIndex >= totalSlides) {
-      slideIndex = 0;
+        const data = sliderData[index];
+        let bgUrl = "";
+
+        if (data.type === 'image') {
+            bgUrl = data.src;
+        } else if (data.type === 'video') {
+            // Video ke liye poster use karein agar available ho
+            bgUrl = data.poster || ""; 
+        }
+
+        // CSS Variable update
+        if(bgUrl) {
+             $heroBanner.css("--banner-bg", `url('${bgUrl}')`);
+        } else {
+             $heroBanner.css("--banner-bg", `none`);
+        }
     }
-    updateSlider();
-  };
 
-  // --- INITIAL START ---
-  // Pehli baar manually run karein taaki first image set ho jaye
-  updateSlider();
+    // --- 4. NEXT SLIDE ---
+    function nextSlide() {
+        slideIndex++;
+        if (slideIndex >= sliderData.length) {
+            slideIndex = 0;
+        }
+        updateSlider();
+    }
 
-  // Automatic Timer Start
-  slideInterval = setInterval(nextSlide, slideDuration);
-}
+    // --- 5. TIMER CONTROL ---
+    function startAutoSlide() {
+        if (slideInterval) clearInterval(slideInterval);
+        slideInterval = setInterval(nextSlide, slideDuration);
+    }
 
-// DOM load hone par slider init karein
-document.addEventListener("DOMContentLoaded", initSlider);
+    // Init Call
+    initSlider();
+});

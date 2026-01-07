@@ -21,7 +21,8 @@
             </ul>
         </div>
 
-        <div class="footer-bottom">
-            {{ siteSetting('footer_text', config('app.name')) }}
-        </div>
+    </div> <div class="footer-bottom">
+        {{ siteSetting('footer_text', config('app.name')) }}
+    </div>
+
 </footer>
