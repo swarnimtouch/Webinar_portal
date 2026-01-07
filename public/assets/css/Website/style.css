@@ -665,6 +665,17 @@ main {
   margin-top: 40px;
 }
 
+.footer-bottom {
+    width: 100%;
+    text-align: center;
+    margin-top: 40px; /* Upar wale section se gap */
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color); /* Optional: Ek halki line separator ke liye */
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
 .footer-content {
   max-width: 1200px;
   margin: 0 auto;
