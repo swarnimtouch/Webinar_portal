@@ -3,55 +3,6 @@
 @section('title', 'TechNova IT Summit 2025')
 
 @push('styles')
-    <style>
-        .error-text {
-            color: #d93025;
-            font-size: 13px;
-            margin-top: 4px;
-            display: none;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .error-text i {
-            font-size: 12px;
-        }
-
-        .is-invalid {
-            border-color: #d93025 !important;
-            background-color: #fff5f5;
-        }
-
-        .is-invalid:focus {
-            border-color: #d93025 !important;
-            box-shadow: 0 0 0 0.2rem rgba(217, 48, 37, 0.25);
-        }
-
-        /* Email Input Group Styling */
-        .email-input-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .email-input-group input {
-            transition: all 0.3s ease;
-        }
-
-        /* Animation for error messages */
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .error-text {
-            animation: slideDown 0.3s ease;
-        }
-    </style>
 @endpush
 
 @section('body')
@@ -293,9 +244,76 @@
 
     @push('scripts')
         {{-- Include FormValidator --}}
+        <script>
+            window.sliderData = [
+                    @foreach($banners as $banner)
+                {
+                    type: "{{ $banner->type }}",
+                    src: "{{ asset('storage/banners/' . $banner->filename) }}"
+                }@if(!$loop->last),@endif
+                @endforeach
+            ];
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
 
+                // ✅ Initialize Form Validators
+                const loginValidator = new FormValidator('loginForm');
+                const registerValidator = new FormValidator('registerForm');
 
+                // ✅ Enable Real-time Validation
+                enableRealTimeValidation(loginValidator);
+                enableRealTimeValidation(registerValidator);
 
+                // ✅ Modal Handlers
+                const loginBtn = document.getElementById('openLoginModal');
+                const registerBtn = document.getElementById('openRegisterModal');
+                const loginModal = document.getElementById('loginModal');
+                const registerModal = document.getElementById('registerModal');
+
+                // Open Login Modal
+                if (loginBtn) {
+                    loginBtn.addEventListener('click', () => {
+                        loginModal.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                    });
+                }
+
+                // Open Register Modal
+                if (registerBtn) {
+                    registerBtn.addEventListener('click', () => {
+                        registerModal.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                    });
+                }
+
+                // Close Login Modal
+                document.querySelectorAll('.close-modal-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        loginModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    });
+                });
+
+                // Close Register Modal
+                document.querySelectorAll('.close-register-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        registerModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    });
+                });
+
+                // Close on outside click
+                [loginModal, registerModal].forEach(modal => {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.style.display = 'none';
+                            document.body.style.overflow = 'auto';
+                        }
+                    });
+                });
+            });
+        </script>
         @if ($errors->any())
             <script>
                 document.addEventListener('DOMContentLoaded', function () {

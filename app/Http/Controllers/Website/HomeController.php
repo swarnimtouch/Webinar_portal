@@ -107,7 +107,7 @@ class HomeController
         // ✅ LOGIN
         Auth::login($user);
 
-        return redirect()->route('dashboard1');
+        return redirect()->route('website.dashboard');
     }
 
     public function register(Request $request)
@@ -143,7 +143,7 @@ class HomeController
 
         Auth::login($user);
 
-        return redirect()->route('dashboard1');
+        return redirect()->route('website.dashboard');
     }
 
 
