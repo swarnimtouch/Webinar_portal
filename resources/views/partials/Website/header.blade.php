@@ -35,4 +35,53 @@
     />
 
     @stack('styles')
+    <style>
+        .error-text {
+            color: #d93025;
+            font-size: 13px;
+            margin-top: 4px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .error-text i {
+            font-size: 12px;
+        }
+
+        .is-invalid {
+            border-color: #d93025 !important;
+            background-color: #fff5f5;
+        }
+
+        .is-invalid:focus {
+            border-color: #d93025 !important;
+            box-shadow: 0 0 0 0.2rem rgba(217, 48, 37, 0.25);
+        }
+
+        /* Email Input Group Styling */
+        .email-input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .email-input-group input {
+            transition: all 0.3s ease;
+        }
+
+        /* Animation for error messages */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-text {
+            animation: slideDown 0.3s ease;
+        }
+    </style>
 </head>

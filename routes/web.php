@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\SpeakersController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Website\HomeController;
+
+
 use Illuminate\Support\Facades\Route;
 
 
@@ -19,11 +21,10 @@ Route::post('/website/login', [HomeController::class, 'login'])
     ->name('website.login.submit');
 Route::post('/website/register', [HomeController::class, 'register'])
     ->name('website.register.submit');
+Route::middleware(['auth'])->prefix('website')->group(function () {
+    Route::get('/dashboard',[\App\Http\Controllers\Website\DashboardController::class, 'dashboard'])->name('website.dashboard');
+});
 
-Route::get('/dashboard1', function () {
-    dd('hii');
-    return view('dashboard');
-})->name('dashboard1');
 
 
 Route::get('/login', [LoginController::class, 'show'])->name('login');

@@ -161,7 +161,7 @@ main {
   border: none;
   margin-bottom: 0;
 
-  --banner-bg: url("images/banner-image.jpg");
+
   transition: --banner-bg 0.5s ease-in-out;
 }
 
