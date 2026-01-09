@@ -11,6 +11,7 @@
         $siteName = siteSetting('site_name', config('app.name'));
     @endphp
 
+
     <nav class="navbar">
         <div class="logo">
             @if($siteLogo)
@@ -188,16 +189,8 @@
                                data-field="{{ $field->field_name }}"
                                data-label="{{ $field->label }}"
                                data-is-required="1" />
-                        <div class="error-text js-error"></div>
                     </div>
                 @endforeach
-                @error($field->field_name)
-                <div class="error-text" style="display:flex">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    {{ $message }}
-                </div>
-                @enderror
-
                 <button type="submit" class="btn btn-gold full-width">Login</button>
             </form>
         </div>
@@ -211,30 +204,116 @@
             <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm">
                 @csrf
                 @foreach($registerFields as $field)
+
                     @php
-                        $inputName = $field->field_name === 'mobile_number' ? 'mobile' : $field->field_name;
+                      $options = is_array(json_decode($field->input_value, true))
+                        ? json_decode($field->input_value, true)
+                        : [];
                     @endphp
-                    <div class="email-input-group">
-                        <div class="icon-box">
-                            <i class="{{ $field->icon ?? 'fa-solid fa-user' }}"></i>
-                        </div>
-                        <input type="{{ $field->field_type }}"
-                               name="{{ $inputName }}"
-                               placeholder="{{ $field->label }}"
-                               data-field="{{ $field->field_name }}"
-                               data-label="{{ $field->label }}"
-                               data-is-required="{{ $field->is_required }}"
-                               class="@error($inputName) is-invalid @enderror"
-                               value="{{ old($inputName) }}" />
 
-                        @error($inputName)
-                        <div class="error-text" style="display: flex;">
-                            <i class="fa-solid fa-circle-exclamation"></i>
-                            {{ $message }}
-                        </div>
-                        @enderror
+                    <div class="email-input-group mb-3">
+                        @if($field->input_type == 1)
+                            <input type="text" data-is-required="{{ $field->is_required }}" name="{{ $field->field_name }}" data-label="{{ $field->label }}" placeholder="{{ $field->label }}"
+                                   value="{{ old($field->field_name) }}" class="form-control">
 
-                        <div class="error-text js-error"></div>
+                        @elseif($field->input_type == 2)
+                            <textarea name="{{ $field->field_name }}" data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" class="form-control"
+                                      placeholder="{{ $field->label }}">{{ old($field->field_name) }}</textarea>
+
+                        @elseif(in_array($field->input_type, [3,13]))
+
+                            @if($field->field_name === 'country')
+                                <select
+                                    name="country"
+                                    id="country"
+                                    class="form-select select2"
+                                    data-label="{{ $field->label }}"
+                                    data-is-required="{{ $field->is_required }}">
+                                    <option value="">Select Country</option>
+                                </select>
+
+                            @elseif($field->field_name === 'state')
+                                <select
+                                    name="state"
+                                    id="state"
+                                    class="form-select select2"
+                                    data-label="{{ $field->label }}"
+                                    data-is-required="{{ $field->is_required }}">
+                                    <option value="">Select State</option>
+                                </select>
+
+                            @elseif($field->field_name === 'city')
+                                <select
+                                    name="city"
+                                    id="city"
+                                    class="form-select select2"
+                                    data-label="{{ $field->label }}"
+                                    data-is-required="{{ $field->is_required }}">
+                                    <option value="">Select City</option>
+                                </select>
+
+                            @else
+                                <select
+                                    name="{{ $field->field_name }}"
+                                    class="form-select"
+                                    data-label="{{ $field->label }}"
+                                    data-is-required="{{ $field->is_required }}">
+                                    <option value="">Select {{ $field->label }}</option>
+                                    @foreach($options as $k => $v)
+                                        <option value="{{ $k }}">{{ $v }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
+
+                        @elseif($field->input_type == 4)
+                            <select data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" name="{{ $field->field_name }}[]" multiple class="form-control">
+                                @foreach($options as $k => $v)
+                                    <option value="{{ $k }}">{{ $v }}</option>
+                                @endforeach
+                            </select>
+
+                        @elseif($field->input_type == 5)
+                            <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="date" name="{{ $field->field_name }}" class="form-control">
+
+                        @elseif($field->input_type == 6)
+                            <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="file" name="{{ $field->field_name }}" class="form-control">
+
+                        @elseif($field->input_type == 7)
+                            <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="password" name="{{ $field->field_name }}" class="form-control">
+
+                        @elseif($field->input_type == 9)
+                            @forelse($options as $k => $v)
+                                <label>
+                                    <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}"  type="checkbox" name="{{ $field->field_name }}[]" value="{{ $k }}">
+                                    {{ $v }}
+                                </label>
+                            @empty
+                                <p class="text-danger">No options available</p>
+                            @endforelse
+
+
+                        @elseif($field->input_type == 10)
+                            <label>
+                                <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="checkbox" name="{{ $field->field_name }}"> {{ $field->label }}
+                            </label>
+
+                        @elseif($field->input_type == 11)
+                            <label class="me-3">
+                                {{ $field->label }}
+                            </label>
+                            @forelse($options as $k => $v)
+
+                                    <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="radio" name="{{ $field->field_name }}" value="{{ $k }}">
+                                    {{ $v }}
+                            @empty
+                                <p class="text-danger">No options configured</p>
+                            @endforelse
+
+
+                        @elseif($field->input_type == 12)
+                            <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="datetime-local" name="{{ $field->field_name }}" class="form-control">
+
+                        @endif
                     </div>
                 @endforeach
                 <button type="submit" class="btn btn-gold full-width">Register</button>
@@ -243,7 +322,34 @@
     </div>
 
     @push('scripts')
-        {{-- Include FormValidator --}}
+        @if(session('toast_error'))
+            <script>
+                toastr.error("{{ session('toast_error') }}");
+            </script>
+        @endif
+
+        @if(session('toast_success'))
+            <script>
+                toastr.success("{{ session('toast_success') }}");
+            </script>
+        @endif
+        @if(session('open_login_modal'))
+            <script>
+                $(document).ready(function () {
+                    $('#loginModal').css('display', 'flex');
+                    $('body').css('overflow', 'hidden');
+                });
+            </script>
+        @endif
+        @if(session('open_register_modal'))
+            <script>
+                $(document).ready(function () {
+                    $('#registerModal').css('display', 'flex');
+                    $('body').css('overflow', 'hidden');
+                });
+            </script>
+        @endif
+
         <script>
             window.sliderData = [
                     @foreach($banners as $banner)
@@ -253,78 +359,212 @@
                 }@if(!$loop->last),@endif
                 @endforeach
             ];
+
         </script>
+
+        //validation
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
+            $(document).ready(function () {
 
-                // ✅ Initialize Form Validators
-                const loginValidator = new FormValidator('loginForm');
-                const registerValidator = new FormValidator('registerForm');
 
-                // ✅ Enable Real-time Validation
-                enableRealTimeValidation(loginValidator);
-                enableRealTimeValidation(registerValidator);
+                const loginValidator = $("#loginForm").validate({
+                    errorElement: "div",
+                    errorClass: "error-text",
 
-                // ✅ Modal Handlers
-                const loginBtn = document.getElementById('openLoginModal');
-                const registerBtn = document.getElementById('openRegisterModal');
-                const loginModal = document.getElementById('loginModal');
-                const registerModal = document.getElementById('registerModal');
+                    errorPlacement: function (error, element) {
+                        error.insertAfter(element.closest(".email-input-group"));
+                    },
 
-                // Open Login Modal
-                if (loginBtn) {
-                    loginBtn.addEventListener('click', () => {
-                        loginModal.style.display = 'flex';
-                        document.body.style.overflow = 'hidden';
-                    });
-                }
+                    highlight: function (element) {
+                        $(element).addClass("is-invalid");
+                    },
 
-                // Open Register Modal
-                if (registerBtn) {
-                    registerBtn.addEventListener('click', () => {
-                        registerModal.style.display = 'flex';
-                        document.body.style.overflow = 'hidden';
-                    });
-                }
-
-                // Close Login Modal
-                document.querySelectorAll('.close-modal-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        loginModal.style.display = 'none';
-                        document.body.style.overflow = 'auto';
-                    });
+                    unhighlight: function (element) {
+                        $(element).removeClass("is-invalid");
+                    }
                 });
 
-                // Close Register Modal
-                document.querySelectorAll('.close-register-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        registerModal.style.display = 'none';
-                        document.body.style.overflow = 'auto';
-                    });
+
+
+                $("#loginForm input").each(function () {
+
+                    const $input = $(this);
+                    const label  = $input.data("label") || "This field";
+                    const type   = $input.attr("type");
+                    const name   = $input.attr("name");
+
+                    if ($input.data("is-required") == 1) {
+                        $input.rules("add", {
+                            required: true,
+                            messages: {
+                                required: label + " is required"
+                            }
+                        });
+                    }
+
+                    if (type === "email" || name === "email") {
+                        $input.rules("add", {
+                            email: true,
+                            messages: {
+                                email: "Please enter a valid email address"
+                            }
+                        });
+                    }
+
+                    if (type === "tel" || name === "mobile_number" || name === "phone") {
+                        $input.rules("add", {
+                            digits: true,
+                            minlength: 10,
+                            maxlength: 10,
+                            messages: {
+                                digits: "Only numbers are allowed",
+                                minlength: "Mobile number must be 10 digits",
+                                maxlength: "Mobile number must be 10 digits"
+                            }
+                        });
+                    }
+
                 });
 
-                // Close on outside click
-                [loginModal, registerModal].forEach(modal => {
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) {
-                            modal.style.display = 'none';
-                            document.body.style.overflow = 'auto';
+                const registerValidator = $("#registerForm").validate({
+                    errorElement: "div",
+                    errorClass: "error-text",
+
+                    errorPlacement: function (error, element) {
+
+                        error.insertAfter(element.closest(".email-input-group"));
+                    },
+
+                    highlight: function (element) {
+                        $(element).addClass("is-invalid");
+                    },
+
+                    unhighlight: function (element) {
+                        $(element).removeClass("is-invalid");
+                    }
+                });
+
+
+                $("#registerForm").find("input, select, textarea").each(function () {
+
+                    const $input = $(this);
+                    const label = $input.data("label") || "This field";
+                    const type   = $input.attr("type");
+                    const name   = $input.attr("name");
+
+                    let rules = {};
+                    let messages = {};
+
+                    if ($input.data("is-required") == 1) {
+                        rules.required = true;
+                        messages.required = label + " is required";
+                    }
+
+                    if (name === "email") {
+                        rules.email = true;
+                        messages.email = "Please enter a valid email address";
+                    }
+
+                    if (name === "tel" || name === "mobile_number") {
+                        rules.digits = true;
+                        rules.minlength = 10;
+                        rules.maxlength = 10;
+
+                        messages.digits = "Only numbers are allowed";
+                        messages.minlength = "Mobile number must be 10 digits";
+                        messages.maxlength = "Mobile number must be 10 digits";
+                    }
+
+                    if (name === "password") {
+                        rules.minlength = 6;
+                        messages.minlength = label + " must be at least 6 characters";
+                    }
+
+                    if (Object.keys(rules).length > 0) {
+                        $input.rules("add", {
+                            ...rules,
+                            messages: messages
+                        });
+                    }
+
+                });
+
+
+            });
+        </script>
+
+        //country wise state and state wise city
+        <script>
+            $(document).ready(function () {
+
+                $('.select2').select2({
+                    width: '100%',
+                    allowClear: true
+                });
+
+
+                $.get('/get-countries', function (countries) {
+
+                    $('#country').append(
+                        countries.map(c =>
+                            `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`
+                        )
+                    );
+
+                    if (window.oldCountry) {
+                        $('#country').val(window.oldCountry).trigger('change');
+                    }
+                });
+
+
+                $('#country').on('change', function () {
+
+                    let countryId = $('#country option:selected').data('id');
+
+                    $('#state').empty().append('<option value="">Select State</option>').trigger('change');
+                    $('#city').empty().append('<option value="">Select City</option>').trigger('change');
+
+                    if (!countryId) return;
+
+                    $.get(`/get-states/${countryId}`, function (states) {
+
+                        $('#state').append(
+                            states.map(s =>
+                                `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`
+                            )
+                        );
+
+                        if (window.oldState) {
+                            $('#state').val(window.oldState).trigger('change');
                         }
                     });
                 });
+
+
+                $('#state').on('change', function () {
+
+                    let stateId = $('#state option:selected').data('id');
+
+                    $('#city').empty().append('<option value="">Select City</option>').trigger('change');
+
+                    if (!stateId) return;
+
+                    $.get(`/get-cities/${stateId}`, function (cities) {
+
+                        $('#city').append(
+                            cities.map(c =>
+                                `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`
+                            )
+                        );
+
+                        if (window.oldCity) {
+                            $('#city').val(window.oldCity).trigger('change');
+                        }
+                    });
+                });
+
             });
         </script>
-        @if ($errors->any())
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    const modal = document.getElementById('registerModal');
-                    if (modal) {
-                        modal.style.display = 'flex';
-                        document.body.style.overflow = 'hidden';
-                    }
-                });
-            </script>
-        @endif
 
     @endpush
 

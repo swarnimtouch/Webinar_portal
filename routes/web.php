@@ -21,6 +21,7 @@ Route::post('/website/login', [HomeController::class, 'login'])
     ->name('website.login.submit');
 Route::post('/website/register', [HomeController::class, 'register'])
     ->name('website.register.submit');
+Route::get('/website/logout', [HomeController::class, 'logout'])->name('website.logout');
 Route::middleware(['auth'])->prefix('website')->group(function () {
     Route::get('/dashboard',[\App\Http\Controllers\Website\DashboardController::class, 'dashboard'])->name('website.dashboard');
 });
@@ -84,4 +85,6 @@ Route::middleware(['auth'])->group(function () {
 
 
 });
-Route::get('/{slug}', [ContentController::class, 'show']);
+Route::get('/get-countries', [HomeController::class, 'countries']);
+Route::get('/get-states/{country}', [HomeController::class, 'states']);
+Route::get('/get-cities/{state}', [HomeController::class, 'cities']);
