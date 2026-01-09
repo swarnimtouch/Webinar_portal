@@ -2,23 +2,21 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\GeneralSettings;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminMiddleware
+class DefineConstants
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !auth()->user()->is_admin) {
-            return redirect()->route('login');
-        }
-
+        GeneralSettings::define_const();
         return $next($request);
     }
 }

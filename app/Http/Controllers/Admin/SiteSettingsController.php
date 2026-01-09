@@ -26,16 +26,7 @@ class SiteSettingsController extends Controller
                 ];
             });
 
-        $title = 'Site Settings';
-        $breadcrumbs = [
-            'Site Settings' => ''
-        ];
-
-        return view('admin.sitesettings.index', compact(
-            'fields',
-            'title',
-            'breadcrumbs'
-        ));
+        return view('admin.site_settings.index', ['fields'=>$fields,'title' => __('Site Settings'), 'breadcrumb' => breadcrumb([__('Site Settings') => route('admin.settings')])]);
     }
 
 

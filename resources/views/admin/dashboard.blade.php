@@ -1,11 +1,5 @@
-@extends('layouts.master')
-
-@section('title', $title ?? '')
-
-@section('body')
-    @include('partials.header')
-
-
+@extends('layouts.admin')
+@section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
     <!--begin::Post-->
     <div class="post d-flex flex-column-fluid" id="kt_post">
@@ -2901,7 +2895,6 @@
         </div>
         <!--end::Container-->
     </div>
-    @include('partials.footer')
 @endsection
 
 @push('scripts')

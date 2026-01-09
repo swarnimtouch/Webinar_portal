@@ -12,7 +12,7 @@ class ProfileController extends Controller
     public function index()
     {
         $user = Auth::user();
-        return view('admin.profile.index', compact('user'));
+        return view('admin.profile.index', ['title' => __('Profile'), 'breadcrumb' => breadcrumb([__('Profile') => route('admin.profile')])]);
     }
 
     public function update(Request $request)
@@ -30,7 +30,6 @@ class ProfileController extends Controller
         $user->username = $request->username;
         $user->email = $request->email;
 
-        // ❌ REMOVE AVATAR
         if ($request->avatar_remove == 1) {
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
@@ -38,7 +37,6 @@ class ProfileController extends Controller
             $user->avatar = null;
         }
 
-        // ✅ UPLOAD NEW AVATAR
         if ($request->hasFile('avatar')) {
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
@@ -51,7 +49,7 @@ class ProfileController extends Controller
         $user->save();
 
         return redirect()
-            ->route('dashboard')
+            ->route('admin.dashboard')
             ->with('success', 'Profile updated successfully');
     }
 

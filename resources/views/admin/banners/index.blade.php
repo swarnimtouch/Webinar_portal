@@ -1,12 +1,8 @@
-@extends('layouts.master')
-
-@section($title,'title')
-@section('body')
-    @include('partials.header')
+@extends('layouts.admin')
+@section('content')
     <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
-
 
 
         <!--begin::Post-->
@@ -41,7 +37,8 @@
 												</span>
                                 <!--end::Svg Icon-->
                                 <input type="text" data-kt-user-table-filter="search"
-                                       class="form-control form-control-solid w-250px ps-14" placeholder="Search banner"/>
+                                       class="form-control form-control-solid w-250px ps-14"
+                                       placeholder="Search banner"/>
                             </div>
                             <!--end::Search-->
                         </div>
@@ -79,7 +76,8 @@
                                         <!--begin::Input group-->
                                         <div class="mb-10">
                                             <label class="form-label fs-6 fw-bold">Type:</label>
-                                            <select class="form-select form-select-solid fw-bolder" data-kt-select2="true"
+                                            <select class="form-select form-select-solid fw-bolder"
+                                                    data-kt-select2="true"
                                                     data-placeholder="Select option" data-allow-clear="true"
                                                     data-kt-user-table-filter="type" data-hide-search="true">
                                                 <option></option>
@@ -91,7 +89,8 @@
                                         <!--begin::Input group-->
                                         <div class="mb-10">
                                             <label class="form-label fs-6 fw-bold">Status:</label>
-                                            <select class="form-select form-select-solid fw-bolder" data-kt-select2="true"
+                                            <select class="form-select form-select-solid fw-bolder"
+                                                    data-kt-select2="true"
                                                     data-placeholder="Select option" data-allow-clear="true"
                                                     data-kt-user-table-filter="status" data-hide-search="true">
                                                 <option></option>
@@ -117,7 +116,7 @@
                                 <!--end::Menu 1-->
                                 <!--end::Filter-->
                                 <!--begin::Add user-->
-                                <a href="{{ route('banner.create') }}" class="btn btn-primary">
+                                <a href="{{ route('admin.banner.create') }}" class="btn btn-primary">
                                 <span class="svg-icon svg-icon-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                          viewBox="0 0 24 24" fill="none">
@@ -140,7 +139,8 @@
                                 <div class="fw-bolder me-5">
                                     <span class="me-2" data-kt-user-table-select="selected_count"></span>Selected
                                 </div>
-                                <button type="button" class="btn btn-danger" data-kt-user-table-select="delete_selected">
+                                <button type="button" class="btn btn-danger"
+                                        data-kt-user-table-select="delete_selected">
                                     Delete Selected
                                 </button>
                             </div>
@@ -155,148 +155,24 @@
                         <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
+                                <th class=""></th>
                                 <th class="w-10px pe-2">
                                     <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
                                         <input class="form-check-input" type="checkbox"
                                                data-kt-check="true"
-                                               data-kt-check-target="#kt_table_users .row-checkbox" />
+                                               data-kt-check-target="#kt_table_users row-checkbox"/>
 
                                     </div>
                                 </th>
-                                <th class="min-w-80px">ID</th>
                                 <th class="min-w-125px">Banner</th>
                                 <th class="min-w-200px">Title</th>
-{{--                                <th class="min-w-100px">Type</th>--}}
                                 <th class="min-w-150px">Created At</th>
                                 <th class="min-w-100px">Status</th>
                                 <th class="text-end min-w-100px">Actions</th>
                             </tr>
                             </thead>
-
-                            <tbody class="text-gray-600 fw-bold">
-                            @forelse($banners as $banner)
-                                <tr>
-                                    <!-- Checkbox -->
-                                    <td>
-                                        <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                            <input class="form-check-input row-checkbox" type="checkbox" value="{{ $banner->id }}" />
-                                        </div>
-                                    </td>
-
-                                    <!-- ID -->
-                                    <td>{{ $loop->iteration }}</td>
-
-
-                                    <!-- Preview -->
-                                    <td>
-                                        @if($banner->type === 'image')
-                                            <div class="position-relative overflow-hidden rounded"
-                                                 style="width:80px;height:80px;cursor:pointer;"
-                                                 onclick="showBannerPreview('{{ $banner->media_url }}', 'image')">
-                                                <img src="{{ $banner->media_url }}"
-                                                     alt="Banner"
-                                                     style="width:100%;height:100%;object-fit:cover;">
-                                            </div>
-                                        @else
-                                            <div class="position-relative overflow-hidden rounded"
-                                                 style="width:80px;height:80px;cursor:pointer;"
-                                                 onclick="showBannerPreview('{{ $banner->media_url }}', 'video')">
-                                                <video width="100%" height="100%" muted loop
-                                                       style="object-fit:cover;"
-                                                       onmouseover="this.play()"
-                                                       onmouseout="this.pause();this.currentTime=0;"
-                                                       data-video-id="video_{{ $banner->id }}">
-                                                    <source src="{{ $banner->media_url }}" type="video/mp4">
-
-                                                </video>
-                                                <!-- Play icon overlay -->
-                                                <div class="position-absolute top-50 start-50 translate-middle play-icon-overlay"
-                                                     style="pointer-events:none;transition:opacity 0.3s;">
-                                                    <i class="bi bi-play-circle-fill text-white" style="font-size: 2rem;opacity:0.8;"></i>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </td>
-
-                                    <!-- Filename -->
-                                    <td>{{ $banner->title }}</td>
-
-                                    <!-- Type -->
-{{--                                    <td>--}}
-{{--                                        <span class="badge badge-light-{{ $banner->type === 'image' ? 'primary' : 'info' }}">--}}
-{{--                                            {{ ucfirst($banner->type) }}--}}
-{{--                                        </span>--}}
-{{--                                    </td>--}}
-
-                                    <!-- Created -->
-                                    <td>{{ $banner->created_at->format('d M Y') }}</td>
-                                    <!-- Status -->
-                                    <td>
-                                        <div class="form-check form-switch form-check-custom form-check-solid">
-                                            <input class="form-check-input banner-status-switch"
-                                                   type="checkbox"
-                                                   {{ $banner->status === 'active' ? 'checked' : '' }}
-                                                   onclick="toggleStatus({{ $banner->id }}, this);"
-                                                   id="status_{{ $banner->id }}">
-                                        </div>
-                                    </td>
-                                    <!-- Actions -->
-
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                                            Actions
-                                            <span class="svg-icon svg-icon-5 m-0">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                        <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="black"/>
-                                                    </svg>
-                                                </span>
-                                        </a>
-
-                                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" data-kt-menu="true">
-                                            <div class="menu-item px-3">
-                                                {{--                                                <a href="{{ route('user.show', $user->id) }}" class="menu-link px-3">View</a>--}}
-                                            </div>
-                                            <div class="menu-item px-3">
-                                                <a href="{{ route('banner.create', $banner->id) }}" class="menu-link px-3">Edit</a>
-                                            </div>
-                                            <div class="menu-item px-3">
-                                                <a href="javascript:void(0)" onclick="deleteBanner({{ $banner->id }},this)" class="menu-link px-3 text-danger">Delete</a>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <!-- Actions -->
-{{--                                    <td class="text-end">--}}
-
-
-{{--                                        <a href="{{ route('banner.create', $banner->id) }}"--}}
-{{--                                           class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"--}}
-{{--                                           title="Edit">--}}
-{{--                                            <span class="svg-icon svg-icon-3">--}}
-{{--                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">--}}
-{{--                                                    <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="black"/>--}}
-{{--                                                    <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="black"/>--}}
-{{--                                                </svg>--}}
-{{--                                            </span>--}}
-{{--                                        </a>--}}
-{{--                                        <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"--}}
-{{--                                                onclick="deleteBanner({{ $banner->id }},this)"--}}
-{{--                                                title="Delete">--}}
-{{--                                        <span class="svg-icon svg-icon-3">--}}
-{{--                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">--}}
-{{--                                                <path d="M5 9C5 8.44772 5.44772 8 6 8H18C18.5523 8 19 8.44772 19 9V18C19 19.6569 17.6569 21 16 21H8C6.34315 21 5 19.6569 5 18V9Z" fill="black"/>--}}
-{{--                                                <path opacity="0.5" d="M5 5C5 4.44772 5.44772 4 6 4H18C18.5523 4 19 4.44772 19 5V5C19 5.55228 18.5523 6 18 6H6C5.44772 6 5 5.55228 5 5V5Z" fill="black"/>--}}
-{{--                                                <path opacity="0.5" d="M9 4C9 3.44772 9.44772 3 10 3H14C14.5523 3 15 3.44772 15 4V4H9V4Z" fill="black"/>--}}
-{{--                                            </svg>--}}
-{{--                                        </span>--}}
-{{--                                        </button>--}}
-{{--                                    </td>--}}
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center py-5">No banners found</td>
-                                </tr>
-                            @endforelse
+                            <tbody class="fw-semibold text-gray-600">
+                            <!-- Data will be loaded via AJAX -->
                             </tbody>
                         </table>
 
@@ -326,353 +202,192 @@
         </div>
 
         <!--end::Post-->
-        @include('partials.footer')
         @endsection
 
         @push('scripts')
             <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
             <script>
-                function showBannerPreview(fileUrl, type) {
-                    const modal = new bootstrap.Modal(
-                        document.getElementById('bannerPreviewModal')
-                    );
+                "use strict";
+                const qs = (s, p = document) => p.querySelector(s);
+                const qsa = (s, p = document) => [...p.querySelectorAll(s)];
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
-                    const modalTitle = document.getElementById('bannerPreviewTitle');
-                    const modalBody  = document.getElementById('bannerPreviewBody');
+                function openBannerPreview(url, type) {
+                    const modalEl = qs('#bannerPreviewModal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    const body = qs('#bannerPreviewBody');
+                    const title = qs('#bannerPreviewTitle');
 
-                    // ✅ Title hamesha Banner
-                    modalTitle.textContent = 'Banner';
-
-                    // Clear previous content
-                    modalBody.innerHTML = '';
+                    title.textContent = 'Banner';
+                    body.innerHTML = '';
 
                     if (type === 'image') {
-                        const img = document.createElement('img');
-                        img.src = fileUrl;
-                        img.className = 'img-fluid rounded';
-                        img.style.maxHeight = '70vh';
-                        modalBody.appendChild(img);
-                    }
-                    else if (type === 'video') {
-                        const video = document.createElement('video');
-                        video.controls = true;
-                        video.autoplay = true;
-                        video.className = 'rounded';
-                        video.style.width = '100%';
-                        video.style.maxHeight = '70vh';
-                        video.id = 'modalVideoPlayer';
-
-                        const source = document.createElement('source');
-                        source.src = fileUrl;
-                        source.type = 'video/mp4';
-
-                        video.appendChild(source);
-                        modalBody.appendChild(video);
+                        body.innerHTML = `<img src="${url}" class="img-fluid rounded" style="max-height:70vh">`;
+                    } else {
+                        body.innerHTML = `
+                        <video controls autoplay style="width:100%;max-height:70vh" id="modalVideo">
+                            <source src="${url}" type="video/mp4">
+                        </video>
+                    `;
                     }
 
                     modal.show();
 
-                    // Close par video stop
-                    const modalElement = document.getElementById('bannerPreviewModal');
-                    modalElement.addEventListener('hidden.bs.modal', function () {
-                        const videoPlayer = document.getElementById('modalVideoPlayer');
-                        if (videoPlayer) {
-                            videoPlayer.pause();
-                            videoPlayer.currentTime = 0;
-                            videoPlayer.src = '';
+                    modalEl.addEventListener('hidden.bs.modal', () => {
+                        const v = qs('#modalVideo');
+                        if (v) {
+                            v.pause();
+                            v.currentTime = 0;
+                            v.src = '';
                         }
-                    }, { once: true });
+                    }, {once: true});
                 }
-            </script>
 
+                let bannerTable;
 
-            <script>
-                // Add this script to fix the select all functionality
-                "use strict";
+                function initBannerTable() {
 
-                var KTUsersList = function () {
-                    var table = document.getElementById('kt_table_users');
-                    var datatable;
-                    var toolbarBase;
-                    var toolbarSelected;
-                    var selectedCount;
+                    bannerTable = $('#kt_table_users').DataTable({
+                        processing: true,
+                        serverSide: true,
+                        searchDelay: 500,
+                        ajax: {
+                            url: '{{ route("admin.banner.datatable") }}',
+                            data: d => {
+                                d.search = qs('[data-kt-user-table-filter="search"]').value;
+                                d.type = qs('[data-kt-user-table-filter="type"]').value;
+                                d.status = qs('[data-kt-user-table-filter="status"]').value;
+                            }
+                        },
+                        order: [[2, 'asc']],
+                        pageLength: 10,
+                        columns: [
+                            {data: null, orderable: false, defaultContent: ''},
 
-                    // Initialize datatable
-                    var initUserTable = function () {
-                        datatable = $(table).DataTable({
-                            searchDelay: 500,
-                            processing: true,
-                            order: [[1, 'desc']],
-                            stateSave: false,
-                            columnDefs: [
-                                {
-                                    orderable: false,
-                                    targets: [0, 2, 6]
+                            {
+                                data: 'id',
+                                orderable: false,
+                                searchable: false,
+                                render: id => `<div class="form-check form-check-sm form-check-custom form-check-solid"> <input class="form-check-input row-checkbox" type="checkbox" value="${id}" /> </div>`
+                            },
+                            {
+                                data: 'media_url',
+                                render: (data, type, row) => `
+                    <div class="banner-preview"
+                         data-url="${row.media_url}"
+                         data-type="${row.type}"
+                         style="width:80px;height:80px;cursor:pointer;">
+                        ${
+                                    row.type === 'image'
+                                        ? `<img src="${row.media_url}" style="width:100%;height:100%;object-fit:cover">`
+                                        : `<video muted style="width:100%;height:100%;object-fit:cover">
+                                   <source src="${row.media_url}" type="video/mp4">
+                               </video>`
                                 }
-                            ]
-                        });
+                    </div>
+                `
+                            },
 
-                        datatable.on('draw', function () {
-                            initToggleToolbar();
-                            handleDeleteRows();
-                            toggleToolbars();
-                            handleSelectAllCheckbox(); // Re-init select all after redraw
-                        });
+                            {data: 'title'},
+                            {data: 'created_at'},
+
+                            {
+                                data: 'status',
+                                render: (data, type, row) => `
+                    <div class="form-check form-switch">
+                        <input class="form-check-input banner-status-toggle"
+                               type="checkbox"
+                               data-id="${row.id}"
+                               ${row.status === 'active' ? 'checked' : ''}>
+                    </div>
+                `
+                            },
+
+                            {
+                                data: 'id',
+                                orderable: false,
+                                searchable: false,
+                                render: id => `<div class="text-end">
+                                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
+                                                        <span class="svg-icon svg-icon-5 m-0">
+                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/> </svg>
+                                                            </span>
+                                                    </a>
+                                                    <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                                                        <div class="menu-item px-3">
+                                                            <a href="#" class="menu-link px-3 banner-delete" data-id="${id}"> Delete </a>
+                                                        </div>
+                                                        <div class="menu-item px-3">
+                                                            <a href="{{ route('admin.banner.create') }}/${id}" class="menu-link px-3 "> Edit </a>
+                                                        </div>
+                                                    </div>
+                                            </div>`
+                            }
+                        ]
+                    });
+                }
+
+                document.addEventListener('click', e => {
+
+                    const preview = e.target.closest('.banner-preview');
+                    if (preview) {
+                        openBannerPreview(preview.dataset.url, preview.dataset.type);
+                        return;
                     }
 
-                    // Handle "Select All" checkbox
-                    var handleSelectAllCheckbox = function() {
-                        const selectAllCheckbox = table.querySelector('thead .form-check-input');
-
-                        if (selectAllCheckbox) {
-                            selectAllCheckbox.addEventListener('change', function() {
-                                const isChecked = this.checked;
-                                const rowCheckboxes = table.querySelectorAll('tbody .row-checkbox');
-
-                                rowCheckboxes.forEach(checkbox => {
-                                    checkbox.checked = isChecked;
-                                });
-
-                                toggleToolbars();
-                            });
-                        }
-                    };
-
-                    // Search Datatable
-                    var handleSearchDatatable = function () {
-                        const filterSearch = document.querySelector('[data-kt-user-table-filter="search"]');
-                        filterSearch.addEventListener('keyup', function (e) {
-                            datatable.search(e.target.value).draw();
-                        });
+                    const del = e.target.closest('.banner-delete');
+                    if (del) {
+                        e.preventDefault();
+                        confirmDelete(del.dataset.id, del.closest('tr'));
                     }
+                });
 
-                    // Filter Datatable
-                    var handleFilterDatatable = () => {
-                        const filterButton = document.querySelector('[data-kt-user-table-filter="filter"]');
-                        const resetButton = document.querySelector('[data-kt-user-table-filter="reset"]');
-                        const typeFilter = document.querySelector('[data-kt-user-table-filter="type"]');
-                        const statusFilter = document.querySelector('[data-kt-user-table-filter="status"]');
+                document.addEventListener('mouseenter', e => {
+                    if (e.target.tagName === 'VIDEO') e.target.play();
+                }, true);
 
-                        filterButton.addEventListener('click', function () {
-                            var typeValue = typeFilter.value.toLowerCase();
-                            var statusValue = statusFilter.value.toLowerCase();
-
-                            if (typeValue !== '') {
-                                datatable.column(4).search(typeValue, false, false);
-                            } else {
-                                datatable.column(4).search('');
-                            }
-
-                            if (statusValue !== '') {
-                                datatable.column(5).search(statusValue, false, false);
-                            } else {
-                                datatable.column(5).search('');
-                            }
-
-                            datatable.draw();
-                        });
-
-                        resetButton.addEventListener('click', function () {
-                            $(typeFilter).val('').trigger('change');
-                            $(statusFilter).val('').trigger('change');
-                            datatable.column(4).search('');
-                            datatable.column(5).search('');
-                            datatable.search('').draw();
-                        });
+                document.addEventListener('mouseleave', e => {
+                    if (e.target.tagName === 'VIDEO') {
+                        e.target.pause();
+                        e.target.currentTime = 0;
                     }
+                }, true);
 
-                    // Delete selected rows
-                    var handleDeleteRows = () => {
-                        const deleteButton = document.querySelector('[data-kt-user-table-select="delete_selected"]');
+                document.addEventListener('change', e => {
+                    if (!e.target.classList.contains('banner-status-toggle')) return;
 
-                        deleteButton.addEventListener('click', function () {
-                            const checkboxes = table.querySelectorAll('tbody .row-checkbox:checked');
-
-                            if (checkboxes.length > 0) {
-                                Swal.fire({
-                                    text: "Are you sure you want to delete selected banners?",
-                                    icon: "warning",
-                                    showCancelButton: true,
-                                    buttonsStyling: false,
-                                    confirmButtonText: "Yes, delete!",
-                                    cancelButtonText: "No, cancel",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-danger",
-                                        cancelButton: "btn fw-bold btn-active-light-primary"
-                                    }
-                                }).then(function (result) {
-                                    if (result.value) {
-                                        const ids = [];
-                                        checkboxes.forEach(checkbox => {
-                                            ids.push(checkbox.value);
-                                        });
-
-                                        $.ajax({
-                                            url: '{{ route("banner.deleteMultiple") }}',
-                                            method: 'POST',
-                                            data: {
-                                                ids: ids,
-                                                _token: '{{ csrf_token() }}'
-                                            },
-                                            success: function(response) {
-                                                Swal.fire({
-                                                    text: "You have deleted selected banners!",
-                                                    icon: "success",
-                                                    buttonsStyling: false,
-                                                    confirmButtonText: "Ok, got it!",
-                                                    customClass: {
-                                                        confirmButton: "btn fw-bold btn-primary",
-                                                    }
-                                                }).then(function() {
-                                                    location.reload();
-                                                });
-                                            },
-                                            error: function(xhr) {
-                                                Swal.fire({
-                                                    text: "Error deleting banners. Please try again.",
-                                                    icon: "error",
-                                                    buttonsStyling: false,
-                                                    confirmButtonText: "Ok, got it!",
-                                                    customClass: {
-                                                        confirmButton: "btn fw-bold btn-primary",
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    }
-
-                    // Toggle toolbars
-                    var toggleToolbars = function () {
-                        toolbarBase = document.querySelector('[data-kt-user-table-toolbar="base"]');
-                        toolbarSelected = document.querySelector('[data-kt-user-table-toolbar="selected"]');
-                        selectedCount = document.querySelector('[data-kt-user-table-select="selected_count"]');
-
-                        const allCheckboxes = table.querySelectorAll('tbody .row-checkbox');
-                        const selectAllCheckbox = table.querySelector('thead .form-check-input');
-
-                        let checkedState = false;
-                        let count = 0;
-
-                        allCheckboxes.forEach(c => {
-                            if (c.checked) {
-                                checkedState = true;
-                                count++;
-                            }
-                        });
-
-                        // Update select all checkbox state
-                        if (selectAllCheckbox) {
-                            if (count === 0) {
-                                selectAllCheckbox.checked = false;
-                                selectAllCheckbox.indeterminate = false;
-                            } else if (count === allCheckboxes.length) {
-                                selectAllCheckbox.checked = true;
-                                selectAllCheckbox.indeterminate = false;
-                            } else {
-                                selectAllCheckbox.checked = false;
-                                selectAllCheckbox.indeterminate = true;
-                            }
-                        }
-
-                        if (checkedState) {
-                            selectedCount.innerHTML = count;
-                            toolbarBase.classList.add('d-none');
-                            toolbarSelected.classList.remove('d-none');
-                        } else {
-                            toolbarBase.classList.remove('d-none');
-                            toolbarSelected.classList.add('d-none');
-                        }
-                    };
-
-                    // Init toggle toolbar
-                    var initToggleToolbar = function () {
-                        const checkboxes = table.querySelectorAll('tbody .row-checkbox');
-
-                        checkboxes.forEach(checkbox => {
-                            checkbox.addEventListener('click', function () {
-                                setTimeout(function () {
-                                    toggleToolbars();
-                                }, 50);
-                            });
-                        });
-                    };
-
-                    return {
-                        init: function () {
-                            if (!table) {
-                                return;
-                            }
-
-                            initUserTable();
-                            handleSelectAllCheckbox(); // Initialize select all functionality
-                            initToggleToolbar();
-                            handleSearchDatatable();
-                            handleFilterDatatable();
-                            handleDeleteRows();
-                        }
-                    }
-                }();
-                function toggleStatus(id, checkbox) {
-
-                    // current state ko pehle save kar lo
-                    const previousState = !checkbox.checked;
-                    const newStatus = checkbox.checked ? 'active' : 'inactive';
-
-                    // checkbox ko temporarily revert karo (jab tak confirm na ho)
-                    checkbox.checked = previousState;
+                    const checkbox = e.target;
+                    const id = checkbox.dataset.id;
+                    const status = checkbox.checked ? 'active' : 'inactive';
 
                     Swal.fire({
-                        text: "Are you sure you want to change the status?",
+                        text: "Change banner status?",
                         icon: "warning",
                         showCancelButton: true,
-                        buttonsStyling: false,
-                        confirmButtonText: "Yes, change it!",
-                        cancelButtonText: "No, cancel",
-                        customClass: {
-                            confirmButton: "btn fw-bold btn-primary",
-                            cancelButton: "btn fw-bold btn-active-light-primary"
+                        confirmButtonText: "Yes"
+                    }).then(result => {
+
+                        if (!result.isConfirmed) {
+                            checkbox.checked = !checkbox.checked;
+                            return;
                         }
-                    }).then(function (result) {
 
-                        if (result.isConfirmed) {
+                        $.ajax({
+                            url: '{{ route("admin.banner.toggleStatus", ":id") }}'.replace(':id', id),
+                            method: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                status
+                            },
+                            success: function () {
 
-                            // ab actual toggle karo
-                            checkbox.checked = !previousState;
-
-                            $.ajax({
-                                url: '{{ route("banner.toggleStatus", ":id") }}'.replace(':id', id),
-                                method: 'POST',
-                                data: {
-                                    _token: '{{ csrf_token() }}',
-                                    status: newStatus
-                                },
-                                success: function () {
-
-                                    if (typeof toastr !== 'undefined') {
-                                        toastr.success('Status updated successfully!');
-                                    } else {
-                                        Swal.fire({
-                                            text: "Status updated successfully!",
-                                            icon: "success",
-                                            buttonsStyling: false,
-                                            confirmButtonText: "Ok",
-                                            customClass: {
-                                                confirmButton: "btn fw-bold btn-primary",
-                                            }
-                                        });
-                                    }
-                                },
-                                error: function () {
-                                    // error aaye to state wapas
-                                    checkbox.checked = previousState;
-
+                                if (typeof toastr !== 'undefined') {
+                                    toastr.success('Status updated successfully!');
+                                } else {
                                     Swal.fire({
-                                        text: "Error updating status. Please try again.",
-                                        icon: "error",
+                                        text: "Status updated successfully!",
+                                        icon: "success",
                                         buttonsStyling: false,
                                         confirmButtonText: "Ok",
                                         customClass: {
@@ -680,58 +395,143 @@
                                         }
                                     });
                                 }
-                            });
-                        }
-                        // ❌ cancel par kuch nahi hoga, checkbox already reverted hai
+                            },
+                            error: function () {
+                                checkbox.checked = previousState;
+
+                                Swal.fire({
+                                    text: "Error updating status. Please try again.",
+                                    icon: "error",
+                                    buttonsStyling: false,
+                                    confirmButtonText: "Ok",
+                                    customClass: {
+                                        confirmButton: "btn fw-bold btn-primary",
+                                    }
+                                });
+                            }
+                        });
                     });
-                }
-                function deleteBanner(id, btn) {
+                });
+
+                function confirmDelete(id, row) {
 
                     Swal.fire({
-                        text: "Are you sure you want to delete this banner?",
+                        text: "Delete this banner?",
                         icon: "warning",
                         showCancelButton: true,
-                        buttonsStyling: false,
-                        confirmButtonText: "Yes, delete it!",
-                        cancelButtonText: "No, cancel",
-                        customClass: {
-                            confirmButton: "btn fw-bold btn-danger",
-                            cancelButton: "btn fw-bold btn-active-light-primary"
-                        }
-                    }).then(function (result) {
+                        confirmButtonText: "Delete"
+                    }).then(result => {
 
-                        if (result.isConfirmed) {
+                        if (!result.isConfirmed) return;
 
-                            $.ajax({
-                                url: '{{ route("banner.delete", ":id") }}'.replace(':id', id),
-                                method: 'DELETE',
-                                data: {
-                                    _token: '{{ csrf_token() }}'
-                                },
-                                success: function () {
-
-                                    // 🔥 Remove row from DataTable
-                                    var row = btn.closest('tr');
-                                    $('#kt_table_users').DataTable().row(row).remove().draw();
-
-                                    Swal.fire({
-                                        text: "Banner has been deleted!",
-                                        icon: "success",
-                                        buttonsStyling: false,
-                                        confirmButtonText: "Ok",
-                                        customClass: {
-                                            confirmButton: "btn fw-bold btn-primary"
-                                        }
-                                    });
-                                }
-                            });
-                        }
+                        $.ajax({
+                            url: '{{ route("admin.banner.delete", ":id") }}'.replace(':id', id),
+                            method: 'DELETE',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function () {
+                                bannerTable.draw();
+                                toastr.success('Banner has been deleted!');
+                            }
+                        });
                     });
                 }
 
-                // On document ready
-                KTUtil.onDOMContentLoaded(function () {
-                    KTUsersList.init();
+                qs('[data-kt-user-table-filter="search"]')
+                    .addEventListener('keyup', () => bannerTable.draw());
+
+                qs('[data-kt-user-table-filter="filter"]')
+                    .addEventListener('click', () => bannerTable.draw());
+
+                qs('[data-kt-user-table-filter="reset"]')
+                    .addEventListener('click', () => {
+                        qs('[data-kt-user-table-filter="type"]').value = '';
+                        qs('[data-kt-user-table-filter="status"]').value = '';
+                        bannerTable.draw();
+                    });
+                document.addEventListener('change', e => {
+                    if (!e.target.matches('[data-kt-check="true"]')) return;
+
+                    const checked = e.target.checked;
+                    qsa('.row-checkbox').forEach(cb => cb.checked = checked);
+                });
+
+                document
+                    .querySelector('[data-kt-user-table-select="delete_selected"]')
+                    ?.addEventListener('click', () => {
+
+                        const ids = qsa('.row-checkbox:checked')
+                            .map(cb => cb.value);
+
+                        if (!ids.length) {
+                            Swal.fire({
+                                text: "Please select at least one banner.",
+                                icon: "info",
+                                confirmButtonText: "OK"
+                            });
+                            return;
+                        }
+
+                        Swal.fire({
+                            text: `Delete ${ids.length} selected banner(s)?`,
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "Yes, delete",
+                            cancelButtonText: "Cancel"
+                        }).then(result => {
+
+                            if (!result.isConfirmed) return;
+
+                            fetch('{{ route("admin.banner.deleteMultiple") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrf
+                                },
+                                body: JSON.stringify({ids})
+                            })
+                                .then(res => {
+                                    if (!res.ok) throw new Error();
+                                    Swal.fire({
+                                        text: "Selected banners deleted successfully.",
+                                        icon: "success",
+                                        confirmButtonText: "OK"
+                                    });
+                                    bannerTable.draw(false);
+                                })
+                                .catch(() => {
+                                    Swal.fire({
+                                        text: "Failed to delete banners.",
+                                        icon: "error",
+                                        confirmButtonText: "OK"
+                                    });
+                                });
+                        });
+                    });
+                document.addEventListener('change', e => {
+
+                    if (!e.target.classList.contains('row-checkbox')) return;
+
+                    const selectedCount = document.querySelectorAll('.row-checkbox:checked').length;
+
+                    const toolbarBase = document.querySelector('[data-kt-user-table-toolbar="base"]');
+                    const toolbarSelected = document.querySelector('[data-kt-user-table-toolbar="selected"]');
+                    const selectedCountEl = document.querySelector('[data-kt-user-table-select="selected_count"]');
+
+                    if (selectedCount > 0) {
+                        toolbarBase.classList.add('d-none');
+                        toolbarSelected.classList.remove('d-none');
+                        selectedCountEl.textContent = selectedCount;
+                    } else {
+                        toolbarBase.classList.remove('d-none');
+                        toolbarSelected.classList.add('d-none');
+                        selectedCountEl.textContent = '';
+                    }
+                });
+                KTUtil.onDOMContentLoaded(() => {
+                    initBannerTable();
                 });
             </script>
+
     @endpush

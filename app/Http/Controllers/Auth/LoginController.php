@@ -10,7 +10,7 @@ class LoginController extends Controller
 {
     public function show()
     {
-        return view('auth.login');
+        return view('auth.login',['title' => __('Login')]);
     }
 
     public function authenticate(Request $request)
@@ -30,13 +30,12 @@ class LoginController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt($credentials, $request->remember ?? false)) {
+        if (Auth::guard('admin')->attempt($credentials, $request->remember ?? false)) {
             $request->session()->regenerate();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful!',
-                'redirect' => route('dashboard')
+                'redirect' => route('admin.dashboard')
             ]);
         }
 
@@ -56,6 +55,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect('admin/login');
     }
 }

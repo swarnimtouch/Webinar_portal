@@ -12,43 +12,27 @@ class UserController extends Controller
 {
     public function index()
     {
-        // Get all active dynamic fields
+
         $activeFields = DaynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
 
-        // Get all users
         $users = User::where('type', 'doctor')->get();
 
-        $breadcrumbs = [
-            'User' => ''
-        ];
 
-        $title = 'Users';
-
-        return view('admin.users.index', compact('users', 'activeFields', 'breadcrumbs', 'title'));
+        return view('admin.users.index', ['users' => $users, 'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index')])]);
     }
 
     public function create()
     {
-        // Get all active dynamic fields for the form
         $activeFields = DaynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
-
-        $breadcrumbs = [
-            'Users' => route('user.index'),
-            'Add User' => ''
-        ];
-
-        $title = ' User';
-
-        return view('admin.users.add_edit', compact('activeFields', 'breadcrumbs', 'title'));
+        return view('admin.users.add_edit', ['activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'),'Add User'=>''])]);
     }
 
     public function store(Request $request)
     {
-        // Get active fields to build validation rules dynamically
         $activeFields = DaynamicFields::where('status', 'active')->get();
 
         $rules = [];
@@ -57,7 +41,6 @@ class UserController extends Controller
         foreach ($activeFields as $field) {
             $fieldName = $field->field_name;
 
-            // Map field names to database columns
             $fieldMapping = [
                 'mobile_number' => 'mobile',
                 'alternative_mobile_number' => 'alternative_mobile',
@@ -92,7 +75,6 @@ class UserController extends Controller
 
         $validated = $request->validate($rules, $messages);
 
-        // Prepare data for insertion
         $userData = [];
 
         foreach ($activeFields as $field) {
@@ -120,55 +102,38 @@ class UserController extends Controller
             }
         }
 
-        // Set default type
         $userData['type'] = 'doctor';
 
         User::create($userData);
 
-        return redirect()->route('user.index')->with('success', 'User created successfully');
+        return redirect()->route('admin.user.index')->with('success', 'User created successfully');
     }
+
     public function show($id)
     {
         $user = User::findOrFail($id);
 
-        // Get all active dynamic fields
         $activeFields = DaynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
 
-        $breadcrumbs = [
-            'Users' => route('user.index'),
-            'User Details' => ''
-        ];
-
-        $title = 'User Details';
-
-        return view('admin.users.show', compact('user', 'activeFields', 'breadcrumbs', 'title'));
+        return view('admin.users.show', ['user'=>$user,'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'),'User Details'=>''])]);
     }
+
     public function edit($id)
     {
         $user = User::findOrFail($id);
 
-        // Get all active dynamic fields for the form
         $activeFields = DaynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
 
-        $breadcrumbs = [
-            'Users' => route('user.index'),
-            'Edit User' => ''
-        ];
-
-        $title = ' User';
-
-        return view('admin.users.add_edit', compact('user', 'activeFields', 'breadcrumbs', 'title'));
+        return view('admin.users.add_edit', ['user'=>$user,'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'),'Edit User'=>''])]);
     }
 
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-
-        // Get active fields to build validation rules dynamically
         $activeFields = DaynamicFields::where('status', 'active')->get();
 
         $rules = [];
@@ -177,7 +142,6 @@ class UserController extends Controller
         foreach ($activeFields as $field) {
             $fieldName = $field->field_name;
 
-            // Map field names to database columns
             $fieldMapping = [
                 'mobile_number' => 'mobile',
                 'alternative_mobile_number' => 'alternative_mobile',
@@ -189,9 +153,8 @@ class UserController extends Controller
                 if ($fieldName == 'email') {
                     $rules[$dbFieldName] = 'required|email|unique:users,email,' . $id;
                 } elseif ($fieldName == 'password') {
-                    $rules['password'] = 'nullable|min:6'; // Password optional on update
+                    $rules['password'] = 'nullable|min:6';
                 } elseif ($fieldName == 'avatar') {
-                    // Avatar optional on update unless being removed
                     if ($request->avatar_removed == '1' && !$request->hasFile('avatar')) {
                         $rules['avatar'] = 'required|image|mimes:jpg,jpeg,png,gif|max:5120';
                     } else {
@@ -217,7 +180,6 @@ class UserController extends Controller
 
         $validated = $request->validate($rules, $messages);
 
-        // Prepare data for update
         $userData = [];
 
         foreach ($activeFields as $field) {
@@ -231,7 +193,6 @@ class UserController extends Controller
             $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
 
             if ($fieldName == 'avatar') {
-                // Handle avatar removal
                 if ($request->avatar_removed == '1') {
                     if ($user->avatar) {
                         Storage::disk('public')->delete($user->avatar);
@@ -239,7 +200,6 @@ class UserController extends Controller
                     $userData['avatar'] = null;
                 }
 
-                // Handle new avatar upload
                 if ($request->hasFile('avatar')) {
                     // Delete old avatar
                     if ($user->avatar) {
@@ -248,7 +208,6 @@ class UserController extends Controller
                     $userData['avatar'] = $request->file('avatar')->store('avatars', 'public');
                 }
             } elseif ($fieldName == 'password') {
-                // Only update password if provided
                 if ($request->filled('password')) {
                     $userData['password'] = Hash::make($request->password);
                 }
@@ -261,7 +220,7 @@ class UserController extends Controller
 
         $user->update($userData);
 
-        return redirect()->route('user.index')->with('success', 'User updated successfully');
+        return redirect()->route('admin.user.index')->with('success', 'User updated successfully');
     }
 
     public function destroy($id)

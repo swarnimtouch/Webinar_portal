@@ -1,9 +1,5 @@
-@extends('layouts.master')
-
-@section('title', $title ?? '')
-
-@section('body')
-    @include('partials.header')
+@extends('layouts.admin')
+@section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
@@ -29,7 +25,7 @@
                 <div class="card mb-5 mb-xl-10">
                     <div id="kt_user_wrapper" class="collapse show">
                         <form method="POST"
-                              action="{{ isset($user) ? route('user.update', $user->id) : route('user.store') }}"
+                              action="{{ isset($user) ? route('admin.user.update', $user->id) : route('admin.user.store') }}"
                               id="kt_user_form"
                               enctype="multipart/form-data">
                             @csrf
@@ -66,7 +62,7 @@
                                                      style="background-image: url('{{ asset('assets/media/avatars/blank.png') }}')">
 
                                                     <div class="image-input-wrapper w-125px h-125px" id="avatarPreview"
-                                                         style="background-image: url('{{ isset($user) && $user->avatar ? asset('storage/' . $user->avatar) : asset('assets/media/avatars/blank.png') }}')">
+                                                         style="background-image: url('{{ $user->avatar?? asset('assets/media/avatars/blank.png') }}')">
                                                     </div>
 
                                                     <label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
@@ -178,7 +174,7 @@
                             </div>
 
                             <div class="card-footer d-flex justify-content-end py-6 px-9">
-                                <a href="{{ route('user.index') }}" class="btn btn-light btn-active-light-primary me-2">Cancel</a>
+                                <a href="{{ route('admin.user.index') }}" class="btn btn-light btn-active-light-primary me-2">Cancel</a>
                                 <button type="submit" class="btn btn-primary" id="kt_user_submit">
                                     <span class="indicator-label">{{ isset($user) ? 'Update' : 'Save' }}</span>
                                     <span class="indicator-progress">Please wait...
@@ -192,8 +188,6 @@
             </div>
         </div>
     </div>
-
-    @include('partials.footer')
 @endsection
 
 @push('scripts')
@@ -250,7 +244,6 @@
                 }
             }
 
-            // Build validation fields dynamically
             const validationFields = {};
 
             @foreach($activeFields as $field)
@@ -365,7 +358,6 @@
                 }
             });
 
-            // Submit Handler
             submitBtn.addEventListener('click', function (e) {
                 e.preventDefault();
 

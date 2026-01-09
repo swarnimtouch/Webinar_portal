@@ -86,4 +86,9 @@ class User extends Authenticatable
             }
         });
     }
+
+    public function getAvatarAttribute($value): string
+    {
+        return (!empty($value)) ? asset("storage/" . $value) : asset('assets/media/avatars/blank.png');
+    }
 }
