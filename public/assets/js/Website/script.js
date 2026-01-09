@@ -20,46 +20,77 @@ function showPopup(type, message) {
 /* =========================================
    1. MODAL & LOGIN LOGIC
    ========================================= */
-const modal = document.getElementById("loginModal");
-const loginBtn = document.querySelector(".navbar .btn-gold");
-const closeBtn = document.querySelector(".close-modal-btn");
+
+const loginModal = document.getElementById("loginModal");
+const registerModal = document.getElementById("registerModal");
+
+const loginBtn = document.getElementById("openLoginModal");
+const registerBtn = document.getElementById("openRegisterModal");
+
+const closeLoginBtn = document.querySelector(".close-modal-btn");
+const closeRegisterBtn = document.querySelector(".close-register-btn");
+
 const body = document.body;
 
-function openModal() {
-  if (modal) {
-    modal.style.display = "flex";
-    body.style.overflow = "hidden";
-  }
+function openLoginModal() {
+    if (loginModal) {
+        loginModal.style.display = "flex";
+        body.style.overflow = "hidden";
+    }
 }
 
-function closeModal() {
-  if (modal) {
-    modal.style.display = "none";
-    body.style.overflow = "auto";
-  }
+function closeLoginModal() {
+    if (loginModal) {
+        loginModal.style.display = "none";
+        body.style.overflow = "auto";
+    }
+}
+
+function openRegisterModal() {
+    if (registerModal) {
+        registerModal.style.display = "flex";
+        body.style.overflow = "hidden";
+    }
+}
+
+function closeRegisterModal() {
+    if (registerModal) {
+        registerModal.style.display = "none";
+        body.style.overflow = "auto";
+    }
 }
 
 if (loginBtn) {
-  loginBtn.addEventListener("click", openModal);
+    loginBtn.addEventListener("click", openLoginModal);
 }
 
-if (closeBtn) {
-  closeBtn.addEventListener("click", closeModal);
+if (registerBtn) {
+    registerBtn.addEventListener("click", openRegisterModal);
+}
+
+if (closeLoginBtn) {
+    closeLoginBtn.addEventListener("click", closeLoginModal);
+}
+
+if (closeRegisterBtn) {
+    closeRegisterBtn.addEventListener("click", closeRegisterModal);
 }
 
 window.addEventListener("click", function (event) {
-  if (event.target === modal) {
-    closeModal();
-  }
+    if (event.target === loginModal) {
+        closeLoginModal();
+    }
+    if (event.target === registerModal) {
+        closeRegisterModal();
+    }
 });
 
-const loginForm = document.getElementById("loginForm");
 
 /* =========================================
    2. SLIDER LOGIC (OPTIMIZED & STABLE)
    ========================================= */
 $(document).ready(function() {
-    
+
     // --- VARIABLES ---
     const $track = $("#sliderTrack");
     const $heroBanner = $(".hero-banner");
@@ -137,7 +168,7 @@ $(document).ready(function() {
             bgUrl = data.src;
         } else if (data.type === 'video') {
             // Video ke liye poster use karein agar available ho
-            bgUrl = data.poster || ""; 
+            bgUrl = data.poster || "";
         }
 
         // CSS Variable update

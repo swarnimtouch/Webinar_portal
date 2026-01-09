@@ -21,5 +21,9 @@ class DaynamicFields extends Model
         'is_profile_field',
         'login_with'
     ];
+    public function attributeInput()
+    {
+        return $this->belongsTo(AttributeInput::class, 'input_type');
+    }
 
 }

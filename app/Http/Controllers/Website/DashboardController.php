@@ -11,6 +11,5 @@ class DashboardController
     public function dashboard()
     {
         return view('website.dashboard');
-        dd(Auth::user());
     }
 }

@@ -12,9 +12,42 @@
         <a href="#" class="active"><i class="fa-solid fa-video"></i> Webinars</a>
         <a href="#"><i class="fa-solid fa-book"></i> Resources</a>
     </nav>
-    <div class="user-menu">
-        <a href="#"><i class="fa-solid fa-bell"></i></a>
-        <a href="#"><i class="fa-solid fa-gear"></i></a>
-        <img src="{{asset('assets/Website/images/user.png')}}" alt="User Avatar" class="user-avatar">
+    <div class="dropdown user-menu">
+
+        <!-- 🔔 Bell -->
+        <a href="#" class=" me-3" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-bell"></i>
+        </a>
+
+        <!-- ⚙️ Gear -->
+        <a href="#" class=" me-3" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-gear"></i>
+        </a>
+
+        <!-- 👤 User Image -->
+        <a href="#" data-bs-toggle="dropdown">
+            <img src="{{ asset('assets/Website/images/user.png') }}"
+                 class="rounded-circle"
+                 width="38"
+                 height="38"
+                 alt="User">
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-end mt-2 shadow">
+            <li>
+                <a class="dropdown-item" href="{{ route('website.dashboard') }}">
+                    Welcome, {{ auth()->user()->first_name }}
+
+                </a>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item text-danger" href="{{ route('website.logout') }}">
+                    <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
+                </a>
+            </li>
+        </ul>
     </div>
+
 </header>

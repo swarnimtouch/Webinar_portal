@@ -17,6 +17,8 @@
     @else
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @endif
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <link rel="stylesheet" href="{{ asset('assets/css/Website/style.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/Website/media.css') }}" />
@@ -33,55 +35,17 @@
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet"
     />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
     @stack('styles')
-    <style>
-        .error-text {
-            color: #d93025;
-            font-size: 13px;
-            margin-top: 4px;
-            display: none;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .error-text i {
-            font-size: 12px;
-        }
-
-        .is-invalid {
-            border-color: #d93025 !important;
-            background-color: #fff5f5;
-        }
-
-        .is-invalid:focus {
-            border-color: #d93025 !important;
-            box-shadow: 0 0 0 0.2rem rgba(217, 48, 37, 0.25);
-        }
-
-        /* Email Input Group Styling */
-        .email-input-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .email-input-group input {
-            transition: all 0.3s ease;
-        }
-
-        /* Animation for error messages */
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .error-text {
-            animation: slideDown 0.3s ease;
-        }
-    </style>
+<style>
+    .error-text {
+        margin-top: -14px;
+        color: red;
+        font-size: 14px;
+    }
+    .select2-container--default .select2-selection--single{
+    border: none;
+    }
+</style>
 </head>
