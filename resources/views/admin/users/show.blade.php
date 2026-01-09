@@ -1,9 +1,5 @@
-@extends('layouts.master')
-
-@section('title', $title ?? '')
-
-@section('body')
-    @include('partials.header')
+@extends('layouts.admin')
+@section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Post-->
         <div class="post d-flex flex-column-fluid" id="kt_post">
@@ -107,7 +103,7 @@
                         <!--begin::Actions-->
                         <div class="card">
                             <div class="card-body">
-                                <a href="{{ route('user.index') }}" class="btn btn-light w-100 mb-3">
+                                <a href="{{ route('admin.user.index') }}" class="btn btn-light w-100 mb-3">
                                     <span class="svg-icon svg-icon-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                             <path d="M9.60001 11H21C21.6 11 22 11.4 22 12C22 12.6 21.6 13 21 13H9.60001V11Z" fill="black"/>
@@ -221,60 +217,7 @@
         </div>
         <!--end::Post-->
     </div>
-
-    @include('partials.footer')
 @endsection
 
 @push('scripts')
-    <script>
-        // Delete user function
-        function deleteUser(id) {
-            Swal.fire({
-                text: "Are you sure you want to delete this user?",
-                icon: "warning",
-                showCancelButton: true,
-                buttonsStyling: false,
-                confirmButtonText: "Yes, delete it!",
-                cancelButtonText: "No, cancel",
-                customClass: {
-                    confirmButton: "btn fw-bold btn-danger",
-                    cancelButton: "btn fw-bold btn-active-light-primary"
-                }
-            }).then(function (result) {
-                if (result.value) {
-                    $.ajax({
-                        url: '{{ route("user.destroy", ":id") }}'.replace(':id', id),
-                        method: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            Swal.fire({
-                                text: "User has been deleted!",
-                                icon: "success",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn fw-bold btn-primary",
-                                }
-                            }).then(function() {
-                                window.location.href = '{{ route("user.index") }}';
-                            });
-                        },
-                        error: function(xhr) {
-                            Swal.fire({
-                                text: "Error deleting user. Please try again.",
-                                icon: "error",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn fw-bold btn-primary",
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-        }
-    </script>
 @endpush

@@ -1,9 +1,5 @@
-@extends('layouts.master')
-
-@section($title,'title')
-
-@section('body')
-    @include('partials.header')
+@extends('layouts.admin')
+@section('content')
     <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
@@ -50,7 +46,7 @@
                             <!--begin::Toolbar-->
                             <div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
                                 <!--begin::Add user-->
-                                <a href="{{ route('speaker.create') }}" class="btn btn-primary">
+                                <a href="{{ route('admin.speaker.create') }}" class="btn btn-primary">
                                 <span class="svg-icon svg-icon-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                          viewBox="0 0 24 24" fill="none">
@@ -84,7 +80,7 @@
                     <!--begin::Card body-->
                     <div class="card-body pt-0">
                         <!--begin::Table-->
-                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
+                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_speakers">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
                                 <th class="w-10px pe-2">
@@ -95,7 +91,6 @@
                                                value="1" />
                                     </div>
                                 </th>
-                                <th class="min-w-80px">ID</th>
                                 <th class="min-w-125px">Photo</th>
                                 <th class="min-w-150px">Name</th>
                                 <th class="min-w-150px">Line 1</th>
@@ -107,111 +102,6 @@
                             </thead>
 
                             <tbody class="text-gray-600 fw-bold">
-                            @forelse($speakers as $speaker)
-                                <tr>
-                                    <!-- Checkbox -->
-                                    <td>
-                                        <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                            <input class="form-check-input" type="checkbox" value="{{ $speaker->id }}" />
-                                        </div>
-                                    </td>
-
-                                    <!-- ID -->
-                                    <td>{{ $loop->iteration }}</td>
-
-                                    <!-- Photo -->
-                                    <td>
-                                        @if($speaker->media_url)
-                                            <div class="position-relative overflow-hidden rounded"
-                                                 style="width:80px;height:80px;cursor:pointer;"
-                                                 onclick="showBannerPreview(
-                                                    '{{ $speaker->media_url }}',
-                                                    'image',
-                                                    'Speakers'
-                                                 )">
-                                                <img src="{{ $speaker->media_url }}"
-                                                     alt="Speaker"
-                                                     style="width:100%;height:100%;object-fit:cover;">
-                                            </div>
-                                        @else
-                                            <div style="width:60px;height:60px;background:#f3f6f9;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                                                <span class="text-muted">No Image</span>
-                                            </div>
-                                        @endif
-                                    </td>
-
-
-
-                                    <!-- Name -->
-                                    <td>{{ $speaker->name ?? '-' }}</td>
-
-                                    <!-- Line 1 -->
-                                    <td>{{ $speaker->line1 ?? '-' }}</td>
-
-                                    <!-- Line 2 -->
-                                    <td>{{ $speaker->line2 ?? '-' }}</td>
-
-                                    <!-- Line 3 -->
-                                    <td>{{ $speaker->line3 ?? '-' }}</td>
-
-                                    <!-- Created -->
-                                    <td>{{ $speaker->created_at->format('d M Y') }}</td>
-
-                                    <!-- Actions -->
-
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                                            Actions
-                                            <span class="svg-icon svg-icon-5 m-0">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                        <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="black"/>
-                                                    </svg>
-                                                </span>
-                                        </a>
-
-                                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" data-kt-menu="true">
-                                            <div class="menu-item px-3">
-{{--                                                <a href="{{ route('user.show', $user->id) }}" class="menu-link px-3">View</a>--}}
-                                            </div>
-                                            <div class="menu-item px-3">
-                                                <a href="{{ route('speaker.create', $speaker->id) }}" class="menu-link px-3">Edit</a>
-                                            </div>
-                                            <div class="menu-item px-3">
-                                                <a href="javascript:void(0)" onclick="deleteSpeaker({{ $speaker->id }})" class="menu-link px-3 text-danger">Delete</a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <!-- Actions -->
-{{--                                    <td class="text-end">--}}
-{{--                                        <a href="{{ route('speaker.create', $speaker->id) }}"--}}
-{{--                                           class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"--}}
-{{--                                           title="Edit">--}}
-{{--                                            <span class="svg-icon svg-icon-3">--}}
-{{--                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">--}}
-{{--                                                    <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="black"/>--}}
-{{--                                                    <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="black"/>--}}
-{{--                                                </svg>--}}
-{{--                                            </span>--}}
-{{--                                        </a>--}}
-
-{{--                                        <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"--}}
-{{--                                                onclick="deleteSpeaker({{ $speaker->id }})"--}}
-{{--                                                title="Delete">--}}
-{{--                                            <span class="svg-icon svg-icon-3">--}}
-{{--                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">--}}
-{{--                                                    <path d="M5 9C5 8.44772 5.44772 8 6 8H18C18.5523 8 19 8.44772 19 9V18C19 19.6569 17.6569 21 16 21H8C6.34315 21 5 19.6569 5 18V9Z" fill="black"/>--}}
-{{--                                                    <path opacity="0.5" d="M5 5C5 4.44772 5.44772 4 6 4H18C18.5523 4 19 4.44772 19 5V5C19 5.55228 18.5523 6 18 6H6C5.44772 6 5 5.55228 5 5V5Z" fill="black"/>--}}
-{{--                                                    <path opacity="0.5" d="M9 4C9 3.44772 9.44772 3 10 3H14C14.5523 3 15 3.44772 15 4V4H9V4Z" fill="black"/>--}}
-{{--                                                </svg>--}}
-{{--                                            </span>--}}
-{{--                                        </button>--}}
-{{--                                    </td>--}}
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center py-5">No speakers found</td>
-                                </tr>
-                            @endforelse
                             </tbody>
                         </table>
 
@@ -242,7 +132,6 @@
         </div>
     </div>
     <!--end::Content-->
-    @include('partials.footer')
 @endsection
 
 @push('scripts')
@@ -251,27 +140,74 @@
         "use strict";
 
         var KTUsersList = function () {
-            var table = document.getElementById('kt_table_users');
+            var table = document.getElementById('kt_table_speakers');
             var datatable;
             var toolbarBase;
             var toolbarSelected;
             var selectedCount;
-
             // Initialize datatable
             var initUserTable = function () {
                 datatable = $(table).DataTable({
-                    searchDelay: 500,
                     processing: true,
-                    order: [[1, 'desc']], // Order by ID column
-                    stateSave: false,
+                    serverSide: true,
+                    searchDelay: 500,
+                    ajax: {
+                        url: '{{ route("admin.speaker.datatable") }}',
+                        data: d => {
+                            d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
+                        }
+                    },
+                    order: [[2, 'asc']],
+                    pageLength: 10,
                     columnDefs: [
                         {
+                            data: 'id',
                             orderable: false,
-                            targets: [0, 2, 8] // Disable ordering on checkbox, photo, and actions columns
+                            searchable: false,
+                            render: id => `<div class="form-check form-check-sm form-check-custom form-check-solid"> <input class="form-check-input row-checkbox" type="checkbox" value="${id}" /> </div>`
                         },
                         {
-                            targets: 2, // Photo column
-                            searchable: false
+                            data: 'media_url',
+                            render: (data, type, row) => `
+                    <div class="banner-preview"
+                         data-url="${row.media_url}"
+                         data-type="${row.type}"
+                         style="width:80px;height:80px;cursor:pointer;">
+                        ${
+                                row.type === 'image'
+                                    ? `<img src="${row.media_url}" style="width:100%;height:100%;object-fit:cover">`
+                                    : `<video muted style="width:100%;height:100%;object-fit:cover">
+                                   <source src="${row.media_url}" type="video/mp4">
+                               </video>`
+                            }
+                    </div>
+                `
+                        },
+                        {data: 'name'},
+                        {data: 'line1'},
+                        {data: 'line2'},
+                        {data: 'line3'},
+                        {data: 'created_at'},
+                        {
+                            data: 'id',
+                            orderable: false,
+                            searchable: false,
+                            render: id => `<div class="text-end">
+                                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
+                                                        <span class="svg-icon svg-icon-5 m-0">
+                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/> </svg>
+                                                            </span>
+                                                    </a>
+                                                    <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                                                        <div class="menu-item px-3">
+                                                            <a href="#" class="menu-link px-3 banner-delete" data-id="${id}"> Delete </a>
+                                                        </div>
+                                                        <div class="menu-item px-3">
+                                                            <a href="{{ route('admin.banner.create') }}/${id}" class="menu-link px-3 "> Edit </a>
+                                                        </div>
+                                                    </div>
+                                            </div>`
                         }
                     ]
                 });
@@ -326,7 +262,7 @@
 
                                 // Make AJAX call to delete
                                 $.ajax({
-                                    url: '{{ route("speaker.deleteMultiple") }}',
+                                    url: '{{ route("admin.speaker.deleteMultiple") }}',
                                     method: 'POST',
                                     data: {
                                         ids: ids,
@@ -459,7 +395,7 @@
                 if (result.value) {
                     // Make AJAX call to delete
                     $.ajax({
-                        url: '{{ route("speaker.delete", ":id") }}'.replace(':id', id),
+                        url: '{{ route("admin.speaker.delete", ":id") }}'.replace(':id', id),
                         method: 'DELETE',
                         data: {
                             _token: '{{ csrf_token() }}'

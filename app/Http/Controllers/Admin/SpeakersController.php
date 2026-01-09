@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Banner;
 use App\Models\Speakers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,51 +14,22 @@ class SpeakersController extends Controller
      */
     public function index()
     {
-        $speakers = Speakers::latest()->get();
-
-        $title = 'Speakers';
-        $breadcrumbs = [
-            'Speakers' => ''
-        ];
-
-        return view('admin.speakers.index', compact(
-            'speakers',
-            'title',
-            'breadcrumbs'
-        ));
+        return view('admin.speakers.index', ['title' => __('Speakers'), 'breadcrumb' => breadcrumb([__('Speakers') => route('admin.speakers')])]);
     }
 
     /**
      * Add / Edit speaker (same breadcrumb)
      */
-    public function create($id = null)
+    public function addEditForm($id = null)
     {
         $speaker = $id ? Speakers::findOrFail($id) : null;
 
-        $title = 'Speakers';
-        $breadcrumbs = [
-            'Speakers' => route('speakers')
+        $response = [
+            'speaker' => $speaker,
+            'title' => __('Speakers'),
+            'breadcrumb' => breadcrumb([__('Speakers') => route('admin.speakers'), ($id ? 'Edit' : 'Add' . ' Speakers') => '']),
         ];
-        if ($id) {
-            // Edit
-            $title = 'Speakers';
-            $breadcrumbs = [
-                'Speakers' => route('speakers'),
-                'Edit Speakers' => ''
-            ];
-        } else {
-            // Create
-            $title = 'Speakers';
-            $breadcrumbs = [
-                'Speakers' => route('speakers'),
-                'Speakers' => ''
-            ];
-        }
-        return view('admin.speakers.add_edit', compact(
-            'speaker',
-            'title',
-            'breadcrumbs'
-        ));
+        return view('admin.speakers.add_edit', $response);
     }
 
 
@@ -75,21 +47,19 @@ class SpeakersController extends Controller
         // If creating new speaker, image is required
         if (!$speaker) {
             $imageRule = 'required|image|mimes:jpeg,png,jpg,gif|max:5120';
-        }
-        // If editing and image was removed and no new image uploaded, make it required
+        } // If editing and image was removed and no new image uploaded, make it required
         elseif ($request->input('image_removed') == '1' && !$request->hasFile('filename')) {
             $imageRule = 'required|image|mimes:jpeg,png,jpg,gif|max:5120';
-        }
-        // If editing speaker has no existing image, image is required
+        } // If editing speaker has no existing image, image is required
         elseif ($speaker && !$speaker->filename && !$request->hasFile('filename')) {
             $imageRule = 'required|image|mimes:jpeg,png,jpg,gif|max:5120';
         }
 
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'line1'    => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'line1' => 'required|string|max:255',
             'filename' => $imageRule,
-            'status'   => 'required|in:active,inactive'
+            'status' => 'required|in:active,inactive'
         ]);
 
         // If updating, use existing speaker, otherwise create new instance
@@ -115,8 +85,7 @@ class SpeakersController extends Controller
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $file->storeAs('speakers', $filename, 'public');
             $speaker->filename = $filename;
-        }
-        // If image was removed but no new image uploaded (update case)
+        } // If image was removed but no new image uploaded (update case)
         elseif ($request->input('image_removed') == '1' && $speaker->exists) {
             // Delete old image
             if ($speaker->filename && Storage::disk('public')->exists('speakers/' . $speaker->filename)) {
@@ -188,6 +157,66 @@ class SpeakersController extends Controller
             'success' => true,
             'status' => $speaker->status,
             'message' => 'Status updated successfully!'
+        ]);
+    }
+
+    public function datatable(Request $request)
+    {
+        $query = Speakers::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('line1', 'like', "%{$search}%")
+                    ->orWhere('line2', 'like', "%{$search}%")
+                    ->orWhere('line3', 'like', "%{$search}%");
+            });
+        }
+
+        $total = $query->count();
+
+        if ($request->has('order')) {
+            $columns = $request->columns;
+            foreach ($request->order as $order) {
+                $columnIndex = $order['column'];
+                $columnName = $columns[$columnIndex]['data'];
+                $direction = $order['dir'];
+
+                $dbColumn = match ($columnName) {
+                    'name' => 'name',
+                    default => 'id'
+                };
+
+                $query->orderBy($dbColumn, $direction);
+            }
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $length = $request->input('length', 10);
+        $start = $request->input('start', 0);
+        $speakers = $query->skip($start)->take($length)->get();
+
+        $data = $speakers->map(function ($speaker) {
+            return [
+                'id' => $speaker->id,
+                'name' => $speaker->name,
+                'media_url' => $speaker->media_url,
+                'line1' => $speaker->line1,
+                'line2' => $speaker->line2,
+                'line3' => $speaker->line3,
+                'created_at' => $speaker->created_at->format('d M Y'),
+                'status' => $speaker->status,
+                'actions' => '',
+            ];
+        });
+
+        return response()->json([
+            'draw' => $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $data
         ]);
     }
 }

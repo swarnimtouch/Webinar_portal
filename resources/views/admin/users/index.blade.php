@@ -1,9 +1,6 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
-@section('title', $title ?? '')
-
-@section('body')
-    @include('partials.header')
+@section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Post-->
         <div class="post d-flex flex-column-fluid" id="kt_post">
@@ -65,7 +62,7 @@
                                 <!--end::Export-->
 
                                 <!--begin::Add user-->
-                                <a href="{{ route('user.create') }}" class="btn btn-primary">
+                                <a href="{{ route('admin.user.create') }}" class="btn btn-primary">
                                     <span class="svg-icon svg-icon-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                             <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="black"/>
@@ -108,7 +105,6 @@
                                 <th class="min-w-125px">ID</th>
                                 @php
                                     $nameFieldShown = false;
-                                    // Fields to exclude from table
                                     $excludeFields = ['city', 'state', 'country'];
                                 @endphp
                                 @foreach($activeFields as $field)
@@ -221,13 +217,13 @@
                                         </a>
                                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" data-kt-menu="true">
                                             <div class="menu-item px-3">
-                                                <a href="{{ route('user.show', $user->id) }}" class="menu-link px-3">View</a>
+                                                <a href="{{ route('admin.user.show', $user->id) }}" class="menu-link px-3">View</a>
                                             </div>
                                             <div class="menu-item px-3">
-                                                <a href="{{ route('user.edit', $user->id) }}" class="menu-link px-3">Edit</a>
+                                                <a href="{{ route('admin.user.edit', $user->id) }}" class="menu-link px-3">Edit</a>
                                             </div>
                                             <div class="menu-item px-3">
-                                                <a href="javascript:void(0)" onclick="deleteUser({{ $user->id }})" class="menu-link px-3 text-danger">Delete</a>
+                                                <a href="#" role="button" data-userid="{{ $user->id }}"  class="menu-link px-3 text-danger delete-user">Delete</a>
                                             </div>
                                         </div>
                                     </td>
@@ -296,7 +292,6 @@
     </div>
     <!--end::View User Modal-->
 
-    @include('partials.footer')
 @endsection
 
 
@@ -316,6 +311,10 @@
 
         // Fields to exclude from listing
         const excludeFields = ['city', 'state', 'country'];
+
+        $('.delete-user').click(function (){
+            deleteUser($(this).data('userid'))
+        });
 
         var KTUsersList = function () {
             var table = document.getElementById('kt_table_users');
@@ -502,7 +501,7 @@
                                 });
 
                                 $.ajax({
-                                    url: '{{ route("user.deleteMultiple") }}',
+                                    url: '{{ route("admin.user.deleteMultiple") }}',
                                     method: 'POST',
                                     data: {
                                         ids: ids,
@@ -623,7 +622,7 @@
 
             // Fetch user data
             $.ajax({
-                url: '{{ route("user.show", ":id") }}'.replace(':id', id),
+                url: '{{ route("admin.user.show", ":id") }}'.replace(':id', id),
                 method: 'GET',
                 success: function(response) {
                     let html = '';
@@ -730,7 +729,7 @@
             }).then(function (result) {
                 if (result.value) {
                     $.ajax({
-                        url: '{{ route("user.destroy", ":id") }}'.replace(':id', id),
+                        url: '{{ route("admin.user.destroy", ":id") }}'.replace(':id', id),
                         method: 'DELETE',
                         data: {
                             _token: '{{ csrf_token() }}'

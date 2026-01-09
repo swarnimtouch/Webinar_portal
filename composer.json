@@ -25,7 +25,7 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Helpers/MenuHelper.php"
+          "app/Helpers/Common.php"
         ]
 
     },

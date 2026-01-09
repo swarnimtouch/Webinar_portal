@@ -1,19 +1,12 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 class DashboardController extends Controller
 {
-    public function __construct()
-    {
-    }
-
     public function index()
     {
-        $breadcrumbs = [
-            'Dashboard' => ''
-        ];
-
-        return view('admin.dashboard', compact('breadcrumbs'));
+        return view('admin.dashboard', ['title' => __('Dashboard'), 'breadcrumb' => breadcrumb([__('Dashboard') => route('admin.dashboard')])]);
     }
 
 }
