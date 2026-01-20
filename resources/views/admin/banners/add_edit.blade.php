@@ -246,8 +246,8 @@
 
                     const blankImage = "{{ asset('assets/media/avatars/blank.png') }}";
                     const originalImage = "{{ $banner->type === 'image' && $banner->filename
-        ? asset('storage/banners/'.$banner->filename)
-        : asset('assets/media/avatars/blank.png') }}";
+                    ? asset('storage/banners/'.$banner->filename)
+                    : asset('assets/media/avatars/blank.png') }}";
 
 
                     const showImageSection = () => {

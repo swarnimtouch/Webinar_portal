@@ -1,9 +1,6 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
-@section('title', 'Password Update')
-
-@section('body')
-    @include('partials.header')
+@section('content')
 
 
     <div class="post d-flex flex-column-fluid" id="kt_post">
@@ -130,8 +127,8 @@
                         <!--end::Card body-->
                         <!--begin::Actions-->
                         <div class="card-footer d-flex justify-content-end py-6 px-9">
-                            <button type="reset" class="btn btn-light btn-active-light-primary me-2"onclick="window.location='{{ route('dashboard') }}'">Discard</button>
-                            <button type="submit" class="btn btn-primary" id="kt_password_update_submit">Change Password</button>
+                            <a href="{{ route('admin.dashboard') }}" type="reset" class="btn btn-light btn-active-light-primary me-2">Discard</a>
+                            <button type="submit" class="btn btn-primary" id="kt_password_update_submit">Save</button>
                         </div>
                         <!--end::Actions-->
                     </form>
@@ -141,7 +138,6 @@
             </div>
         </div>
     </div>
-    @include('partials.footer')
 @endsection
 
 @push('scripts')

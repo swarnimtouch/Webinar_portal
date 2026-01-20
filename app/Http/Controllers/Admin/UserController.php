@@ -252,4 +252,61 @@ class UserController extends Controller
 
         return response()->json(['success' => true]);
     }
+    public function datatable(Request $request)
+    {
+        $fields = DaynamicFields::where('status', 'active')
+            ->orderBy('index_no')
+            ->get();
+
+        $query = User::where('type', 'doctor');
+
+        if (!empty($request->search['value'])) {
+            $search = $request->search['value'];
+
+            $query->where(function ($q) use ($fields, $search) {
+                foreach ($fields as $field) {
+                    $q->orWhere($field->field_name, 'like', "%{$search}%");
+                }
+            });
+        }
+
+        $total = $query->count();
+
+        if ($request->has('order')) {
+            $order = $request->order[0];
+            $columnName = $request->columns[$order['column']]['data'];
+            $direction  = $order['dir'];
+
+            if (\Schema::hasColumn('users', $columnName)) {
+                $query->orderBy($columnName, $direction);
+            }
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $length = $request->length ?? 10;
+        $start  = $request->start ?? 0;
+
+        $users = $query->skip($start)->take($length)->get();
+
+        $data = $users->map(function ($user) use ($fields) {
+            $row = ['id' => $user->id];
+
+            foreach ($fields as $field) {
+                $row[$field->field_name] = $user->{$field->field_name} ?? '';
+            }
+
+            $row['actions'] = '';
+
+            return $row;
+        });
+
+        return response()->json([
+            'draw' => intval($request->draw),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $data
+        ]);
+    }
+
 }

@@ -37,6 +37,7 @@ class User extends Authenticatable
         'therapy',
         'avatar',
         'remember_token',
+        'created_at'
     ];
 
 

@@ -1,9 +1,7 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
-@section($title,'title')
 
-@section('body')
-    @include('partials.header')
+@section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
 
@@ -29,12 +27,15 @@
             @endif
 
             <!-- Edit Content Card -->
-            <div class="card mb-5 mb-xl-10">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title fs-3 fw-bolder">{{$title}}</div>
+                    </div>
 
 
                 <div id="kt_content_wrapper">
                     <form method="POST"
-                          action="{{ route('content.update', $content->id) }}"
+                          action="{{ route('admin.content.update', $content->id) }}"
                           id="kt_content_form">
 
                         @csrf
@@ -90,7 +91,7 @@
                         </div>
 
                         <div class="card-footer d-flex justify-content-end py-6 px-9">
-                            <a href="{{ route('content') }}" class="btn btn-light btn-active-light-primary me-2">Cancel</a>
+                            <a href="{{ route('admin.content') }}" class="btn btn-light btn-active-light-primary me-2">Cancel</a>
                             <button type="submit" class="btn btn-primary" id="kt_content_submit">
                                 <span class="indicator-label">Save</span>
                                 <span class="indicator-progress">Please wait...
@@ -104,7 +105,6 @@
         </div>
     </div>
 
-    @include('partials.footer')
 @endsection
 
 @push('scripts')
@@ -163,7 +163,6 @@
                 });
             });
 
-            // Auto-generate slug from title
             const titleInput = document.querySelector('input[name="title"]');
             const slugInput = document.querySelector('input[name="slug"]');
 

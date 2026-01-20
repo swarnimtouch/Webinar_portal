@@ -55,7 +55,9 @@ class ProfileController extends Controller
 
     public function password()
     {
-        return view('admin.profile.password');
+        $user = Auth::user();
+
+        return view('admin.profile.password', ['title' => __('Password'), 'breadcrumb' => breadcrumb([__('Password') => route('admin.password')])]);
     }
 
     public function updatePassword(Request $request)
@@ -79,7 +81,7 @@ class ProfileController extends Controller
         $user->save();
 
         return redirect()
-            ->route('dashboard')
+            ->route('admin.dashboard')
             ->with('success', 'Password updated successfully');
     }
 

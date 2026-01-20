@@ -98,7 +98,7 @@ class SpeakersController extends Controller
 
         $message = $id ? 'Speaker updated successfully!' : 'Speaker created successfully!';
 
-        return redirect()->route('speakers')->with('success', $message);
+        return redirect()->route('admin.speakers')->with('success', $message);
     }
 
     /**
@@ -106,17 +106,17 @@ class SpeakersController extends Controller
      */
     public function delete($id)
     {
-        $speaker = Speakers::findOrFail($id);
+        try {
+            $banner = Speakers::findOrFail($id);
+            if (Storage::exists('public/speakers/' . $banner->filename)) {
+                Storage::delete('public/speakers/' . $banner->filename);
+            }
+            $banner->delete();
 
-        // Delete image file if exists
-        if ($speaker->filename && Storage::disk('public')->exists('speakers/' . $speaker->filename)) {
-            Storage::disk('public')->delete('speakers/' . $speaker->filename);
+            return response()->json(['success' => true, 'message' => 'Banner deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error deleting banner'], 500);
         }
-
-        $speaker->delete();
-
-        return redirect()->route('speakers')
-            ->with('success', 'Speaker deleted successfully!');
     }
 
     /**

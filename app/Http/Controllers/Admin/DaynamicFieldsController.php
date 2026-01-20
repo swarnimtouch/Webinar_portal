@@ -13,14 +13,18 @@ class DaynamicFieldsController extends Controller
     public function index()
     {
         $fields = DaynamicFields::orderBy('index_no')->get();
-        $maxIndex = $fields->count();
 
-        $title = 'Dynamic Field';
-        $breadcrumbs = [
-            'Dynamic Fields' => ''
-        ];
-        return view('admin.dynamic_fields.index', compact('fields','maxIndex','title','breadcrumbs'));
+        return view('admin.dynamic_fields.index', [
+            'fields' => $fields,
+            'maxIndex' => $fields->count(),
+            'title' => __('Dynamic Fields'),
+            'breadcrumb' => breadcrumb([
+                __('Dynamic Fields') => route('admin.dynamic-fields')
+            ])
+        ]);
     }
+
+
 
 
     /**

@@ -145,7 +145,7 @@
             var toolbarBase;
             var toolbarSelected;
             var selectedCount;
-            // Initialize datatable
+
             var initUserTable = function () {
                 datatable = $(table).DataTable({
                     processing: true,
@@ -159,40 +159,38 @@
                     },
                     order: [[2, 'asc']],
                     pageLength: 10,
-                    columnDefs: [
+                    columns: [
                         {
                             data: 'id',
                             orderable: false,
                             searchable: false,
-                            render: id => `<div class="form-check form-check-sm form-check-custom form-check-solid"> <input class="form-check-input row-checkbox" type="checkbox" value="${id}" /> </div>`
+                            render: id => `
+                        <div class="form-check form-check-sm form-check-custom form-check-solid">
+                            <input class="form-check-input row-checkbox" type="checkbox" value="${id}" />
+                        </div>`
                         },
                         {
                             data: 'media_url',
-                            render: (data, type, row) => `
-                    <div class="banner-preview"
-                         data-url="${row.media_url}"
-                         data-type="${row.type}"
-                         style="width:80px;height:80px;cursor:pointer;">
-                        ${
-                                row.type === 'image'
-                                    ? `<img src="${row.media_url}" style="width:100%;height:100%;object-fit:cover">`
-                                    : `<video muted style="width:100%;height:100%;object-fit:cover">
-                                   <source src="${row.media_url}" type="video/mp4">
-                               </video>`
-                            }
-                    </div>
-                `
+                            orderable: false,
+                            searchable: false,
+                            render: data => `
+                        <div class="banner-preview"
+                             data-url="${data}"
+                             style="width:80px;height:80px;cursor:pointer;">
+                            <img src="${data}" style="width:100%;height:100%;object-fit:cover">
+                        </div>`
                         },
-                        {data: 'name'},
-                        {data: 'line1'},
-                        {data: 'line2'},
-                        {data: 'line3'},
-                        {data: 'created_at'},
+                        { data: 'name' },
+                        { data: 'line1' },
+                        { data: 'line2' },
+                        { data: 'line3' },
+                        { data: 'created_at' },
                         {
                             data: 'id',
                             orderable: false,
                             searchable: false,
-                            render: id => `<div class="text-end">
+                            render: id => `
+                                            <div class="text-end">
                                                     <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
                                                         <span class="svg-icon svg-icon-5 m-0">
                                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -204,7 +202,7 @@
                                                             <a href="#" class="menu-link px-3 banner-delete" data-id="${id}"> Delete </a>
                                                         </div>
                                                         <div class="menu-item px-3">
-                                                            <a href="{{ route('admin.banner.create') }}/${id}" class="menu-link px-3 "> Edit </a>
+                                                            <a href="{{ route('admin.speaker.create') }}/${id}" class="menu-link px-3 "> Edit </a>
                                                         </div>
                                                     </div>
                                             </div>`
@@ -212,16 +210,49 @@
                     ]
                 });
 
-                // Re-init functions on datatable re-draw
                 datatable.on('draw', function () {
                     initToggleToolbar();
                     handleDeleteRows();
                     toggleToolbars();
                     KTMenu.createInstances();
                 });
+            };
+
+            document.addEventListener('click', e => {
+
+                const preview = e.target.closest('.banner-preview');
+                if (preview) {
+                    showBannerPreview(preview.dataset.url);
+                }
+
+                const del = e.target.closest('.banner-delete');
+                if (del) {
+                    e.preventDefault();
+                    confirmDelete(del.dataset.id);
+                }
+            });
+
+            function confirmDelete(id) {
+                Swal.fire({
+                    text: "Delete this speaker?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Delete"
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+
+                    $.ajax({
+                        url: '{{ route("admin.speaker.delete", ":id") }}'.replace(':id', id),
+                        method: 'DELETE',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function () {
+                            toastr.success('Speaker has been deleted!');
+                            location.reload();
+                        }
+                    });
+                });
             }
 
-            // Search Datatable
             var handleSearchDatatable = function () {
                 const filterSearch = document.querySelector('[data-kt-user-table-filter="search"]');
                 filterSearch.addEventListener('keyup', function (e) {
@@ -229,97 +260,17 @@
                 });
             }
 
-            // Delete selected rows
-            var handleDeleteRows = () => {
-                const deleteButton = document.querySelector('[data-kt-user-table-select="delete_selected"]');
+            var handleDeleteRows = () => {};
 
-                if (!deleteButton) return;
-
-                deleteButton.addEventListener('click', function (e) {
-                    e.preventDefault();
-
-                    const checkboxes = table.querySelectorAll('tbody [type="checkbox"]:checked');
-
-                    if (checkboxes.length > 0) {
-                        Swal.fire({
-                            text: "Are you sure you want to delete selected speakers?",
-                            icon: "warning",
-                            showCancelButton: true,
-                            buttonsStyling: false,
-                            confirmButtonText: "Yes, delete!",
-                            cancelButtonText: "No, cancel",
-                            customClass: {
-                                confirmButton: "btn fw-bold btn-danger",
-                                cancelButton: "btn fw-bold btn-active-light-primary"
-                            }
-                        }).then(function (result) {
-                            if (result.value) {
-                                // Get selected IDs
-                                const ids = [];
-                                checkboxes.forEach(checkbox => {
-                                    ids.push(checkbox.value);
-                                });
-
-                                // Make AJAX call to delete
-                                $.ajax({
-                                    url: '{{ route("admin.speaker.deleteMultiple") }}',
-                                    method: 'POST',
-                                    data: {
-                                        ids: ids,
-                                        _token: '{{ csrf_token() }}'
-                                    },
-                                    success: function(response) {
-                                        // Show success message
-                                        Swal.fire({
-                                            text: "You have deleted selected speakers!",
-                                            icon: "success",
-                                            buttonsStyling: false,
-                                            confirmButtonText: "Ok, got it!",
-                                            customClass: {
-                                                confirmButton: "btn fw-bold btn-primary",
-                                            }
-                                        }).then(function() {
-                                            // Reload page to reflect changes
-                                            location.reload();
-                                        });
-                                    },
-                                    error: function(xhr) {
-                                        Swal.fire({
-                                            text: "Error deleting speakers. Please try again.",
-                                            icon: "error",
-                                            buttonsStyling: false,
-                                            confirmButtonText: "Ok, got it!",
-                                            customClass: {
-                                                confirmButton: "btn fw-bold btn-primary",
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-
-            // Toggle toolbars
             var toggleToolbars = function () {
                 toolbarBase = document.querySelector('[data-kt-user-table-toolbar="base"]');
                 toolbarSelected = document.querySelector('[data-kt-user-table-toolbar="selected"]');
                 selectedCount = document.querySelector('[data-kt-user-table-select="selected_count"]');
 
                 const allCheckboxes = table.querySelectorAll('tbody [type="checkbox"]');
+                let count = [...allCheckboxes].filter(c => c.checked).length;
 
-                let checkedState = false;
-                let count = 0;
-
-                allCheckboxes.forEach(c => {
-                    if (c.checked) {
-                        checkedState = true;
-                        count++;
-                    }
-                });
-
-                if (checkedState) {
+                if (count > 0) {
                     selectedCount.innerHTML = count;
                     toolbarBase.classList.add('d-none');
                     toolbarSelected.classList.remove('d-none');
@@ -329,164 +280,91 @@
                 }
             };
 
-            // Init toggle toolbar
             var initToggleToolbar = function () {
-                // Target table body checkboxes
                 const checkboxes = table.querySelectorAll('tbody [type="checkbox"]');
-
-                // Select all checkbox in header
                 const headerCheckbox = table.querySelector('thead [type="checkbox"]');
 
-                // Handle header checkbox click
                 if (headerCheckbox) {
                     headerCheckbox.addEventListener('change', function (e) {
-                        checkboxes.forEach(c => {
-                            c.checked = e.target.checked;
-                        });
+                        checkboxes.forEach(c => c.checked = e.target.checked);
                         toggleToolbars();
                     });
                 }
 
-                // Handle individual checkbox clicks
                 checkboxes.forEach(checkbox => {
-                    checkbox.addEventListener('change', function () {
-                        toggleToolbars();
-
-                        // Update header checkbox state
-                        const allChecked = Array.from(checkboxes).every(c => c.checked);
-                        const anyChecked = Array.from(checkboxes).some(c => c.checked);
-
-                        if (headerCheckbox) {
-                            headerCheckbox.checked = allChecked;
-                            headerCheckbox.indeterminate = anyChecked && !allChecked;
-                        }
-                    });
+                    checkbox.addEventListener('change', toggleToolbars);
                 });
             };
+            document
+                .querySelector('[data-kt-user-table-select="delete_selected"]')
+                ?.addEventListener('click', () => {
 
-            return {
-                init: function () {
-                    if (!table) {
+                    const ids = [...table.querySelectorAll('.row-checkbox:checked')]
+                        .map(cb => cb.value);
+
+                    if (!ids.length) {
+                        Swal.fire({
+                            text: "Please select at least one speaker.",
+                            icon: "info"
+                        });
                         return;
                     }
 
+                    Swal.fire({
+                        text: `Delete ${ids.length} selected speaker(s)?`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, delete"
+                    }).then(result => {
+                        if (!result.isConfirmed) return;
+
+                        fetch('{{ route("admin.speaker.deleteMultiple") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ ids })
+                        })
+                            .then(res => res.json())
+                            .then(() => {
+                                toastr.success('Selected speakers deleted successfully!');
+                                datatable.draw(false);
+                            });
+                    });
+                });
+
+            return {
+                init: function () {
+                    if (!table) return;
                     initUserTable();
                     initToggleToolbar();
                     handleSearchDatatable();
-                    handleDeleteRows();
                 }
             }
         }();
 
-        // Delete single speaker
-        function deleteSpeaker(id) {
-            Swal.fire({
-                text: "Are you sure you want to delete this speaker?",
-                icon: "warning",
-                showCancelButton: true,
-                buttonsStyling: false,
-                confirmButtonText: "Yes, delete it!",
-                cancelButtonText: "No, cancel",
-                customClass: {
-                    confirmButton: "btn fw-bold btn-danger",
-                    cancelButton: "btn fw-bold btn-active-light-primary"
-                }
-            }).then(function (result) {
-                if (result.value) {
-                    // Make AJAX call to delete
-                    $.ajax({
-                        url: '{{ route("admin.speaker.delete", ":id") }}'.replace(':id', id),
-                        method: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            Swal.fire({
-                                text: "Speaker has been deleted!",
-                                icon: "success",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn fw-bold btn-primary",
-                                }
-                            }).then(function() {
-                                location.reload();
-                            });
-                        },
-                        error: function(xhr) {
-                            Swal.fire({
-                                text: "Error deleting speaker. Please try again.",
-                                icon: "error",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn fw-bold btn-primary",
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-        }
-
-        // On document ready
         KTUtil.onDOMContentLoaded(function () {
             KTUsersList.init();
         });
-    </script>
-    <script>
-        function showBannerPreview(fileUrl, type, titleText = 'Speakers') {
 
-            const modal = new bootstrap.Modal(
-                document.getElementById('bannerPreviewModal')
-            );
-
+        function showBannerPreview(fileUrl) {
+            const modal = new bootstrap.Modal(document.getElementById('bannerPreviewModal'));
             const modalTitle = document.getElementById('bannerPreviewTitle');
             const modalBody  = document.getElementById('bannerPreviewBody');
 
-            // ✅ Title dynamically set hoga
-            modalTitle.textContent = titleText;
-
+            modalTitle.textContent = 'Speakers';
             modalBody.innerHTML = '';
 
-            if (type === 'image') {
-                const img = document.createElement('img');
-                img.src = fileUrl;
-                img.className = 'img-fluid rounded';
-                img.style.maxHeight = '70vh';
-                modalBody.appendChild(img);
-            }
-            else if (type === 'video') {
-                const video = document.createElement('video');
-                video.controls = true;
-                video.autoplay = true;
-                video.className = 'rounded';
-                video.style.width = '100%';
-                video.style.maxHeight = '70vh';
-                video.id = 'modalVideoPlayer';
-
-                const source = document.createElement('source');
-                source.src = fileUrl;
-                source.type = 'video/mp4';
-
-                video.appendChild(source);
-                modalBody.appendChild(video);
-            }
+            const img = document.createElement('img');
+            img.src = fileUrl;
+            img.className = 'img-fluid rounded';
+            img.style.maxHeight = '70vh';
+            modalBody.appendChild(img);
 
             modal.show();
-
-            // Close par video stop
-            document
-                .getElementById('bannerPreviewModal')
-                .addEventListener('hidden.bs.modal', function () {
-                    const videoPlayer = document.getElementById('modalVideoPlayer');
-                    if (videoPlayer) {
-                        videoPlayer.pause();
-                        videoPlayer.currentTime = 0;
-                        videoPlayer.src = '';
-                    }
-                }, { once: true });
         }
     </script>
+
 
 @endpush
