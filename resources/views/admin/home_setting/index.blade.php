@@ -1,12 +1,9 @@
-
 @extends('layouts.admin')
-
-
 @section('content')
-
     <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
+
 
         <!--begin::Post-->
         <div class="post d-flex flex-column-fluid" id="kt_post">
@@ -40,7 +37,8 @@
 												</span>
                                 <!--end::Svg Icon-->
                                 <input type="text" data-kt-user-table-filter="search"
-                                       class="form-control form-control-solid w-250px ps-14" placeholder="Search brands"/>
+                                       class="form-control form-control-solid w-250px ps-14"
+                                       placeholder="Search home setting"/>
                             </div>
                             <!--end::Search-->
                         </div>
@@ -77,13 +75,15 @@
                                     <div class="px-7 py-5" data-kt-user-table-filter="form">
                                         <!--begin::Input group-->
                                         <div class="mb-10">
-                                            <label class="form-label fs-6 fw-bold">Status:</label>
-                                            <select class="form-select form-select-solid fw-bolder" data-kt-select2="true"
+                                            <label class="form-label fs-6 fw-bold">Player Type:</label>
+                                            <select class="form-select form-select-solid fw-bolder"
+                                                    data-kt-select2="true"
                                                     data-placeholder="Select option" data-allow-clear="true"
-                                                    data-kt-user-table-filter="status" data-hide-search="true">
+                                                    data-kt-user-table-filter="player_type" data-hide-search="true">
                                                 <option></option>
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
+                                                <option value="youtube">YouTube</option>
+                                                <option value="vimeo">Vimeo</option>
+                                                <option value="other">Other</option>
                                             </select>
                                         </div>
                                         <!--end::Input group-->
@@ -104,7 +104,7 @@
                                 <!--end::Menu 1-->
                                 <!--end::Filter-->
                                 <!--begin::Add user-->
-                                <a href="{{ route('admin.brand.create') }}" class="btn btn-primary">
+                                <a href="{{ route('admin.home_setting.create') }}" class="btn btn-primary">
                                 <span class="svg-icon svg-icon-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                          viewBox="0 0 24 24" fill="none">
@@ -115,7 +115,7 @@
                                               fill="black"/>
                                     </svg>
                                 </span>
-                                    Add Brands
+                                    Add Home Setting
                                 </a>
 
                                 <!--end::Add user-->
@@ -127,7 +127,8 @@
                                 <div class="fw-bolder me-5">
                                     <span class="me-2" data-kt-user-table-select="selected_count"></span>Selected
                                 </div>
-                                <button type="button" class="btn btn-danger" data-kt-user-table-select="delete_selected">
+                                <button type="button" class="btn btn-danger"
+                                        data-kt-user-table-select="delete_selected">
                                     Delete Selected
                                 </button>
                             </div>
@@ -142,24 +143,31 @@
                         <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
+                                <th class=""></th>
                                 <th class="w-10px pe-2">
                                     <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                        <input class="form-check-input" type="checkbox"
+                                        <input class="form-check-input"
+                                               type="checkbox"
                                                data-kt-check="true"
-                                               data-kt-check-target="#kt_table_users .row-checkbox"/>
+                                               data-kt-check-target="#kt_table_users .row-checkbox"
+                                               value="1" />
+
                                     </div>
                                 </th>
-                                <th class="min-w-125px">Preview</th>
                                 <th class="min-w-200px">Title</th>
-                                <th class="min-w-150px">Created At</th>
-                                <th class="min-w-100px">Status</th>
+                                <th class="min-w-200px">Url</th>
+                                <th class="min-w-200px">Player id</th>
+                                <th class="min-w-125px">Player Type</th>
+                                <th class="min-w-150px">Publish Date</th>
+                                <th class="min-w-150px">Event Start</th>
+                                <th class="min-w-150px">Event End</th>
+                                <th class="min-w-125px">User Attendance</th>
                                 <th class="text-end min-w-100px">Actions</th>
                             </tr>
                             </thead>
                             <tbody class="fw-semibold text-gray-600">
                             <!-- Data will be loaded via AJAX -->
                             </tbody>
-
                         </table>
 
                         <!--end::Table-->
@@ -170,22 +178,7 @@
             </div>
             <!--end::Container-->
         </div>
-        <div class="modal fade" id="bannerPreviewModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="bannerPreviewTitle">Brand Preview</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body text-center" id="bannerPreviewBody">
-                        <!-- Preview content will be inserted here -->
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+
         <!--end::Post-->
         @endsection
 
@@ -193,70 +186,45 @@
             <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
             <script>
                 "use strict";
-
-                const qs  = (s, p = document) => p.querySelector(s);
+                const qs = (s, p = document) => p.querySelector(s);
                 const qsa = (s, p = document) => [...p.querySelectorAll(s)];
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
-                function openBrandPreview(url) {
-                    const modalEl = qs('#bannerPreviewModal');
-                    const modal   = new bootstrap.Modal(modalEl);
-                    const body    = qs('#bannerPreviewBody');
-                    const title   = qs('#bannerPreviewTitle');
+                let homeSettingTable;
 
-                    title.textContent = 'Brand';
-                    body.innerHTML = `<img src="${url}" class="img-fluid rounded" style="max-height:70vh">`;
+                function initHomeSettingTable() {
 
-                    modal.show();
-                }
-
-                let brandTable;
-
-                function initBrandTable() {
-                    brandTable = $('#kt_table_users').DataTable({
+                    homeSettingTable = $('#kt_table_users').DataTable({
                         processing: true,
                         serverSide: true,
                         searchDelay: 500,
                         ajax: {
-                            url: '{{ route("admin.brand.datatable") }}',
+                            url: '{{ route("admin.home_setting.datatable") }}',
                             data: d => {
                                 d.search = qs('[data-kt-user-table-filter="search"]').value;
-                                d.status = qs('[data-kt-user-table-filter="status"]').value;
+                                d.player_type = qs('[data-kt-user-table-filter="player_type"]').value;
                             }
                         },
-                        order: [[1, 'asc']],
+                        order: [[2, 'asc']],
                         pageLength: 10,
                         columns: [
+                            {data: null, orderable: false, defaultContent: ''},
+
                             {
                                 data: 'id',
                                 orderable: false,
                                 searchable: false,
-                                render: id => `
-                    <div class="form-check form-check-sm form-check-custom form-check-solid">
-                        <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
-                    </div>`
+                                render: id => `<div class="form-check form-check-sm form-check-custom form-check-solid"> <input class="form-check-input row-checkbox" type="checkbox" value="${id}" /> </div>`
                             },
-                            {
-                                data: 'media_url',
-                                render: (data, type, row) => `
-                    <div class="brand-preview"
-                         data-url="${row.media_url}"
-                         style="width:80px;height:80px;cursor:pointer;">
-                        <img src="${row.media_url}" style="width:100%;height:100%;object-fit:cover">
-                    </div>`
-                            },
-                            { data: 'title' },
-                            { data: 'created_at' },
-                            {
-                                data: 'status',
-                                render: (data, type, row) => `
-                    <div class="form-check form-switch">
-                        <input class="form-check-input brand-status-toggle"
-                               type="checkbox"
-                               data-id="${row.id}"
-                               ${row.status === 'active' ? 'checked' : ''}>
-                    </div>`
-                            },
+                            {data: 'title'},
+                            {data: 'url'},
+                            {data: 'player_id'},
+                            {data: 'player_type'},
+                            {data: 'publish_date'},
+                            {data: 'event_start_time'},
+                            {data: 'event_end_time'},
+                            {data: 'user_attendance'},
+
                             {
                                 data: 'id',
                                 orderable: false,
@@ -270,10 +238,10 @@
                                                     </a>
                                                     <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
                                                         <div class="menu-item px-3">
-                                                            <a href="#" class="menu-link px-3 brand-delete" data-id="${id}"> Delete </a>
+                                                            <a href="#" class="menu-link px-3 home-setting-delete" data-id="${id}"> Delete </a>
                                                         </div>
                                                         <div class="menu-item px-3">
-                                                            <a href="{{ route('admin.brand.create') }}/${id}" class="menu-link px-3 "> Edit </a>
+                                                            <a href="{{ route('admin.home_setting.create') }}/${id}" class="menu-link px-3 "> Edit </a>
                                                         </div>
                                                     </div>
                                             </div>`
@@ -283,135 +251,134 @@
                 }
 
                 document.addEventListener('click', e => {
-                    const preview = e.target.closest('.brand-preview');
-                    if (preview) {
-                        openBrandPreview(preview.dataset.url);
-                        return;
-                    }
 
-                    const del = e.target.closest('.brand-delete');
+                    const del = e.target.closest('.home-setting-delete');
                     if (del) {
                         e.preventDefault();
-                        confirmDelete(del.dataset.id);
+                        confirmDelete(del.dataset.id, del.closest('tr'));
                     }
                 });
 
-                document.addEventListener('change', e => {
-                    if (!e.target.classList.contains('brand-status-toggle')) return;
-
-                    const checkbox = e.target;
-                    const id = checkbox.dataset.id;
-                    const status = checkbox.checked ? 'active' : 'inactive';
+                function confirmDelete(id, row) {
 
                     Swal.fire({
-                        text: "Change brand status?",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Yes"
-                    }).then(result => {
-                        if (!result.isConfirmed) {
-                            checkbox.checked = !checkbox.checked;
-                            return;
-                        }
-
-                        $.ajax({
-                            url: '{{ route("admin.brand.toggleStatus", ":id") }}'.replace(':id', id),
-                            method: 'POST',
-                            data: { _token: '{{ csrf_token() }}', status },
-                            success: () => toastr.success('Status updated successfully!')
-                        });
-                    });
-                });
-
-                function confirmDelete(id) {
-                    Swal.fire({
-                        text: "Delete this brand?",
+                        text: "Delete this home setting?",
                         icon: "warning",
                         showCancelButton: true,
                         confirmButtonText: "Delete"
                     }).then(result => {
+
                         if (!result.isConfirmed) return;
 
                         $.ajax({
-                            url: '{{ route("admin.brand.delete", ":id") }}'.replace(':id', id),
+                            url: '{{ route("admin.home_setting.delete", ":id") }}'.replace(':id', id),
                             method: 'DELETE',
-                            data: { _token: '{{ csrf_token() }}' },
-                            success: () => {
-                                brandTable.draw();
-                                toastr.success('Brand has been deleted!');
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function () {
+                                homeSettingTable.draw();
+                                toastr.success('Home setting has been deleted!');
                             }
                         });
                     });
                 }
 
-                qs('[data-kt-user-table-filter="search"]').addEventListener('keyup', () => brandTable.draw());
-                qs('[data-kt-user-table-filter="filter"]').addEventListener('click', () => brandTable.draw());
-                qs('[data-kt-user-table-filter="reset"]').addEventListener('click', () => {
-                    qs('[data-kt-user-table-filter="status"]').value = '';
-                    brandTable.draw();
-                });
+                qs('[data-kt-user-table-filter="search"]')
+                    .addEventListener('keyup', () => homeSettingTable.draw());
 
+                qs('[data-kt-user-table-filter="filter"]')
+                    .addEventListener('click', () => homeSettingTable.draw());
+
+                qs('[data-kt-user-table-filter="reset"]')
+                    .addEventListener('click', () => {
+                        qs('[data-kt-user-table-filter="player_type"]').value = '';
+                        homeSettingTable.draw();
+                    });
                 document.addEventListener('change', e => {
                     if (!e.target.matches('[data-kt-check="true"]')) return;
-                    qsa('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
-                    updateToolbar();
+
+                    const checked = e.target.checked;
+                    qsa('.row-checkbox').forEach(cb => cb.checked = checked);
                 });
 
-                document.addEventListener('change', e => {
-                    if (!e.target.classList.contains('row-checkbox')) return;
-                    updateToolbar();
-                });
+                document
+                    .querySelector('[data-kt-user-table-select="delete_selected"]')
+                    ?.addEventListener('click', () => {
 
-                function updateToolbar() {
-                    const count = qsa('.row-checkbox:checked').length;
-                    const base = qs('[data-kt-user-table-toolbar="base"]');
-                    const selected = qs('[data-kt-user-table-toolbar="selected"]');
-                    const counter = qs('[data-kt-user-table-select="selected_count"]');
+                        const ids = qsa('.row-checkbox:checked')
+                            .map(cb => cb.value);
 
-                    if (count > 0) {
-                        base.classList.add('d-none');
-                        selected.classList.remove('d-none');
-                        counter.textContent = count;
-                    } else {
-                        base.classList.remove('d-none');
-                        selected.classList.add('d-none');
-                        counter.textContent = '';
-                    }
-                }
-                qs('[data-kt-user-table-select="delete_selected"]')?.addEventListener('click', () => {
-                    const ids = qsa('.row-checkbox:checked').map(cb => cb.value);
-
-                    if (!ids.length) {
-                        Swal.fire({ text: "Please select at least one brand.", icon: "info" });
-                        return;
-                    }
-
-                    Swal.fire({
-                        text: `Delete ${ids.length} selected brand(s)?`,
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Yes, delete"
-                    }).then(result => {
-                        if (!result.isConfirmed) return;
-
-                        fetch('{{ route("admin.brand.deleteMultiple") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrf
-                            },
-                            body: JSON.stringify({ ids })
-                        })
-                            .then(() => {
-                                Swal.fire({ text: "Selected brands deleted successfully.", icon: "success" });
-                                brandTable.draw(false);
-                                location.reload();
+                        if (!ids.length) {
+                            Swal.fire({
+                                text: "Please select at least one home setting.",
+                                icon: "info",
+                                confirmButtonText: "OK"
                             });
-                    });
-                });
+                            return;
+                        }
 
+                        Swal.fire({
+                            text: `Delete ${ids.length} selected home setting(s)?`,
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "Yes, delete",
+                            cancelButtonText: "Cancel"
+                        }).then(result => {
+
+                            if (!result.isConfirmed) return;
+
+                            fetch('{{ route("admin.home_setting.deleteMultiple") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrf
+                                },
+                                body: JSON.stringify({ids})
+                            })
+                                .then(res => {
+                                    if (!res.ok) throw new Error();
+                                    Swal.fire({
+                                        text: "Selected home settings deleted successfully.",
+                                        icon: "success",
+                                        confirmButtonText: "OK"
+                                    });
+                                    homeSettingTable.draw(false);
+                                })
+                                .catch(() => {
+                                    Swal.fire({
+                                        text: "Failed to delete home settings.",
+                                        icon: "error",
+                                        confirmButtonText: "OK"
+                                    });
+                                });
+                        });
+                    });
+                document.addEventListener('change', e => {
+
+                    if (!e.target.classList.contains('row-checkbox') &&
+                        !e.target.matches('[data-kt-check="true"]')) return;
+
+
+                    const selectedCount = document.querySelectorAll('.row-checkbox:checked').length;
+
+                    const toolbarBase = document.querySelector('[data-kt-user-table-toolbar="base"]');
+                    const toolbarSelected = document.querySelector('[data-kt-user-table-toolbar="selected"]');
+                    const selectedCountEl = document.querySelector('[data-kt-user-table-select="selected_count"]');
+
+                    if (selectedCount > 0) {
+                        toolbarBase.classList.add('d-none');
+                        toolbarSelected.classList.remove('d-none');
+                        selectedCountEl.textContent = selectedCount;
+                    } else {
+                        toolbarBase.classList.remove('d-none');
+                        toolbarSelected.classList.add('d-none');
+                        selectedCountEl.textContent = '';
+                    }
+
+                });
                 KTUtil.onDOMContentLoaded(() => {
-                    initBrandTable();
+                    initHomeSettingTable();
                 });
             </script>
 

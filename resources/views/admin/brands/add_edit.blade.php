@@ -1,9 +1,7 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
-@section($title,'title')
 
-@section('body')
-    @include('partials.header')
+@section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
 
@@ -28,12 +26,15 @@
             @endif
 
             <!-- Create/Edit Brand Card -->
-            <div class="card mb-5 mb-xl-10">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title fs-3 fw-bolder">{{$title}}</div>
+                    </div>
 
 
                 <div id="kt_brand_create" class="collapse show">
                     <form method="POST"
-                          action="{{ route('brand.store', $brand->id ?? null) }}"
+                          action="{{ route('admin.brand.store', $brand->id ?? null) }}"
                           id="kt_brand_form"
                           enctype="multipart/form-data">
                         @csrf
@@ -111,9 +112,9 @@
                         </div>
 
                         <div class="card-footer d-flex justify-content-end py-6 px-9">
-                            <a href="{{route('brand')}}" class="btn btn-light btn-active-light-primary me-2">Cancel</a>
+                            <a href="{{route('admin.brand')}}" class="btn btn-light btn-active-light-primary me-2">Cancel</a>
                             <button type="submit" class="btn btn-primary" id="kt_brand_submit">
-                                <span class="indicator-label">{{ $brand->exists ? 'Save' : 'Save' }}</span>
+                                <span class="indicator-label">Save</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                                 </span>
@@ -125,236 +126,126 @@
         </div>
     </div>
 
-    @include('partials.footer')
 @endsection
 
 @push('scripts')
     <script src="{{ asset('assets/js/custom/widgets.js')}}"></script>
-    <script>
-        var KTBrandForm = function () {
-            var form;
-            var submitButton;
-            var validator;
-            var fileInput;
-            var fileTypeIndicator;
-            var removeInput;
+            <script>
+                "use strict";
 
-            var isEditMode = {{ $brand->exists ? 'true' : 'false' }};
-            var blankImageUrl = "{{ asset('assets/media/avatars/blank.png') }}";
-            var originalImageUrl = "{{ $brand->filename && $brand->type === 'image' ? asset('storage/brands/'.$brand->filename) : asset('assets/media/avatars/blank.png') }}";
-            var fileRemoved = false;
+                const KTBrandEdit = (() => {
 
-            return {
-                init: function () {
-                    form = document.querySelector("#kt_brand_form");
-                    submitButton = document.querySelector("#kt_brand_submit");
-                    fileInput = document.querySelector("#filename");
-                    fileTypeIndicator = document.querySelector("#fileTypeIndicator");
-                    removeInput = document.querySelector("input[name='brand_remove']");
+                    let form, submitBtn, validator;
+                    const isEdit = {{ $brand->exists ? 'true' : 'false' }};
+                    const blankImage = "{{ asset('assets/media/avatars/blank.png') }}";
+                    const originalImage = "{{ $brand->filename && $brand->type === 'image'
+                    ? asset('storage/brands/'.$brand->filename)
+                    : asset('assets/media/avatars/blank.png') }}";
 
-                    if (!form) {
-                        console.error("Form not found");
-                        return;
-                    }
+                    let fileRemoved = false;
 
-                    /* ===============================
-                       FILE TYPE AUTO-DETECT
-                    =============================== */
-                    fileInput.addEventListener("change", function(e) {
-                        var file = e.target.files[0];
+                    const init = () => {
 
-                        if (!file) {
-                            fileTypeIndicator.innerHTML = '';
-                            $('#brandImagePreview').css('background-image', "url('" + blankImageUrl + "')");
+                        form = document.getElementById('kt_brand_form');
+                        submitBtn = document.getElementById('kt_brand_submit');
+
+                        if (!form) return;
+
+                        const fileInput = document.getElementById('filename');
+                        const removeInput = document.querySelector("input[name='brand_remove']");
+
+                        validator = FormValidation.formValidation(form, {
+                            fields: {
+                                title: {
+                                    validators: {
+                                        notEmpty: { message: 'Title is required' }
+                                    }
+                                },
+                                filename: {
+                                    validators: {
+                                        callback: {
+                                            message: 'File is required',
+                                            callback: function (input) {
+                                                if (!isEdit && input.value === '') return false;
+                                                if (isEdit && fileRemoved && input.value === '') return false;
+                                                return true;
+                                            }
+                                        },
+                                        file: {
+                                            extension: 'jpg,jpeg,png,gif,webp,mp4,mov,avi,webm',
+                                            type: 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/webm',
+                                            maxSize: 20971520,
+                                            message: 'Invalid file (max 20MB)'
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                trigger: new FormValidation.plugins.Trigger(),
+                                bootstrap5: new FormValidation.plugins.Bootstrap5({
+                                    rowSelector: '.row'
+                                })
+                            }
+                        });
+
+                        fileInput.addEventListener('change', function () {
+                            if (!this.files.length) return;
+
                             fileRemoved = false;
                             removeInput.value = '';
 
-                            // Trigger validation immediately
-                            setTimeout(function() {
-                                validator.revalidateField('filename');
-                            }, 100);
-                            return;
-                        }
-
-                        fileRemoved = false;
-                        removeInput.value = '';
-                        var fileType = file.type;
-
-                        if (fileType.startsWith('image/')) {
-                            fileTypeIndicator.innerHTML = '<span class="badge badge-light-primary">Type: Image</span>';
-
-                            // Show image preview
-                            var reader = new FileReader();
-                            reader.onload = function(e) {
-                                $('#brandImagePreview').css('background-image', 'url(' + e.target.result + ')');
-                            };
-                            reader.readAsDataURL(file);
-
-                        } else if (fileType.startsWith('video/')) {
-                            fileTypeIndicator.innerHTML = '<span class="badge badge-light-info">Type: Video</span>';
-                            $('#brandImagePreview').css('background-image', "url('" + blankImageUrl + "')");
-                        } else {
-                            fileTypeIndicator.innerHTML = '<span class="badge badge-light-danger">Type: Unknown</span>';
-                        }
-
-                        // Trigger validation immediately after file selection
-                        setTimeout(function() {
-                            validator.revalidateField('filename');
-                        }, 100);
-
-                        console.log('File selected:', file.name, 'Type:', fileType);
-                    });
-
-                    /* ===============================
-                       CANCEL / REMOVE BUTTONS
-                    =============================== */
-                    $(document).on('click', '[data-kt-image-input-action="cancel"]', function() {
-                        console.log('File cancel clicked');
-
-                        $('#filename').val('');
-                        fileRemoved = false;
-                        removeInput.value = '';
-                        fileTypeIndicator.innerHTML = '';
-
-                        // Restore original image
-                        if (isEditMode && originalImageUrl !== blankImageUrl) {
-                            $('#brandImagePreview').css('background-image', "url('" + originalImageUrl + "')");
-                        } else {
-                            $('#brandImagePreview').css('background-image', "url('" + blankImageUrl + "')");
-                        }
-
-                        // Trigger validation immediately
-                        setTimeout(function() {
-                            validator.revalidateField('filename');
-                        }, 100);
-                    });
-
-                    $(document).on('click', '[data-kt-image-input-action="remove"]', function() {
-                        console.log('File remove clicked');
-
-                        $('#filename').val('');
-                        fileRemoved = true;
-                        removeInput.value = '1'; // Mark for removal
-                        fileTypeIndicator.innerHTML = '';
-
-                        // Show blank image
-                        $('#brandImagePreview').css('background-image', "url('" + blankImageUrl + "')");
-
-                        // Trigger validation immediately
-                        setTimeout(function() {
-                            validator.revalidateField('filename');
-                        }, 100);
-                    });
-
-                    /* ===============================
-                       FORM VALIDATION
-                    =============================== */
-                    var fileValidators = {};
-
-                    if (!isEditMode) {
-                        // Create mode - file required
-                        fileValidators = {
-                            notEmpty: {
-                                message: "Image is required"
-                            },
-                            file: {
-                                extension: 'jpg,jpeg,png,gif,webp,mp4,mov,avi,webm',
-                                type: 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/webm',
-                                maxSize: 20971520, // 20MB
-                                message: 'Please select a valid image or video file (max 20MB)'
-                            }
-                        };
-                    } else {
-                        // Edit mode - file optional, but required if removed
-                        fileValidators = {
-                            callback: {
-                                message: 'Please upload a new file',
-                                callback: function(input) {
-                                    // If file was removed, new file is required
-                                    if (fileRemoved && input.value === '') {
-                                        return false;
-                                    }
-                                    return true;
-                                }
-                            },
-                            file: {
-                                extension: 'jpg,jpeg,png,gif,webp,mp4,mov,avi,webm',
-                                type: 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/webm',
-                                maxSize: 20971520,
-                                message: 'Please select a valid image or video file (max 20MB)'
-                            }
-                        };
-                    }
-
-                    validator = FormValidation.formValidation(form, {
-                        fields: {
-                            title: {
-                                validators: {
-                                    notEmpty: {
-                                        message: "Title is required"
-                                    }
-                                }
-                            },
-                            filename: {
-                                validators: fileValidators
-                            }
-                        },
-                        plugins: {
-                            trigger: new FormValidation.plugins.Trigger(),
-                            bootstrap: new FormValidation.plugins.Bootstrap5({
-                                rowSelector: '.row',
-                                eleInvalidClass: '',
-                                eleValidClass: ''
-                            })
-                        }
-                    });
-
-                    /* ===============================
-                       SUBMIT
-                    =============================== */
-                    submitButton.addEventListener("click", function (e) {
-                        e.preventDefault();
-
-                        console.log('=== SUBMIT ===');
-                        console.log('Edit Mode:', isEditMode);
-                        console.log('File Removed:', fileRemoved);
-                        console.log('Remove Input Value:', removeInput.value);
-                        console.log('File Selected:', $('#filename')[0].files.length > 0 ? $('#filename')[0].files[0].name : 'none');
-
-                        validator.validate().then(function (status) {
-                            console.log('Validation Status:', status);
-
-                            if (status === 'Valid') {
-                                submitButton.setAttribute("data-kt-indicator", "on");
-                                submitButton.disabled = true;
-
-                                setTimeout(function() {
-                                    form.submit();
-                                }, 300);
+                            const file = this.files[0];
+                            if (file.type.startsWith('image/')) {
+                                const reader = new FileReader();
+                                reader.onload = e => {
+                                    $('#brandImagePreview').css('background-image', `url('${e.target.result}')`);
+                                };
+                                reader.readAsDataURL(file);
                             } else {
-                                var invalidFields = validator.getInvalidFields();
-                                console.log('Invalid Fields:', invalidFields);
-
-                                Swal.fire({
-                                    text: "Please fill all required fields correctly",
-                                    icon: "error",
-                                    buttonsStyling: false,
-                                    confirmButtonText: "Ok, got it!",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-primary",
-                                    }
-                                });
+                                $('#brandImagePreview').css('background-image', `url('${blankImage}')`);
                             }
+
+                            validator.revalidateField('filename');
                         });
-                    });
 
-                    console.log("Brand form initialized | Edit:", isEditMode);
-                }
-            };
-        }();
+                        $(document).on(
+                            'click',
+                            '[data-kt-image-input-action="remove"], [data-kt-image-input-action="cancel"]',
+                            () => {
+                                $('#filename').val('');
+                                fileRemoved = true;
+                                document.querySelector("input[name='brand_remove']").value = '1';
 
-        KTUtil.onDOMContentLoaded(function () {
-            KTBrandForm.init();
-        });
-    </script>
-@endpush
+                                $('#brandImagePreview').css(
+                                    'background-image',
+                                    `url('${blankImage}')`
+                                );
+
+                                validator.revalidateField('filename');
+                            }
+                        );
+
+
+                        submitBtn.addEventListener('click', e => {
+                            e.preventDefault();
+
+                            validator.validate().then(status => {
+                                if (status !== 'Valid') return;
+
+                                submitBtn.setAttribute('data-kt-indicator', 'on');
+                                submitBtn.disabled = true;
+                                form.submit();
+                            });
+                        });
+                    };
+
+                    return { init };
+
+                })();
+
+                KTUtil.onDOMContentLoaded(() => {
+                    KTBrandEdit.init();
+                });
+            </script>
+
+    @endpush

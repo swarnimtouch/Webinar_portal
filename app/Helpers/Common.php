@@ -131,6 +131,20 @@ function getModules($user_type = 'admin'): array
                 'child' => [],
                 'all_routes' => ['admin.dynamic-fields','admin.dynamic-fields.store']
             ],
+            [
+                'route' => route('admin.home_setting'),
+                'name' => 'Home Settings',
+                'icon' => 'bi bi-gear',
+                'child' =>[],
+                'all_routes' => ['admin.home_setting','admin.home_setting.create']
+            ],
+            [
+                'route' => route('admin.user_attendance'),
+                'name' => 'User Attendance',
+                'icon' => 'bi bi-people fs-3',
+                'child' =>[],
+                'all_routes' => ['admin.user_attendance']
+            ],
         ];
     }
 

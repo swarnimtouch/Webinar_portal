@@ -1,9 +1,7 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
-@section($title,'title')
 
-@section('body')
-    @include('partials.header')
+@section('content')
     <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Post-->
@@ -56,7 +54,7 @@
                     <!--end::Card header-->
                     <!--begin::Card body-->
                     <div class="card-body pt-0">
-                        <form id="fields-form" method="POST" action="{{ route('dynamic-fields.store') }}">
+                        <form id="fields-form" method="POST" action="{{ route('admin.dynamic-fields.store') }}">
                             @csrf
 
                             <input type="hidden" name="order_data" id="order-data">
@@ -190,7 +188,6 @@
         <!--end::Post-->
     </div>
     <!--end::Content-->
-    @include('partials.footer')
 @endsection
 
 @push('scripts')
@@ -209,10 +206,10 @@
                 datatable = $(table).DataTable({
                     searchDelay: 500,
                     processing: true,
-                    ordering: false, // Disable ordering since using manual drag-drop
+                    ordering: false,
                     stateSave: false,
-                    paging: false, // Disable pagination for sortable to work properly
-                    info: false, // Hide "Showing X of Y entries"
+                    paging: false,
+                    info: false,
                     columnDefs: [
                         {
                             orderable: false,
@@ -222,7 +219,6 @@
                 });
             }
 
-            // Search Datatable
             var handleSearchDatatable = function () {
                 const filterSearch = document.querySelector('[data-kt-user-table-filter="search"]');
                 if (filterSearch) {
@@ -244,7 +240,6 @@
             }
         }();
 
-        // Sortable functionality
         function initSortable() {
             function updateIndexes() {
                 let order = [];
@@ -261,7 +256,6 @@
                     }
                 });
 
-                // Store order data in hidden field
                 $('#order-data').val(JSON.stringify(order));
             }
 
@@ -281,11 +275,9 @@
                 }
             });
 
-            // Initial index update
             updateIndexes();
         }
 
-        // Save form handler
         function initSaveButton() {
             const saveBtn = document.getElementById('save-fields-btn');
             const form = document.getElementById('fields-form');
@@ -294,11 +286,9 @@
                 saveBtn.addEventListener('click', function(e) {
                     e.preventDefault();
 
-                    // Show loading state
                     saveBtn.disabled = true;
                     saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
-                    // Submit form via AJAX
                     const formData = new FormData(form);
 
                     $.ajax({
@@ -312,7 +302,6 @@
                             saveBtn.disabled = false;
                             saveBtn.innerHTML = '<span class="svg-icon svg-icon-2"></span>Save Changes';
 
-                            // Show success message
                             Swal.fire({
                                 text: response.message || "Changes saved successfully!",
                                 icon: "success",
@@ -324,7 +313,6 @@
                             });
                         },
                         error: function(xhr) {
-                            // Reset button
                             saveBtn.disabled = false;
                             saveBtn.innerHTML = '<span class="svg-icon svg-icon-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M17.5 11H6.5C4 11 2 9 2 6.5C2 4 4 2 6.5 2H17.5C20 2 22 4 22 6.5C22 9 20 11 17.5 11ZM15 6.5C15 7.9 16.1 9 17.5 9C18.9 9 20 7.9 20 6.5C20 5.1 18.9 4 17.5 4C16.1 4 15 5.1 15 6.5Z" fill="black"/><path opacity="0.3" d="M17.5 22H6.5C4 22 2 20 2 17.5C2 15 4 13 6.5 13H17.5C20 13 22 15 22 17.5C22 20 20 22 17.5 22ZM4 17.5C4 18.9 5.1 20 6.5 20C7.9 20 9 18.9 9 17.5C9 16.1 7.9 15 6.5 15C5.1 15 4 16.1 4 17.5Z" fill="black"/></svg></span>Save Changes';
 
@@ -344,7 +332,6 @@
             }
         }
 
-        // On document ready
         KTUtil.onDOMContentLoaded(function () {
             KTUsersList.init();
             initSortable();
@@ -352,24 +339,24 @@
         });
     </script>
 
-    <style>
-        .ui-state-highlight {
-            height: 50px;
-            background-color: #f3f6f9;
-            border: 2px dashed #3699ff;
-        }
+{{--    <style>--}}
+{{--        .ui-state-highlight {--}}
+{{--            height: 50px;--}}
+{{--            background-color: #f3f6f9;--}}
+{{--            border: 2px dashed #3699ff;--}}
+{{--        }--}}
 
-        .drag-handle:hover {
-            color: #3699ff;
-        }
+{{--        .drag-handle:hover {--}}
+{{--            color: #3699ff;--}}
+{{--        }--}}
 
-        #kt_table_users tbody tr {
-            transition: background-color 0.2s;
-        }
+{{--        #kt_table_users tbody tr {--}}
+{{--            transition: background-color 0.2s;--}}
+{{--        }--}}
 
-        #kt_table_users tbody tr.ui-sortable-helper {
-            background-color: #fff;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-    </style>
+{{--        #kt_table_users tbody tr.ui-sortable-helper {--}}
+{{--            background-color: #fff;--}}
+{{--            box-shadow: 0 0 20px rgba(0,0,0,0.1);--}}
+{{--        }--}}
+{{--    </style>--}}
 @endpush

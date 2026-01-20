@@ -13,18 +13,12 @@ class ContentController extends Controller
     public function index()
     {
         // Pagination
-        $contents = Content::orderBy('created_at', 'desc')->paginate(20);
-
-        $title = 'Content';
-        $breadcrumbs = [
-            'Content' => ''
-        ];
-
-        return view('admin.content.index', compact(
-            'contents',
-            'title',
-            'breadcrumbs'
-        ));
+        return view('admin.content.index', [
+            'title' => __('Contents'),
+            'breadcrumb' => breadcrumb([
+                __('Contents') => route('admin.content')
+            ])
+        ]);
     }
 
 
@@ -63,17 +57,15 @@ class ContentController extends Controller
         $content = Content::findOrFail($id);
 
         // 🔹 Edit page pe bhi same breadcrumb & title
-        $title = 'Content';
-        $breadcrumbs = [
-            'Content' => route('content'),
-            'Edit Content' => ''
+        $response = [
+            'content' => $content,
+            'title' => __('Content'),
+            'breadcrumb' => breadcrumb([__('Contents') => route('admin.content'), ($id ? 'Edit' : 'Add' . ' Content') => '']),
         ];
+        return view('admin.content.edit', $response);
 
-        return view('admin.content.edit', compact(
-            'content',
-            'title',
-            'breadcrumbs'
-        ));
+
+
     }
 
 
@@ -101,5 +93,61 @@ class ContentController extends Controller
     public function destroy(Content $content)
     {
         //
+    }
+    public function datatable(Request $request)
+    {
+        $query = Content::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                ;
+            });
+        }
+
+
+        $total = $query->count();
+
+        if ($request->has('order')) {
+            $columns = $request->columns;
+            foreach ($request->order as $order) {
+                $columnIndex = $order['column'];
+                $columnName = $columns[$columnIndex]['data'];
+                $direction = $order['dir'];
+
+                $dbColumn = match ($columnName) {
+                    'title' => 'title',
+                    'slug' => 'slug',
+                    default => 'id'
+                };
+
+                $query->orderBy($dbColumn, $direction);
+            }
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $length = $request->input('length', 10);
+        $start = $request->input('start', 0);
+        $contents = $query->skip($start)->take($length)->get();
+
+        $data = $contents->map(function ($content) {
+            return [
+                'id' => $content->id,
+                'title' => $content->title,
+                'slug' => $content->slug,
+                'content' => $content->content,
+                'created_at' => $content->created_at->format('d M Y'),
+                'actions' => '',
+            ];
+        });
+
+        return response()->json([
+            'draw' => $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $data
+        ]);
     }
 }

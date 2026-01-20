@@ -14,46 +14,26 @@ class BrandsController extends Controller
 
     public function index()
     {
-        $brands = Brands::latest()->get();
 
-        $title = 'Brands';
-        $breadcrumbs = [
-            'Brands' => ''
-        ];
+        return view('admin.brands.index', [
+            'title' => __('Brands'),
+            'breadcrumb' => breadcrumb([
+                __('Brands') => route('admin.brand')
+            ])
+        ]);
 
-        return view('admin.brands.index', compact(
-            'brands',
-            'title',
-            'breadcrumbs'
-        ));
     }
 
-    public function create($id = null)
+    public function addEditForm($id = null)
     {
-        $brand = $id ? Brands::findOrFail($id) : new Brands();
+        $brand = $id ? Brands::findOrFail($id) :new Brands();
 
-
-        if ($id) {
-            // Edit
-            $title = 'Brands';
-            $breadcrumbs = [
-                'Brands' => route('brand'),
-                'Edit Brands' => ''
-            ];
-        } else {
-            // Create
-            $title = 'Brands';
-            $breadcrumbs = [
-                'Brands' => route('brand'),
-                'Brand' => ''
-            ];
-        }
-
-        return view('admin.brands.add_edit', compact(
-            'brand',
-            'title',
-            'breadcrumbs'
-        ));
+        $response = [
+            'brand' => $brand,
+            'title' => __('Brand'),
+            'breadcrumb' => breadcrumb([__('Brands') => route('admin.brand'), ($id ? 'Edit' : 'Add' . ' Brand') => '']),
+        ];
+        return view('admin.brands.add_edit', $response);
     }
 
     public function store(Request $request, $id = null)
@@ -100,7 +80,7 @@ class BrandsController extends Controller
 
         $brand->save();
 
-        return redirect()->route('brand')
+        return redirect()->route('admin.brand')
             ->with('success', $isUpdate ? 'Brand updated successfully' : 'Brand created successfully');
     }
 
@@ -171,5 +151,70 @@ class BrandsController extends Controller
                 'message' => 'Error updating status'
             ], 500);
         }
+    }
+
+    public function datatable(Request $request)
+    {
+        $query = Brands::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ;
+            });
+        }
+        if ($request->has('type') && !empty($request->type)) {
+            $type = $request->type;
+            $query->where('type', $type);
+        }
+
+        if ($request->has('status') && !empty($request->status)) {
+            $status = $request->status;
+            $query->where('status', $status);
+        }
+
+        $total = $query->count();
+
+        if ($request->has('order')) {
+            $columns = $request->columns;
+            foreach ($request->order as $order) {
+                $columnIndex = $order['column'];
+                $columnName = $columns[$columnIndex]['data'];
+                $direction = $order['dir'];
+
+                $dbColumn = match ($columnName) {
+                    'title' => 'title',
+                    'type' => 'type',
+                    default => 'id'
+                };
+
+                $query->orderBy($dbColumn, $direction);
+            }
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $length = $request->input('length', 10);
+        $start = $request->input('start', 0);
+        $brands = $query->skip($start)->take($length)->get();
+
+        $data = $brands->map(function ($brand) {
+            return [
+                'id' => $brand->id,
+                'title' => $brand->title,
+                'media_url' => $brand->media_url,
+                'created_at' => $brand->created_at->format('d M Y'),
+                'status' => $brand->status,
+                'actions' => '',
+            ];
+        });
+
+        return response()->json([
+            'draw' => $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $data
+        ]);
     }
 }

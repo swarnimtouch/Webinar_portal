@@ -1,9 +1,7 @@
-@extends('layouts.master')
+@extends('layouts.admin')
 
-@section($title,'title')
 
-@section('body')
-    @include('partials.header')
+@section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
 
@@ -28,10 +26,13 @@
             @endif
 
             <!-- Create/Edit Speaker Card -->
-            <div class="card mb-5 mb-xl-10">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title fs-3 fw-bolder">{{$title}}</div>
+                </div>
                 <div id="kt_speaker_wrapper" class="collapse show">
                     <form method="POST"
-                          action="{{ route('speakers.store', isset($speaker) ? $speaker->id : null) }}"
+                          action="{{ route('admin.speakers.store', isset($speaker) ? $speaker->id : null) }}"
                           id="kt_speaker_form"
                           enctype="multipart/form-data">
                         @csrf
@@ -116,9 +117,9 @@
                         </div>
 
                         <div class="card-footer d-flex justify-content-end py-6 px-9">
-                            <a type="reset" href="{{route('speakers')}}" class="btn btn-light btn-active-light-primary me-2">Cancel</a>
+                            <a type="reset" href="{{route('admin.speakers')}}" class="btn btn-light btn-active-light-primary me-2">Cancel</a>
                             <button type="submit" class="btn btn-primary" id="kt_speaker_submit">
-                                <span class="indicator-label">{{ isset($speaker) ? 'Save' : 'Save' }}</span>
+                                <span class="indicator-label">Save</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                                 </span>
@@ -130,147 +131,108 @@
         </div>
     </div>
 
-    @include('partials.footer')
 @endsection
 
 @push('scripts')
-    <script>
-        "use strict";
+            <script>
+                "use strict";
 
-        KTUtil.onDOMContentLoaded(function () {
+                const KTSpeakerEdit = (() => {
 
-            const form = document.querySelector('#kt_speaker_form');
-            const submitBtn = document.querySelector('#kt_speaker_submit');
-            const fileInput = document.querySelector('#filename');
-            const imageRemovedInput = document.querySelector('#image_removed');
-            const hasExistingImage = document.querySelector('#has_existing_image').value === '1';
-            const isEditMode = {{ isset($speaker) ? 'true' : 'false' }};
+                    let form, submitBtn, validator;
+                    const isEdit = {{ isset($speaker) ? 'true' : 'false' }};
+                    const blankImage = "{{ asset('assets/media/avatars/blank.png') }}";
 
-            let imageWasRemoved = false;
-            let newImageSelected = false;
+                    let imageRemoved = false;
 
-            /* ===============================
-               IMAGE REMOVE
-            =============================== */
-            document.querySelectorAll('[data-kt-image-input-action="remove"]').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    imageWasRemoved = true;
-                    newImageSelected = false;
-                    imageRemovedInput.value = '1';
+                    const init = () => {
 
-                    setTimeout(() => {
-                        validator.revalidateField('filename');
-                    }, 100);
-                });
-            });
+                        form = document.getElementById('kt_speaker_form');
+                        submitBtn = document.getElementById('kt_speaker_submit');
 
-            /* ===============================
-               IMAGE CANCEL
-            =============================== */
-            document.querySelectorAll('[data-kt-image-input-action="cancel"]').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    imageWasRemoved = false;
-                    newImageSelected = false;
-                    imageRemovedInput.value = '0';
+                        if (!form) return;
 
-                    setTimeout(() => {
-                        validator.revalidateField('filename');
-                    }, 100);
-                });
-            });
+                        const fileInput = document.getElementById('filename');
+                        const imageRemovedInput = document.getElementById('image_removed');
 
-            /* ===============================
-               NEW IMAGE SELECT
-            =============================== */
-            fileInput.addEventListener('change', function () {
-                if (this.files && this.files.length > 0) {
-                    newImageSelected = true;
-                    imageWasRemoved = false;
-                    imageRemovedInput.value = '0';
-                }
-            });
-
-            /* ===============================
-               FORM VALIDATION
-            =============================== */
-            const validator = FormValidation.formValidation(form, {
-                fields: {
-                    filename: {
-                        validators: {
-                            callback: {
-                                message: 'Image is required',
-                                callback: function () {
-
-                                    // 🔹 EDIT MODE
-                                    if (isEditMode && hasExistingImage) {
-
-                                        if (imageWasRemoved && !newImageSelected) {
-                                            return false;
-                                        }
-
-                                        if (!imageWasRemoved) {
-                                            return true;
+                        validator = FormValidation.formValidation(form, {
+                            fields: {
+                                name: {
+                                    validators: {
+                                        notEmpty: { message: 'Name is required' }
+                                    }
+                                },
+                                line1: {
+                                    validators: {
+                                        notEmpty: { message: 'Line 1 is required' }
+                                    }
+                                },
+                                filename: {
+                                    validators: {
+                                        callback: {
+                                            message: 'Image is required',
+                                            callback: function () {
+                                                if (isEdit && !imageRemoved) return true;
+                                                return fileInput.files && fileInput.files.length > 0;
+                                            }
+                                        },
+                                        file: {
+                                            extension: 'jpg,jpeg,png,gif',
+                                            type: 'image/jpeg,image/png,image/gif',
+                                            maxSize: 5242880,
+                                            message: 'Only JPG/PNG/GIF up to 5MB allowed'
                                         }
                                     }
-
-                                    // 🔹 ADD MODE or removed image
-                                    if (!fileInput.files || fileInput.files.length === 0) {
-                                        return false;
-                                    }
-
-                                    return true;
                                 }
                             },
-                            file: {
-                                extension: 'jpg,jpeg,png,gif',
-                                type: 'image/jpeg,image/png,image/gif',
-                                maxSize: 5242880,
-                                message: 'Only JPG/PNG/GIF up to 5MB allowed'
+                            plugins: {
+                                trigger: new FormValidation.plugins.Trigger(),
+                                bootstrap5: new FormValidation.plugins.Bootstrap5({
+                                    rowSelector: '.row'
+                                })
                             }
-                        }
-                    },
+                        });
 
-                    name: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Name is required'
-                            }
-                        }
-                    },
+                        fileInput.addEventListener('change', function () {
+                            if (!this.files.length) return;
+                            imageRemoved = false;
+                            imageRemovedInput.value = '0';
+                            validator.revalidateField('filename');
+                        });
 
-                    line1: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Line 1 is required'
-                            }
-                        }
-                    }
-                },
+                        document.querySelectorAll(
+                            '[data-kt-image-input-action="cancel"], [data-kt-image-input-action="remove"]'
+                        ).forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                imageRemoved = true;
+                                imageRemovedInput.value = '1';
+                                fileInput.value = '';
+                                document.querySelectorAll('.image-input-wrapper').forEach(el => {
+                                    el.style.backgroundImage = `url('${blankImage}')`;
+                                });
+                                validator.revalidateField('filename');
+                            });
+                        });
 
-                plugins: {
-                    trigger: new FormValidation.plugins.Trigger(),
-                    bootstrap: new FormValidation.plugins.Bootstrap5({
-                        rowSelector: '.row'
-                    })
-                }
-            });
+                        submitBtn.addEventListener('click', e => {
+                            e.preventDefault();
+                            validator.validate().then(status => {
+                                if (status !== 'Valid') return;
+                                submitBtn.setAttribute('data-kt-indicator', 'on');
+                                submitBtn.disabled = true;
+                                form.submit();
+                            });
+                        });
+                    };
 
-            /* ===============================
-               SUBMIT
-            =============================== */
-            submitBtn.addEventListener('click', function (e) {
-                e.preventDefault();
+                    return { init };
 
-                validator.validate().then(function (status) {
-                    if (status === 'Valid') {
-                        submitBtn.setAttribute('data-kt-indicator', 'on');
-                        submitBtn.disabled = true;
-                        form.submit();
-                    }
+                })();
+
+                KTUtil.onDOMContentLoaded(() => {
+                    KTSpeakerEdit.init();
                 });
-            });
+            </script>
 
-        });
-    </script>
 
 @endpush
