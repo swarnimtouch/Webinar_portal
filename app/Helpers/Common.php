@@ -79,7 +79,7 @@ function getModules($user_type = 'admin'): array
                 'name' => 'Users',
                 'icon' => 'bi bi-people fs-3',
                 'child' => [],
-                'all_routes' => ['admin.user.index', 'admin.user.create', 'admin.user.edit']
+                'all_routes' => ['admin.user.index','admin.user.create']
             ],
             [
                 'route' => '#',
@@ -96,32 +96,32 @@ function getModules($user_type = 'admin'): array
                         'route' => route('admin.banners'),
                         'name' => 'Banners',
                         'icon' => 'bi bi-image',
-                        'all_routes' => ['admin.banners', 'admin.banner.create', 'admin.banner.edit']
+                        'all_routes' => ['admin.banners', 'admin.banner.add_edit_form']
                     ],
                     [
                         'route' => route('admin.speakers'),
                         'name' => 'Speakers',
                         'icon' => 'bi bi-mic',
-                        'all_routes' => ['admin.speakers', 'admin.speaker.create', 'admin.speaker.edit']
+                        'all_routes' => ['admin.speakers', 'admin.speaker.add_edit_form']
                     ],
                     [
                         'route' => route('admin.brand'),
                         'name' => 'Brands',
                         'icon' => 'bi bi-tags',
-                        'all_routes' => ['admin.brand', 'admin.brand.create', 'admin.brand.edit']
+                        'all_routes' => ['admin.brand', 'admin.brand.add_edit_form']
                     ],
                     [
                         'route' => route('admin.content'),
                         'name' => 'Content',
                         'icon' => 'bi bi-file-text',
-                        'all_routes' => ['admin.content', 'admin.content.edit']
+                        'all_routes' => ['admin.content','admin.content.add_edit_form']
                     ],
                 ],
                 'all_routes' => [
-                    'admin.settings', 'admin.banners', 'admin.banner.create', 'admin.banner.edit',
-                    'admin.speakers', 'admin.speaker.create', 'admin.speaker.edit',
-                    'admin.brand', 'admin.brand.create', 'admin.brand.edit',
-                    'admin.content', 'admin.content.edit'
+                    'admin.settings', 'admin.banners','admin.banner.add_edit_form',
+                    'admin.speakers','admin.speaker.add_edit_form',
+                    'admin.brand', 'admin.brand.add_edit_form',
+                    'admin.content','admin.content.add_edit_form'
                 ]
             ],
             [
@@ -156,10 +156,15 @@ function get_route($route)
     return $route;
 }
 
-function is_active_module($names = [], $nlevel = false): string
+function is_active_module(array $names, $nlevel = false): string
 {
-    $current_route = url()->current();
-    return in_array($current_route, $names) && $nlevel == true ? " here show" : (in_array($current_route, $names) ? 'active' : '');
+    $current = Route::currentRouteName();
+
+    $isActive = in_array($current, $names);
+
+    return $isActive
+        ? ($nlevel ? "here show" : "active")
+        : '';
 }
 
 function echo_extra_for_site_setting($extra = ""): string

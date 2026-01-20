@@ -22,23 +22,7 @@ class ContentController extends Controller
     }
 
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
+     /**
      * Display the specified resource.
      */
     public function show($slug)
@@ -82,18 +66,10 @@ class ContentController extends Controller
         $content->update($validated);
 
         return redirect()
-            ->route('content')   // 🔴 make sure route exists
+            ->route('admin.content')
             ->with('success', 'Content updated successfully!');
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Content $content)
-    {
-        //
-    }
     public function datatable(Request $request)
     {
         $query = Content::query();

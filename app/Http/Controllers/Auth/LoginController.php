@@ -1,16 +1,18 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Admin\Controller;
+use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class LoginController extends Controller
 {
-    public function show()
+    public function index()
     {
-        return view('auth.login',['title' => __('Login')]);
+        return view('auth.login', ['title' => __('Login')]);
     }
 
     public function authenticate(Request $request)

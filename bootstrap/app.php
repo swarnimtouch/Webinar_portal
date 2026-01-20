@@ -30,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('admin.login');
             }
 
-            return route('login');
+            return route('home');
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
