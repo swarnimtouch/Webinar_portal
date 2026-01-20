@@ -159,25 +159,36 @@ $(document).ready(function() {
 
     // --- 3. BACKGROUND UPDATER (Blur Effect) ---
     function updateBackground(index) {
-        if ($heroBanner.length === 0) return;
+    const data = sliderData[index];
+    
+    // Background Elements select karein
+    const $bgImage = $("#bgImage");
+    const $bgVideo = $("#bgVideo");
 
-        const data = sliderData[index];
-        let bgUrl = "";
+    // Reset Active Classes (Dono ko chupao pehle)
+    $(".bg-media").removeClass("active");
 
-        if (data.type === 'image') {
-            bgUrl = data.src;
-        } else if (data.type === 'video') {
-            // Video ke liye poster use karein agar available ho
-            bgUrl = data.poster || "";
-        }
+    if (data.type === 'image') {
+        // --- Agar IMAGE hai ---
+        $bgVideo.trigger('pause'); // Video pause karo (CPU save karne ke liye)
+        
+        $bgImage.attr("src", data.src); // Image set karo
+        $bgImage.addClass("active");    // Image dikhao
 
-        // CSS Variable update
-        if(bgUrl) {
-             $heroBanner.css("--banner-bg", `url('${bgUrl}')`);
-        } else {
-             $heroBanner.css("--banner-bg", `none`);
+    } else if (data.type === 'video') {
+        // --- Agar VIDEO hai ---
+        $bgVideo.attr("src", data.src); // Video source set karo
+        $bgVideo.addClass("active");    // Video dikhao
+        
+        // Background video play karo
+        const videoEl = $bgVideo.get(0);
+        videoEl.load();
+        const playPromise = videoEl.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => console.log("Bg Video Auto-play blocked:", error));
         }
     }
+}
 
     // --- 4. NEXT SLIDE ---
     function nextSlide() {

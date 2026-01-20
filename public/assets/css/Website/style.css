@@ -162,25 +162,35 @@ main {
   margin-bottom: 0;
 
 
-  transition: --banner-bg 0.5s ease-in-out;
 }
 
-.hero-banner::before {
-  content: "";
+/* Container jo background ko hold karega */
+.banner-backdrop {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1; /* Slider se piche */
+  overflow: hidden;
+}
 
-  background-image: var(--banner-bg);
+/* Image aur Video dono ke liye common style */
+.bg-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Puri screen bharega */
+  filter: blur(20px) brightness(0.6); /* BLUR EFFECT YAHAN HAI */
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: opacity 0.5s ease-in-out; /* Smooth switch ke liye */
+  opacity: 0; /* Default chupa hua */
+}
 
-  background-size: cover;
-  background-position: center;
-  filter: blur(20px) brightness(0.5);
-  z-index: 1;
-
-  transition: background-image 0.5s ease-in-out;
+/* Active class jisse element dikhega */
+.bg-media.active {
+  opacity: 1;
 }
 
 .slider-wrapper {
@@ -188,7 +198,9 @@ main {
   z-index: 2;
   width: 85%;
   border-radius: 12px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  box-shadow: none;        /* CHANGE: Shadow hata di taaki border na dikhe */
+  background: transparent; /* ADDED: Background bilkul saaf */
+  border: none;            /* ADDED: Koi border nahi */
   margin: 40px 0;
   overflow: hidden;
 }
@@ -197,19 +209,35 @@ main {
   display: flex;
   transition: transform 0.5s ease-in-out;
   width: 100%;
+  height: 100%; /* ADDED: Ye zaroori hai taaki andar ki slides height le sakein */
 }
 
 .slide {
   min-width: 100%;
+  height: 100%;            /* ADDED: Pura height lega */
+  display: flex;           /* ADDED: Flexbox layout */
+  align-items: center;     /* ADDED: Vertical Center (Upar-Niche se beech me) */
+  justify-content: center; /* ADDED: Horizontal Center (Left-Right se beech me) */
 }
 
 /* Image aur Video dono ke liye same styling */
 .slide img,
 .slide video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Aspect ratio maintain karega */
+  width: auto !important;       /* CHANGE: Image ko apne size mein rehne do */
+  height: auto !important;      /* CHANGE: Height bhi content ke hisaab se */
+  max-width: 100% !important;   /* ADDED: Screen se bahar na jaye */
+  max-height: 500px !important; /* Limit height */
+  
+  object-fit: contain;
+  background-color: transparent;
   display: block;
+  margin: 0 auto;               /* Center mein rahega */
+  
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  
+  border-radius: 16px !important; /* NEW: Yahan se corners gol honge */
 }
 
 /* Video ke controls hide karne ke liye (extra safety) */
