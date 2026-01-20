@@ -42,10 +42,16 @@
 
             <div class="intro-card">
                 <div class="hero-banner">
-                    <div class="slider-wrapper">
-                        <div class="slider-track" id="sliderTrack"></div>
-                    </div>
-                </div>
+    
+    <div class="banner-backdrop">
+        <img id="bgImage" class="bg-media" src="" alt="">
+        <video id="bgVideo" class="bg-media" muted loop playsinline></video>
+    </div>
+
+    <div class="slider-wrapper">
+        <div class="slider-track" id="sliderTrack"></div>
+    </div>
+</div>
 
                 <div class="info-bar">
                     <div class="info-item">

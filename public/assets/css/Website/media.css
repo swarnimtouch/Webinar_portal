@@ -530,13 +530,14 @@
     filter: blur(10px) brightness(0.6);
   }
 
-  .slider-wrapper {
-    width: 100%; /* Mobile me Full Width */
-    aspect-ratio: 4 / 3; /* Mobile ke liye square-ish ratio */
-  }
-  .slider-wrapper img {
+ .slider-wrapper {
     width: 100%;
+    /* Height kam ki hai taaki frame "Landscape" (Rectangle) dikhe */
+    height: 180px; 
+    margin: 20px 0;
+    background-color: transparent; /* Optional: Agar blank space black chahiye to #000 likhein */
   }
+
 
   .intro-card {
     padding: 10px;
@@ -747,10 +748,44 @@
 ================================ */
 .slider-wrapper .slide img,
 .slider-wrapper .slide video {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
   object-fit: contain !important;
+  width: auto !important;        /* CHANGE: Image ko content ke hisaab se shrink kiya */
+  height: auto !important;       
+  max-width: 100% !important;    /* ADDED: Taaki mobile me screen se bahar na nikle */
   display: block;
+  margin: 0 auto;
+  border-radius: 16px !important; /* ADDED: Radius yahan bhi confirm kar di */
+}
+
+@media (min-width: 1025px) {
+  .slider-wrapper .slide img,
+  .slider-wrapper .slide video {
+    max-height: 480px !important; /* Banner height se thoda kam */
+  }
+}
+
+
+/* 3. Mobile/Tablet: Image ko Box me Fit karna + Border Radius dikhana */
+@media (max-width: 1024px) {
+  .slider-wrapper .slide img,
+  .slider-wrapper .slide video {
+    /* Auto karne se image ka box utna hi rahega jitni image hai, 
+       taki border radius image ke upar hi lage, hawa me nahi */
+    width: auto !important;
+    height: auto !important;
+
+    /* Ye ensure karega ki image slider se bahar na nikle */
+    max-width: 100% !important;
+    max-height: 100% !important;
+    
+    /* Image ko aspect ratio ke hisaab se fit rakhna */
+    object-fit: contain !important; 
+    
+    /* Ab Radius har haal me dikhegi */
+    border-radius: 16px !important;
+    
+    /* Extra safety taki layout na bigde */
+    display: block !important;
+    margin: 0 auto !important;
+  }
 }
