@@ -1,385 +1,494 @@
 @extends('layouts.admin')
 @section('content')
-    <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
-        <!--begin::Toolbar-->
-
-
-        <!--begin::Post-->
         <div class="post d-flex flex-column-fluid" id="kt_post">
-            <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
+
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
-                <!--begin::Card-->
+
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="card">
-                    <!--begin::Card header-->
-                    <div class="card-header border-0 pt-6">
-                        <!--begin::Card title-->
-                        <div class="card-title">
-                            <!--begin::Search-->
-                            <div class="d-flex align-items-center position-relative my-1">
-                                <!--begin::Svg Icon | path: icons/duotune/general/gen021.svg-->
-                                <span class="svg-icon svg-icon-1 position-absolute ms-6">
-													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                         viewBox="0 0 24 24" fill="none">
-														<rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546"
-                                                              height="2" rx="1" transform="rotate(45 17.0365 15.1223)"
-                                                              fill="black"/>
-														<path
-                                                            d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
-                                                            fill="black"/>
-													</svg>
-												</span>
-                                <!--end::Svg Icon-->
-                                <input type="text" data-kt-user-table-filter="search"
-                                       class="form-control form-control-solid w-250px ps-14"
-                                       placeholder="Search home setting"/>
-                            </div>
-                            <!--end::Search-->
-                        </div>
-                        <!--begin::Card title-->
-                        <!--begin::Card toolbar-->
-                        <div class="card-toolbar">
-                            <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
-                                <!--begin::Filter-->
-                                <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                                        data-kt-menu-placement="bottom-end">
-                                    <!--begin::Svg Icon | path: icons/duotune/general/gen031.svg-->
-                                    <span class="svg-icon svg-icon-2">
-													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                         viewBox="0 0 24 24" fill="none">
-														<path
-                                                            d="M19.0759 3H4.72777C3.95892 3 3.47768 3.83148 3.86067 4.49814L8.56967 12.6949C9.17923 13.7559 9.5 14.9582 9.5 16.1819V19.5072C9.5 20.2189 10.2223 20.7028 10.8805 20.432L13.8805 19.1977C14.2553 19.0435 14.5 18.6783 14.5 18.273V13.8372C14.5 12.8089 14.8171 11.8056 15.408 10.964L19.8943 4.57465C20.3596 3.912 19.8856 3 19.0759 3Z"
-                                                            fill="black"/>
-													</svg>
-												</span>
-                                    <!--end::Svg Icon-->Filter
-                                </button>
-                                <!--begin::Menu 1-->
-                                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                                    <!--begin::Header-->
-                                    <div class="px-7 py-5">
-                                        <div class="fs-5 text-dark fw-bolder">Filter Options</div>
-                                    </div>
-                                    <!--end::Header-->
-                                    <!--begin::Separator-->
-                                    <div class="separator border-gray-200"></div>
-                                    <!--end::Separator-->
-                                    <!--begin::Content-->
-                                    <div class="px-7 py-5" data-kt-user-table-filter="form">
-                                        <!--begin::Input group-->
-                                        <div class="mb-10">
-                                            <label class="form-label fs-6 fw-bold">Player Type:</label>
-                                            <select class="form-select form-select-solid fw-bolder"
-                                                    data-kt-select2="true"
-                                                    data-placeholder="Select option" data-allow-clear="true"
-                                                    data-kt-user-table-filter="player_type" data-hide-search="true">
-                                                <option></option>
-                                                <option value="youtube">YouTube</option>
-                                                <option value="vimeo">Vimeo</option>
-                                                <option value="other">Other</option>
-                                            </select>
-                                        </div>
-                                        <!--end::Input group-->
-                                        <!--begin::Actions-->
-                                        <div class="d-flex justify-content-end">
-                                            <button type="reset"
-                                                    class="btn btn-light btn-active-light-primary fw-bold me-2 px-6"
-                                                    data-kt-menu-dismiss="true" data-kt-user-table-filter="reset">Reset
-                                            </button>
-                                            <button type="submit" class="btn btn-primary fw-bold px-6"
-                                                    data-kt-menu-dismiss="true" data-kt-user-table-filter="filter">Apply
-                                            </button>
-                                        </div>
-                                        <!--end::Actions-->
-                                    </div>
-                                    <!--end::Content-->
-                                </div>
-                                <!--end::Menu 1-->
-                                <!--end::Filter-->
-                                <!--begin::Add user-->
-                                <a href="{{ route('admin.home_setting.create') }}" class="btn btn-primary">
-                                <span class="svg-icon svg-icon-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                         viewBox="0 0 24 24" fill="none">
-                                        <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2"
-                                              rx="1" transform="rotate(-90 11.364 20.364)"
-                                              fill="black"/>
-                                        <rect x="4.36396" y="11.364" width="16" height="2" rx="1"
-                                              fill="black"/>
-                                    </svg>
-                                </span>
-                                    Add Home Setting
-                                </a>
-
-                                <!--end::Add user-->
-                            </div>
-                            <!--end::Toolbar-->
-                            <!--begin::Group actions-->
-                            <div class="d-flex justify-content-end align-items-center d-none"
-                                 data-kt-user-table-toolbar="selected">
-                                <div class="fw-bolder me-5">
-                                    <span class="me-2" data-kt-user-table-select="selected_count"></span>Selected
-                                </div>
-                                <button type="button" class="btn btn-danger"
-                                        data-kt-user-table-select="delete_selected">
-                                    Delete Selected
-                                </button>
-                            </div>
-                            <!--end::Group actions-->
-                        </div>
-                        <!--end::Card toolbar-->
+                    <div class="card-header">
+                        <div class="card-title fs-3 fw-bolder">{{$title}}</div>
                     </div>
-                    <!--end::Card header-->
-                    <!--begin::Card body-->
-                    <div class="card-body pt-0">
-                        <!--begin::Table-->
-                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
-                            <thead>
-                            <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
-                                <th class=""></th>
-                                <th class="w-10px pe-2">
-                                    <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                        <input class="form-check-input"
-                                               type="checkbox"
-                                               data-kt-check="true"
-                                               data-kt-check-target="#kt_table_users .row-checkbox"
-                                               value="1" />
+                    <div class="card-body border-top p-9">
+                        <form method="POST" action="{{ route('admin.home_setting.save') }}" id="kt_home_setting_form">
+                            @csrf
 
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Title</label>
+                                <div class="col-lg-8">
+                                    <input type="text" name="title" id="title"
+                                           class="form-control form-control-lg form-control-solid"
+                                           value="{{ old('title', $homeSetting->title ?? '') }}"
+                                           placeholder="Enter title "/>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Player Type</label>
+                                <div class="col-lg-8">
+                                    <select name="player_type" id="player_type"
+                                            class="form-select form-select-solid form-select-lg"
+                                            data-control="select2" data-placeholder="Select player type"
+                                            data-hide-search="true">
+                                        <option value="">Select player type</option>
+                                        <option value="youtube" {{ old('player_type', $homeSetting->player_type ?? '') === 'youtube' ? 'selected' : '' }}>YouTube</option>
+                                        <option value="vimeo" {{ old('player_type', $homeSetting->player_type ?? '') === 'vimeo' ? 'selected' : '' }}>Vimeo</option>
+                                        <option value="other" {{ old('player_type', $homeSetting->player_type ?? '') === 'other' ? 'selected' : '' }}>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Player ID</label>
+                                <div class="col-lg-8">
+                                    <input type="text" name="player_id" id="player_id"
+                                           class="form-control form-control-lg form-control-solid"
+                                           value="{{ old('player_id', $homeSetting->player_id ?? '') }}"
+                                           placeholder="Enter YouTube video ID"/>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">
+                                    Video Iframe Code
+                                </label>
+                                <div class="col-lg-8">
+                                    <textarea name="url" id="url"
+                                              class="form-control form-control-lg form-control-solid"
+                                              rows="5"
+                                              placeholder="Auto-generated iframe code (You can also edit manually)">{{ old('url', $homeSetting->url ?? '') }}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- Video Preview Section -->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Video Preview</label>
+                                <div class="col-lg-8">
+                                    <div id="video-preview" class="border rounded p-5 bg-light-primary" style="min-height: 200px;">
+                                        <div class="text-center text-muted" id="preview-placeholder">
+                                            <i class="bi bi-play-circle fs-3x mb-3"></i>
+                                            <p class="mb-0">Video preview will appear here</p>
+                                        </div>
+                                        <div id="preview-content" style="display: none;"></div>
                                     </div>
-                                </th>
-                                <th class="min-w-200px">Title</th>
-                                <th class="min-w-200px">Url</th>
-                                <th class="min-w-200px">Player id</th>
-                                <th class="min-w-125px">Player Type</th>
-                                <th class="min-w-150px">Publish Date</th>
-                                <th class="min-w-150px">Event Start</th>
-                                <th class="min-w-150px">Event End</th>
-                                <th class="min-w-125px">User Attendance</th>
-                                <th class="text-end min-w-100px">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody class="fw-semibold text-gray-600">
-                            <!-- Data will be loaded via AJAX -->
-                            </tbody>
-                        </table>
+                                </div>
+                            </div>
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Publish Date</label>
+                                <div class="col-lg-8">
+                                    <input type="text"
+                                           name="publish_date"
+                                           id="publish_date"
+                                           class="form-control form-control-lg form-control-solid"
+                                           placeholder="Select publish date"
+                                           value="{{ old('publish_date', isset($homeSetting->publish_date) ? $homeSetting->publish_date->format('d M Y') : '') }}"/>
+                                </div>
+                            </div>
 
-                        <!--end::Table-->
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Event Start Time</label>
+                                <div class="col-lg-8">
+                                    <input type="text"
+                                           name="event_start_time"
+                                           id="event_start_time"
+                                           class="form-control form-control-lg form-control-solid"
+                                           placeholder="Select start date & time"
+                                           value="{{ old('event_start_time', isset($homeSetting->event_start_time) ? $homeSetting->event_start_time->format('d M Y H:i') : '') }}"/>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Event End Time</label>
+                                <div class="col-lg-8">
+                                    <input type="text"
+                                           name="event_end_time"
+                                           id="event_end_time"
+                                           class="form-control form-control-lg form-control-solid"
+                                           placeholder="Select end date & time"
+                                           value="{{ old('event_end_time', isset($homeSetting->event_end_time) ? $homeSetting->event_end_time->format('d M Y H:i') : '') }}"/>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Active From Date</label>
+                                <div class="col-lg-8">
+                                    <input type="text"
+                                           name="active_from_date"
+                                           id="active_from_date"
+                                           class="form-control form-control-lg form-control-solid"
+                                           placeholder="Active from"
+                                           value="{{ old('active_from_date', isset($homeSetting->active_from_date) ? $homeSetting->active_from_date->format('d M Y H:i') : '') }}"/>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Active To Date</label>
+                                <div class="col-lg-8">
+                                    <input type="text"
+                                           name="active_to_date"
+                                           id="active_to_date"
+                                           class="form-control form-control-lg form-control-solid"
+                                           placeholder="Active to"
+                                           value="{{ old('active_to_date', isset($homeSetting->active_to_date) ? $homeSetting->active_to_date->format('d M Y H:i') : '') }}"/>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">User Attendance</label>
+                                <div class="col-lg-8">
+                                    <div class="form-check form-switch form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox" name="user_attendance" id="user_attendance"
+                                               value="1" {{ old('user_attendance', $homeSetting->user_attendance ?? false) ? 'checked' : '' }}/>
+                                        <label class="form-check-label" for="user_attendance">
+                                            Enable user attendance tracking
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </form>
                     </div>
-                    <!--end::Card body-->
+                    <div class="card-footer d-flex justify-content-end py-6 px-9">
+                        <button type="submit" class="btn btn-primary" id="kt_home_setting_submit">
+                            <span class="indicator-label">Save Changes</span>
+                            <span class="indicator-progress">Please wait...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
-                <!--end::Card-->
             </div>
-            <!--end::Container-->
         </div>
+    </div>
+@endsection
 
-        <!--end::Post-->
-        @endsection
+@push('scripts')
+    <script>
+        "use strict";
 
-        @push('scripts')
-            <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
-            <script>
-                "use strict";
-                const qs = (s, p = document) => p.querySelector(s);
-                const qsa = (s, p = document) => [...p.querySelectorAll(s)];
-                const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        KTUtil.onDOMContentLoaded(function () {
 
-                let homeSettingTable;
+            flatpickr("#publish_date", {
+                dateFormat: "d M Y",
+                allowInput: true
+            });
 
-                function initHomeSettingTable() {
+            flatpickr("#event_start_time", {
+                enableTime: true,
+                dateFormat: "d M Y H:i",
+                time_24hr: true
+            });
 
-                    homeSettingTable = $('#kt_table_users').DataTable({
-                        processing: true,
-                        serverSide: true,
-                        searchDelay: 500,
-                        ajax: {
-                            url: '{{ route("admin.home_setting.datatable") }}',
-                            data: d => {
-                                d.search = qs('[data-kt-user-table-filter="search"]').value;
-                                d.player_type = qs('[data-kt-user-table-filter="player_type"]').value;
-                            }
-                        },
-                        order: [[2, 'asc']],
-                        pageLength: 10,
-                        columns: [
-                            {data: null, orderable: false, defaultContent: ''},
+            flatpickr("#event_end_time", {
+                enableTime: true,
+                dateFormat: "d M Y H:i",
+                time_24hr: true
+            });
 
-                            {
-                                data: 'id',
-                                orderable: false,
-                                searchable: false,
-                                render: id => `<div class="form-check form-check-sm form-check-custom form-check-solid"> <input class="form-check-input row-checkbox" type="checkbox" value="${id}" /> </div>`
-                            },
-                            {data: 'title'},
-                            {data: 'url'},
-                            {data: 'player_id'},
-                            {data: 'player_type'},
-                            {data: 'publish_date'},
-                            {data: 'event_start_time'},
-                            {data: 'event_end_time'},
-                            {data: 'user_attendance'},
+            flatpickr("#active_from_date", {
+                enableTime: true,
+                dateFormat: "d M Y H:i",
+                time_24hr: true
+            });
 
-                            {
-                                data: 'id',
-                                orderable: false,
-                                searchable: false,
-                                render: id => `<div class="text-end">
-                                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
-                                                        <span class="svg-icon svg-icon-5 m-0">
-                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/> </svg>
-                                                            </span>
-                                                    </a>
-                                                    <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
-                                                        <div class="menu-item px-3">
-                                                            <a href="#" class="menu-link px-3 home-setting-delete" data-id="${id}"> Delete </a>
-                                                        </div>
-                                                        <div class="menu-item px-3">
-                                                            <a href="{{ route('admin.home_setting.create') }}/${id}" class="menu-link px-3 "> Edit </a>
-                                                        </div>
-                                                    </div>
-                                            </div>`
-                            }
-                        ]
-                    });
+            flatpickr("#active_to_date", {
+                enableTime: true,
+                dateFormat: "d M Y H:i",
+                time_24hr: true
+            });
+
+            $('#player_type').select2({
+                minimumResultsForSearch: Infinity
+            });
+
+            const extractYouTubeData = (input) => {
+                if (!input) return null;
+                input = input.trim();
+                if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
+                    return { videoId: input, si: null };
                 }
-
-                document.addEventListener('click', e => {
-
-                    const del = e.target.closest('.home-setting-delete');
-                    if (del) {
-                        e.preventDefault();
-                        confirmDelete(del.dataset.id, del.closest('tr'));
+                let videoId = null;
+                let si = null;
+                try {
+                    const url = new URL(input.includes('http') ? input : 'https://' + input);
+                    const vParam = url.searchParams.get('v');
+                    if (vParam && /^[a-zA-Z0-9_-]{11}$/.test(vParam)) {
+                        videoId = vParam;
                     }
-                });
-
-                function confirmDelete(id, row) {
-
-                    Swal.fire({
-                        text: "Delete this home setting?",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Delete"
-                    }).then(result => {
-
-                        if (!result.isConfirmed) return;
-
-                        $.ajax({
-                            url: '{{ route("admin.home_setting.delete", ":id") }}'.replace(':id', id),
-                            method: 'DELETE',
-                            data: {
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function () {
-                                homeSettingTable.draw();
-                                toastr.success('Home setting has been deleted!');
-                            }
-                        });
-                    });
-                }
-
-                qs('[data-kt-user-table-filter="search"]')
-                    .addEventListener('keyup', () => homeSettingTable.draw());
-
-                qs('[data-kt-user-table-filter="filter"]')
-                    .addEventListener('click', () => homeSettingTable.draw());
-
-                qs('[data-kt-user-table-filter="reset"]')
-                    .addEventListener('click', () => {
-                        qs('[data-kt-user-table-filter="player_type"]').value = '';
-                        homeSettingTable.draw();
-                    });
-                document.addEventListener('change', e => {
-                    if (!e.target.matches('[data-kt-check="true"]')) return;
-
-                    const checked = e.target.checked;
-                    qsa('.row-checkbox').forEach(cb => cb.checked = checked);
-                });
-
-                document
-                    .querySelector('[data-kt-user-table-select="delete_selected"]')
-                    ?.addEventListener('click', () => {
-
-                        const ids = qsa('.row-checkbox:checked')
-                            .map(cb => cb.value);
-
-                        if (!ids.length) {
-                            Swal.fire({
-                                text: "Please select at least one home setting.",
-                                icon: "info",
-                                confirmButtonText: "OK"
-                            });
-                            return;
+                    si = url.searchParams.get('si');
+                } catch (e) {}
+                if (!videoId) {
+                    const patterns = [
+                        /(?:youtube\.com\/watch\?.*v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+                        /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+                        /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+                    ];
+                    for (let pattern of patterns) {
+                        const match = input.match(pattern);
+                        if (match && match[1]) {
+                            videoId = match[1];
+                            break;
                         }
-
-                        Swal.fire({
-                            text: `Delete ${ids.length} selected home setting(s)?`,
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonText: "Yes, delete",
-                            cancelButtonText: "Cancel"
-                        }).then(result => {
-
-                            if (!result.isConfirmed) return;
-
-                            fetch('{{ route("admin.home_setting.deleteMultiple") }}', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': csrf
-                                },
-                                body: JSON.stringify({ids})
-                            })
-                                .then(res => {
-                                    if (!res.ok) throw new Error();
-                                    Swal.fire({
-                                        text: "Selected home settings deleted successfully.",
-                                        icon: "success",
-                                        confirmButtonText: "OK"
-                                    });
-                                    homeSettingTable.draw(false);
-                                })
-                                .catch(() => {
-                                    Swal.fire({
-                                        text: "Failed to delete home settings.",
-                                        icon: "error",
-                                        confirmButtonText: "OK"
-                                    });
-                                });
-                        });
-                    });
-                document.addEventListener('change', e => {
-
-                    if (!e.target.classList.contains('row-checkbox') &&
-                        !e.target.matches('[data-kt-check="true"]')) return;
-
-
-                    const selectedCount = document.querySelectorAll('.row-checkbox:checked').length;
-
-                    const toolbarBase = document.querySelector('[data-kt-user-table-toolbar="base"]');
-                    const toolbarSelected = document.querySelector('[data-kt-user-table-toolbar="selected"]');
-                    const selectedCountEl = document.querySelector('[data-kt-user-table-select="selected_count"]');
-
-                    if (selectedCount > 0) {
-                        toolbarBase.classList.add('d-none');
-                        toolbarSelected.classList.remove('d-none');
-                        selectedCountEl.textContent = selectedCount;
-                    } else {
-                        toolbarBase.classList.remove('d-none');
-                        toolbarSelected.classList.add('d-none');
-                        selectedCountEl.textContent = '';
                     }
+                    const siMatch = input.match(/[?&]si=([a-zA-Z0-9_-]+)/);
+                    if (siMatch && siMatch[1]) {
+                        si = siMatch[1];
+                    }
+                }
+                return videoId ? { videoId, si } : null;
+            };
 
-                });
-                KTUtil.onDOMContentLoaded(() => {
-                    initHomeSettingTable();
-                });
-            </script>
+            const extractVimeoID = (input) => {
+                if (!input) return null;
+                input = input.trim();
+                if (/^\d+$/.test(input)) {
+                    return input;
+                }
+                const patterns = [
+                    /vimeo\.com\/(\d+)/,
+                    /player\.vimeo\.com\/video\/(\d+)/
+                ];
+                for (let pattern of patterns) {
+                    const match = input.match(pattern);
+                    if (match && match[1]) {
+                        return match[1];
+                    }
+                }
+                return null;
+            };
 
-    @endpush
+            let isManualEdit = false;
+
+            const updateVideoPreview = (iframeCode) => {
+                const previewContent = $('#preview-content');
+                const previewPlaceholder = $('#preview-placeholder');
+
+                if (iframeCode && iframeCode.trim() !== '') {
+                    previewContent.html(iframeCode);
+                    previewContent.find('iframe').css({
+                        'width': '100%',
+                        'max-width': '100%',
+                        'height': 'auto',
+                        'aspect-ratio': '16/9'
+                    });
+                    previewPlaceholder.hide();
+                    previewContent.show();
+                } else {
+                    previewContent.hide();
+                    previewPlaceholder.show();
+                }
+            };
+
+            const generateEmbedContent = () => {
+                if (isManualEdit) return;
+
+                const playerInput = $('#player_id').val()?.trim();
+                const playerType = $('#player_type').val();
+
+                if (!playerInput || !playerType) {
+                    if (!isManualEdit) {
+                        $('#url').val('');
+                        updateVideoPreview('');
+                    }
+                    return;
+                }
+
+                let iframeCode = '';
+                let videoId = '';
+
+                if (playerType === 'youtube') {
+                    const youtubeData = extractYouTubeData(playerInput);
+                    if (!youtubeData || !youtubeData.videoId) {
+                        if (!isManualEdit) {
+                            $('#url').val('');
+                            updateVideoPreview('');
+                        }
+                        return;
+                    }
+                    videoId = youtubeData.videoId;
+                    const siParam = youtubeData.si;
+                    const embedUrl = siParam
+                        ? `https://www.youtube.com/embed/${videoId}?si=${siParam}`
+                        : `https://www.youtube.com/embed/${videoId}`;
+                    iframeCode = `<iframe width="560" height="315" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+                }
+                else if (playerType === 'vimeo') {
+                    videoId = extractVimeoID(playerInput);
+                    if (!videoId) {
+                        if (!isManualEdit) {
+                            $('#url').val('');
+                            updateVideoPreview('');
+                        }
+                        return;
+                    }
+                    iframeCode = `<iframe src="https://player.vimeo.com/video/${videoId}?badge=0&autopause=0&player_id=0&app_id=58479" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write" title="Vimeo video player" allowfullscreen></iframe>`;
+                }
+                else if (playerType === 'other') {
+                    iframeCode = `<iframe width="560" height="315" src="${playerInput}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                }
+
+                $('#url').val(iframeCode);
+                updateVideoPreview(iframeCode);
+            };
+
+            $('#player_id').on('input', function() {
+                isManualEdit = false;
+                generateEmbedContent();
+            });
+
+            $('#player_type').on('change', function() {
+                isManualEdit = false;
+                generateEmbedContent();
+            });
+
+            $('#url').on('input', function() {
+                const currentVal = $(this).val();
+                if (currentVal && currentVal.length > 0) {
+                    isManualEdit = true;
+                    updateVideoPreview(currentVal);
+                }
+            });
+
+            $('#url').on('blur', function() {
+                if (!$(this).val()) {
+                    isManualEdit = false;
+                }
+            });
+
+            setTimeout(() => {
+                const urlVal = $('#url').val();
+                if (!urlVal || urlVal.trim() === '') {
+                    isManualEdit = false;
+                    generateEmbedContent();
+                } else {
+                    isManualEdit = true;
+                    updateVideoPreview(urlVal);
+                }
+            }, 500);
+
+            const form = document.getElementById('kt_home_setting_form');
+            const submitBtn = document.getElementById('kt_home_setting_submit');
+
+            if (!form) return;
+
+            const validator = FormValidation.formValidation(form, {
+                fields: {
+                    player_type: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Player type is required'
+                            }
+                        }
+                    },
+                    url: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Video iframe code is required'
+                            }
+                        }
+                    },
+                    player_id: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Player ID or URL is required'
+                            }
+                        }
+                    },
+                    publish_date: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Publish date is required'
+                            }
+                        }
+                    },
+                    event_start_time: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Event start time is required'
+                            }
+                        }
+                    },
+                    event_end_time: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Event end time is required'
+                            },
+                            callback: {
+                                message: 'Event end time must be after start time',
+                                callback: function (input) {
+                                    const start = $('#event_start_time').val();
+                                    if (!start || !input.value) return true;
+                                    return new Date(input.value) >= new Date(start);
+                                }
+                            }
+                        }
+                    },
+                    active_from_date: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Active from date is required'
+                            }
+                        }
+                    },
+                    active_to_date: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Active to date is required'
+                            },
+                            callback: {
+                                message: 'Active to date must be after from date',
+                                callback: function (input) {
+                                    const from = $('#active_from_date').val();
+                                    if (!from || !input.value) return true;
+                                    return new Date(input.value) >= new Date(from);
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    trigger: new FormValidation.plugins.Trigger(),
+                    bootstrap5: new FormValidation.plugins.Bootstrap5({
+                        rowSelector: '.row'
+                    })
+                }
+            });
+
+            $('#event_start_time').on('change', () => {
+                validator.revalidateField('event_end_time');
+            });
+
+            $('#active_from_date').on('change', () => {
+                validator.revalidateField('active_to_date');
+            });
+
+            submitBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                validator.validate().then(function (status) {
+                    if (status !== 'Valid') return;
+                    submitBtn.setAttribute('data-kt-indicator', 'on');
+                    submitBtn.disabled = true;
+                    form.submit();
+                });
+            });
+
+        });
+    </script>
+@endpush

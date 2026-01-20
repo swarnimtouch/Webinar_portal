@@ -139,14 +139,14 @@
                     <!--begin::Card body-->
                     <div class="card-body pt-0">
                         <!--begin::Table-->
-                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
+                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_Brands">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
                                 <th class="w-10px pe-2">
                                     <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
                                         <input class="form-check-input" type="checkbox"
                                                data-kt-check="true"
-                                               data-kt-check-target="#kt_table_users .row-checkbox"/>
+                                               data-kt-check-target="#kt_table_Brands .row-checkbox"/>
                                     </div>
                                 </th>
                                 <th class="min-w-125px">Preview</th>
@@ -213,7 +213,7 @@
                 let brandTable;
 
                 function initBrandTable() {
-                    brandTable = $('#kt_table_users').DataTable({
+                    brandTable = $('#kt_table_Brands').DataTable({
                         processing: true,
                         serverSide: true,
                         searchDelay: 500,

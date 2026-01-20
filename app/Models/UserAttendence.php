@@ -11,7 +11,10 @@ class UserAttendence extends Model
 
     protected $fillable = [
         'user_id',
-        'session_time'
+        'session_time',
+        'joined_at',
+        'last_ping_at',
+
     ];
 
     protected $casts = [
