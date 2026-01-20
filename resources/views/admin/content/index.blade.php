@@ -117,7 +117,7 @@
                         orderable: false,
                         searchable: false,
                         render: id => `
-                    <a href="{{ route('admin.content.edit', ':id') }}"
+                    <a href="{{ route('admin.content.add_edit_form', ':id') }}"
                                            class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"
                                            title="Edit">
                                             <span class="svg-icon svg-icon-3">

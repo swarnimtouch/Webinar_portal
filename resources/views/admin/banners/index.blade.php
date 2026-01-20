@@ -116,7 +116,7 @@
                                 <!--end::Menu 1-->
                                 <!--end::Filter-->
                                 <!--begin::Add user-->
-                                <a href="{{ route('admin.banner.create') }}" class="btn btn-primary">
+                                <a href="{{ route('admin.banner.add_edit_form') }}" class="btn btn-primary">
                                 <span class="svg-icon svg-icon-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                          viewBox="0 0 24 24" fill="none">
@@ -321,7 +321,7 @@
                                                             <a href="#" class="menu-link px-3 banner-delete" data-id="${id}"> Delete </a>
                                                         </div>
                                                         <div class="menu-item px-3">
-                                                            <a href="{{ route('admin.banner.create') }}/${id}" class="menu-link px-3 "> Edit </a>
+                                                            <a href="{{ route('admin.banner.add_edit_form') }}/${id}" class="menu-link px-3 "> Edit </a>
                                                         </div>
                                                     </div>
                                             </div>`

@@ -16,7 +16,7 @@
                     @endphp
                     @if(empty($have_child))
                         <div class="menu-item">
-                            <a class="menu-link {{ is_active_module([$value['route']]) }}" href="{{ $value['route'] ?? 'javascript:;' }}">
+                            <a class="menu-link {{ is_active_module($value['all_routes']) }}" href="{{ $value['route'] ?? 'javascript:;' }}">
 										<span class="menu-icon">
 											<i class="{!! $value['icon'] !!}"></i>
 										</span>
@@ -35,7 +35,7 @@
                             <div class="menu-sub menu-sub-accordion menu-active-bg">
                                 @foreach ($value['child'] as $val)
                                     <div class="menu-item">
-                                        <a class="menu-link {{ is_active_module([$val['route']]) }}" href="{{ $val['route'] }}">
+                                        <a class="menu-link {{ is_active_module($val['all_routes']) }}" href="{{ $val['route'] }}">
 												<span class="menu-bullet">
 													<span class="bullet bullet-dot"></span>
 												</span>

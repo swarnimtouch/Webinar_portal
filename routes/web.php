@@ -21,4 +21,9 @@ Route::middleware(['auth'])->prefix('website')->group(function () {
 Route::get('/get-countries', [HomeController::class, 'countries']);
 Route::get('/get-states/{country}', [HomeController::class, 'states']);
 Route::get('/get-cities/{state}', [HomeController::class, 'cities']);
+Route::get('/admin', function (){
+  return redirect(route('admin.dashboard'));
+});
 Route::get('/{slug}', [ContentController::class, 'show']);
+
+
