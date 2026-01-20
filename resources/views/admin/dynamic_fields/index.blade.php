@@ -60,7 +60,7 @@
                             <input type="hidden" name="order_data" id="order-data">
 
                             <!--begin::Table-->
-                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
+                            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_Dynamic_fields">
                                 <thead>
                                 <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
                                     <th class="min-w-80px">Move</th>
@@ -197,8 +197,8 @@
     <script>
         "use strict";
 
-        var KTUsersList = function () {
-            var table = document.getElementById('kt_table_users');
+        var KTDaynamicFieldList = function () {
+            var table = document.getElementById('kt_table_Dynamic_fields');
             var datatable;
 
             // Initialize datatable
@@ -244,7 +244,7 @@
             function updateIndexes() {
                 let order = [];
 
-                $("#kt_table_users tbody tr").each(function (index) {
+                $("#kt_table_Dynamic_fields tbody tr").each(function (index) {
                     $(this).find('.index-badge').text(index + 1);
 
                     const rowId = $(this).data('id');
@@ -259,7 +259,7 @@
                 $('#order-data').val(JSON.stringify(order));
             }
 
-            $("#kt_table_users tbody").sortable({
+            $("#kt_table_Dynamic_fields tbody").sortable({
                 handle: ".drag-handle",
                 placeholder: "ui-state-highlight",
                 helper: function(e, tr) {
@@ -333,30 +333,11 @@
         }
 
         KTUtil.onDOMContentLoaded(function () {
-            KTUsersList.init();
+            KTDaynamicFieldList.init();
             initSortable();
             initSaveButton();
         });
     </script>
 
-{{--    <style>--}}
-{{--        .ui-state-highlight {--}}
-{{--            height: 50px;--}}
-{{--            background-color: #f3f6f9;--}}
-{{--            border: 2px dashed #3699ff;--}}
-{{--        }--}}
 
-{{--        .drag-handle:hover {--}}
-{{--            color: #3699ff;--}}
-{{--        }--}}
-
-{{--        #kt_table_users tbody tr {--}}
-{{--            transition: background-color 0.2s;--}}
-{{--        }--}}
-
-{{--        #kt_table_users tbody tr.ui-sortable-helper {--}}
-{{--            background-color: #fff;--}}
-{{--            box-shadow: 0 0 20px rgba(0,0,0,0.1);--}}
-{{--        }--}}
-{{--    </style>--}}
 @endpush

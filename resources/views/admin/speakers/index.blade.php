@@ -139,7 +139,7 @@
     <script>
         "use strict";
 
-        var KTUsersList = function () {
+        var KTSpeakersList = function () {
             var table = document.getElementById('kt_table_speakers');
             var datatable;
             var toolbarBase;
@@ -345,7 +345,7 @@
         }();
 
         KTUtil.onDOMContentLoaded(function () {
-            KTUsersList.init();
+            KTSpeakersList.init();
         });
 
         function showBannerPreview(fileUrl) {

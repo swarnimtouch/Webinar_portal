@@ -48,7 +48,7 @@
                     <!--begin::Card body-->
                     <div class="card-body pt-0">
                         <!--begin::Table-->
-                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
+                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_Content">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
                                 <th class="min-w-80px">ID</th>
@@ -88,7 +88,7 @@
         let contentTable;
 
         function initContentTable() {
-            contentTable = $('#kt_table_users').DataTable({
+            contentTable = $('#kt_table_Content').DataTable({
                 processing: true,
                 serverSide: true,
                 searchDelay: 500,
@@ -104,7 +104,13 @@
                     { data: 'id' },
                     { data: 'title' },
                     { data: 'slug' },
-                    { data: 'content' },
+                    {
+                        data: 'content',
+                        render: function (data) {
+                            return data; // ✅ HTML render hoga
+                        }
+                    },
+
                     { data: 'created_at' },
                     {
                         data: 'id',

@@ -82,7 +82,7 @@ class ContentController extends Controller
         $content->update($validated);
 
         return redirect()
-            ->route('content')   // 🔴 make sure route exists
+            ->route('admin.content')   // 🔴 make sure route exists
             ->with('success', 'Content updated successfully!');
     }
 

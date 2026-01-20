@@ -80,6 +80,7 @@
                                 <div class="col-lg-8">
                                     <textarea name="content"
                                               rows="10"
+                                              id="editor"
                                               class="form-control form-control-lg form-control-solid @error('content') is-invalid @enderror"
                                               placeholder="Enter content">{{ old('content', $content->content) }}</textarea>
                                     @error('content')
@@ -108,7 +109,9 @@
 @endsection
 
 @push('scripts')
-    <script>
+            <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
+            <script>
         "use strict";
 
         KTUtil.onDOMContentLoaded(function () {
@@ -183,4 +186,19 @@
             });
         });
     </script>
+            <script>
+                let editorInstance;
+
+                // Initialize CKEditor
+                ClassicEditor
+                    .create(document.querySelector('#editor'))
+                    .then(editor => {
+                        editorInstance = editor;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+
+
+            </script>
 @endpush

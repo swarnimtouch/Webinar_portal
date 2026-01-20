@@ -103,13 +103,13 @@
                                 </div>
                             </div>
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Line 2</label>
+                                <label class="col-lg-4 col-form-label  fw-bold fs-6">Line 2</label>
                                 <div class="col-lg-8">
                                     <input type="text" name="line2" value="{{ old('line2', $speaker->line2 ?? '') }}" class="form-control form-control-lg form-control-solid" />
                                 </div>
                             </div>
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Line 3</label>
+                                <label class="col-lg-4 col-form-label  fw-bold fs-6">Line 3</label>
                                 <div class="col-lg-8">
                                     <input type="text" name="line3" value="{{ old('line3', $speaker->line3 ?? '') }}" class="form-control form-control-lg form-control-solid" />
                                 </div>

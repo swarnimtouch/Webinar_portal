@@ -76,12 +76,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     Route::get('home_setting',[HomeSettingController::class, 'index'])    ->name('home_setting');
-    Route::get('home_setting/create/{id?}', [HomeSettingController::class, 'addEditForm'])->name('home_setting.create');
-    Route::match(['POST', 'PUT'], 'home_setting/store/{id?}', [HomeSettingController::class, 'save'])->name('home_setting.save');
-    Route::delete('home_setting/delete/{id}', [HomeSettingController::class, 'delete'])->name('home_setting.delete');
-    Route::post('home_setting/delete-multiple', [HomeSettingController::class, 'deleteMultiple'])->name('home_setting.deleteMultiple');
-    Route::post('home_setting/toggle-status/{id}', [HomeSettingController::class, 'toggleStatus'])->name('home_setting.toggleStatus');
-    Route::get('home_setting/datatable', [HomeSettingController::class, 'datatable'])->name('home_setting.datatable');
+    Route::post('/home-setting/save', [HomeSettingController::class, 'save'])->name('home_setting.save');
 
     Route::get('user_attendance',[UserAttendenceController::class, 'index'])    ->name('user_attendance');
     Route::delete('user_attendance/delete/{id}', [UserAttendenceController::class, 'delete'])->name('user_attendance.delete');
