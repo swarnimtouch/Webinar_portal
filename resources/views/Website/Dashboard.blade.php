@@ -1,7 +1,6 @@
 @extends('layouts.website')
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/Website/home.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/css/Website/home_media.css') }}" />
+
 @endpush
 
 @section('body')
@@ -15,7 +14,6 @@
             <section class="video-section">
                 <div class="video-player">
                     {!! $home_setting->url !!}
-
                 </div>
 
                 <div class="webinar-details">
@@ -47,8 +45,7 @@
 
                         <div class="about-webinar">
                             <h3>About This Webinar</h3>
-                            <p>Join us for an in-depth exploration of how artificial intelligence is reshaping enterprise operations and strategic planning. Dr. Marcus Chen will share cutting-edge insights from his 15 years of research and practical implementation experience, covering real-world case studies, emerging trends, and actionable strategies that organizations can implement immediately.</p>
-                            <p>This session is designed for C-level executives, technology leaders, and innovation managers who want to stay ahead of the AI curve. We'll dive deep into machine learning applications, ethical considerations, and the roadmap for successful AI integration in your organization.</p>
+                            <p>{!!$home_setting->about_us!!}</p>
                         </div>
 
                         <div class="key-topics">
@@ -245,7 +242,7 @@
                 </div>
             </section>
 
-           @include('partials.Website.aside')
+            @include('partials.Website.aside')
         </main>
     </div>
 
@@ -253,5 +250,73 @@
         <i class="fa-solid fa-arrow-down"></i>
     </button>
 
+    @endsection
 
-@endsection
+    @push('scripts')
+        // Add this script in your dashboard blade file
+
+        <script>
+            // Attendance tracking - ping every 30 seconds
+            let attendanceInterval;
+
+            function startAttendanceTracking() {
+                // Initial ping
+                updateSessionTime();
+
+                attendanceInterval = setInterval(function() {
+                    updateSessionTime();
+                }, 30000); // 30 seconds
+            }
+
+            function updateSessionTime() {
+                fetch('{{ route("dashboard.attendance.update") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({})
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Session time updated:', data.session_time, 'seconds');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating session time:', error);
+                    });
+            }
+
+            // Start tracking when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                @if(isset($home_setting) && $home_setting->user_attendance)
+                startAttendanceTracking();
+                @endif
+            });
+
+            // Stop tracking when user leaves page
+            window.addEventListener('beforeunload', function() {
+                if (attendanceInterval) {
+                    clearInterval(attendanceInterval);
+                    // Final update before leaving
+                    navigator.sendBeacon('{{ route("dashboard.attendance.update") }}', JSON.stringify({}));
+                }
+            });
+
+            // Handle visibility change (user switches tabs)
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    // User left the tab
+                    if (attendanceInterval) {
+                        clearInterval(attendanceInterval);
+                    }
+                } else {
+                    // User returned to tab
+                    @if(isset($home_setting) && $home_setting->user_attendance)
+                    startAttendanceTracking();
+                    @endif
+                }
+            });
+        </script>
+    @endpush

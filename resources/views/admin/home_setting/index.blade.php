@@ -89,6 +89,7 @@
                                     </div>
                                 </div>
                             </div>
+
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Publish Date</label>
                                 <div class="col-lg-8">
@@ -100,55 +101,17 @@
                                            value="{{ old('publish_date', isset($homeSetting->publish_date) ? $homeSetting->publish_date->format('d M Y') : '') }}"/>
                                 </div>
                             </div>
-
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Event Start Time</label>
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">About Us</label>
                                 <div class="col-lg-8">
-                                    <input type="text"
-                                           name="event_start_time"
-                                           id="event_start_time"
-                                           class="form-control form-control-lg form-control-solid"
-                                           placeholder="Select start date & time"
-                                           value="{{ old('event_start_time', isset($homeSetting->event_start_time) ? $homeSetting->event_start_time->format('d M Y H:i') : '') }}"/>
+                                    <textarea name="about_us"
+                                              rows="10"
+                                              id="editor"
+                                              class="form-control form-control-lg form-control-solid @error('about_us') is-invalid @enderror"
+                                              placeholder="Enter about_us">{{ old('about_us', $homeSetting->about_us) }}</textarea>
+
                                 </div>
                             </div>
-
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Event End Time</label>
-                                <div class="col-lg-8">
-                                    <input type="text"
-                                           name="event_end_time"
-                                           id="event_end_time"
-                                           class="form-control form-control-lg form-control-solid"
-                                           placeholder="Select end date & time"
-                                           value="{{ old('event_end_time', isset($homeSetting->event_end_time) ? $homeSetting->event_end_time->format('d M Y H:i') : '') }}"/>
-                                </div>
-                            </div>
-
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Active From Date</label>
-                                <div class="col-lg-8">
-                                    <input type="text"
-                                           name="active_from_date"
-                                           id="active_from_date"
-                                           class="form-control form-control-lg form-control-solid"
-                                           placeholder="Active from"
-                                           value="{{ old('active_from_date', isset($homeSetting->active_from_date) ? $homeSetting->active_from_date->format('d M Y H:i') : '') }}"/>
-                                </div>
-                            </div>
-
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Active To Date</label>
-                                <div class="col-lg-8">
-                                    <input type="text"
-                                           name="active_to_date"
-                                           id="active_to_date"
-                                           class="form-control form-control-lg form-control-solid"
-                                           placeholder="Active to"
-                                           value="{{ old('active_to_date', isset($homeSetting->active_to_date) ? $homeSetting->active_to_date->format('d M Y H:i') : '') }}"/>
-                                </div>
-                            </div>
-
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">User Attendance</label>
                                 <div class="col-lg-8">
@@ -162,7 +125,56 @@
                                 </div>
                             </div>
 
+                            <!-- Conditional Attendance Date Fields -->
+                            <div id="attendance-date-fields" style="display: none;">
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label fw-bold fs-6">Event Start Time</label>
+                                    <div class="col-lg-8">
+                                        <input type="text"
+                                               name="event_start_time"
+                                               id="event_start_time"
+                                               class="form-control form-control-lg form-control-solid"
+                                               placeholder="Select start date & time"
+                                               value="{{ old('event_start_time', isset($homeSetting->event_start_time) ? $homeSetting->event_start_time->format('d M Y H:i') : '') }}"/>
+                                    </div>
+                                </div>
 
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label fw-bold fs-6">Event End Time</label>
+                                    <div class="col-lg-8">
+                                        <input type="text"
+                                               name="event_end_time"
+                                               id="event_end_time"
+                                               class="form-control form-control-lg form-control-solid"
+                                               placeholder="Select end date & time"
+                                               value="{{ old('event_end_time', isset($homeSetting->event_end_time) ? $homeSetting->event_end_time->format('d M Y H:i') : '') }}"/>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label fw-bold fs-6">Active From Date</label>
+                                    <div class="col-lg-8">
+                                        <input type="text"
+                                               name="active_from_date"
+                                               id="active_from_date"
+                                               class="form-control form-control-lg form-control-solid"
+                                               placeholder="Active from"
+                                               value="{{ old('active_from_date', isset($homeSetting->active_from_date) ? $homeSetting->active_from_date->format('d M Y H:i') : '') }}"/>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label fw-bold fs-6">Active To Date</label>
+                                    <div class="col-lg-8">
+                                        <input type="text"
+                                               name="active_to_date"
+                                               id="active_to_date"
+                                               class="form-control form-control-lg form-control-solid"
+                                               placeholder="Active to"
+                                               value="{{ old('active_to_date', isset($homeSetting->active_to_date) ? $homeSetting->active_to_date->format('d M Y H:i') : '') }}"/>
+                                    </div>
+                                </div>
+                            </div>
                         </form>
                     </div>
                     <div class="card-footer d-flex justify-content-end py-6 px-9">
@@ -180,7 +192,10 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
     <script>
+
         "use strict";
 
         KTUtil.onDOMContentLoaded(function () {
@@ -217,6 +232,25 @@
             $('#player_type').select2({
                 minimumResultsForSearch: Infinity
             });
+
+            // User Attendance Toggle Functionality
+            const toggleAttendanceFields = () => {
+                const isChecked = $('#user_attendance').is(':checked');
+                const attendanceFields = $('#attendance-date-fields');
+
+                if (isChecked) {
+                    attendanceFields.slideDown(300);
+                } else {
+                    attendanceFields.slideUp(300);
+                    // Values retain rehti hain, sirf fields hide hote hain
+                }
+            };
+
+            // Initialize on page load
+            toggleAttendanceFields();
+
+            // Listen to checkbox changes
+            $('#user_attendance').on('change', toggleAttendanceFields);
 
             const extractYouTubeData = (input) => {
                 if (!input) return null;
@@ -404,6 +438,7 @@
                             }
                         }
                     },
+
                     player_id: {
                         validators: {
                             notEmpty: {
@@ -420,19 +455,31 @@
                     },
                     event_start_time: {
                         validators: {
-                            notEmpty: {
-                                message: 'Event start time is required'
+                            callback: {
+                                message: 'Event start time is required when attendance is enabled',
+                                callback: function (input) {
+                                    const isAttendanceEnabled = $('#user_attendance').is(':checked');
+                                    if (!isAttendanceEnabled) return true;
+                                    return input.value !== '';
+                                }
                             }
                         }
                     },
                     event_end_time: {
                         validators: {
-                            notEmpty: {
-                                message: 'Event end time is required'
+                            callback: {
+                                message: 'Event end time is required when attendance is enabled',
+                                callback: function (input) {
+                                    const isAttendanceEnabled = $('#user_attendance').is(':checked');
+                                    if (!isAttendanceEnabled) return true;
+                                    return input.value !== '';
+                                }
                             },
                             callback: {
                                 message: 'Event end time must be after start time',
                                 callback: function (input) {
+                                    const isAttendanceEnabled = $('#user_attendance').is(':checked');
+                                    if (!isAttendanceEnabled) return true;
                                     const start = $('#event_start_time').val();
                                     if (!start || !input.value) return true;
                                     return new Date(input.value) >= new Date(start);
@@ -442,19 +489,31 @@
                     },
                     active_from_date: {
                         validators: {
-                            notEmpty: {
-                                message: 'Active from date is required'
+                            callback: {
+                                message: 'Active from date is required when attendance is enabled',
+                                callback: function (input) {
+                                    const isAttendanceEnabled = $('#user_attendance').is(':checked');
+                                    if (!isAttendanceEnabled) return true;
+                                    return input.value !== '';
+                                }
                             }
                         }
                     },
                     active_to_date: {
                         validators: {
-                            notEmpty: {
-                                message: 'Active to date is required'
+                            callback: {
+                                message: 'Active to date is required when attendance is enabled',
+                                callback: function (input) {
+                                    const isAttendanceEnabled = $('#user_attendance').is(':checked');
+                                    if (!isAttendanceEnabled) return true;
+                                    return input.value !== '';
+                                }
                             },
                             callback: {
                                 message: 'Active to date must be after from date',
                                 callback: function (input) {
+                                    const isAttendanceEnabled = $('#user_attendance').is(':checked');
+                                    if (!isAttendanceEnabled) return true;
                                     const from = $('#active_from_date').val();
                                     if (!from || !input.value) return true;
                                     return new Date(input.value) >= new Date(from);
@@ -479,6 +538,13 @@
                 validator.revalidateField('active_to_date');
             });
 
+            $('#user_attendance').on('change', () => {
+                validator.revalidateField('event_start_time');
+                validator.revalidateField('event_end_time');
+                validator.revalidateField('active_from_date');
+                validator.revalidateField('active_to_date');
+            });
+
             submitBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 validator.validate().then(function (status) {
@@ -490,5 +556,20 @@
             });
 
         });
+    </script>
+    <script>
+        let editorInstance;
+
+        // Initialize CKEditor
+        ClassicEditor
+            .create(document.querySelector('#editor'))
+            .then(editor => {
+                editorInstance = editor;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+
     </script>
 @endpush

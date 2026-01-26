@@ -13,6 +13,7 @@ class HomeSetting extends Model
         'player_type',
         'url',
         'publish_date',
+        'about_us',
         'event_start_time',
         'event_end_time',
         'active_from_date',

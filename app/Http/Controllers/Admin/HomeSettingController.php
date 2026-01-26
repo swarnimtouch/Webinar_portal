@@ -48,6 +48,7 @@ class HomeSettingController extends Controller
             'title' => 'nullable|string|max:255',
             'player_id' => 'required|string|max:255',
             'publish_date' => 'required|date',
+            'about_us' => 'nullable|string',
             'event_start_time' => 'required|date',
             'event_end_time' => 'required|date|after_or_equal:event_start_time',
             'active_from_date' => 'required|date',
@@ -59,6 +60,7 @@ class HomeSettingController extends Controller
             'url.required' => 'Video iframe code is required',
             'player_id.required' => 'Player ID is required',
             'publish_date.required' => 'Publish date is required',
+            'about_us.required' => 'About us is required',
             'event_start_time.required' => 'Event start time is required',
             'event_end_time.required' => 'Event end time is required',
             'event_end_time.after_or_equal' => 'Event end time must be after or equal to start time',
@@ -82,6 +84,7 @@ class HomeSettingController extends Controller
             $homeSetting->url = $request->url;
             $homeSetting->player_id = $request->player_id;
             $homeSetting->publish_date = $request->publish_date;
+            $homeSetting->about_us = $request->about_us;
             $homeSetting->event_start_time = $request->event_start_time;
             $homeSetting->event_end_time = $request->event_end_time;
             $homeSetting->active_from_date = $request->active_from_date;
