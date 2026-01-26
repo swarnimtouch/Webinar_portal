@@ -4,15 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DaynamicFields extends Model
+class DynamicFields extends Model
 {
-    protected $table = 'daynamic_fields';
 
     protected $fillable = [
         'index_no',
         'field_name',
         'label',
-        'input_type',
+        'attribute_id',
         'input_value',
         'html_class',
         'is_required',
@@ -23,7 +22,7 @@ class DaynamicFields extends Model
     ];
     public function attributeInput()
     {
-        return $this->belongsTo(AttributeInput::class, 'input_type');
+        return $this->belongsTo(Attribute::class, 'attribute_id');
     }
 
 }

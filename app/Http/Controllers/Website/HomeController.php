@@ -7,7 +7,7 @@ use App\Models\Brands;
 use App\Models\City;
 use App\Models\Content;
 use App\Models\Country;
-use App\Models\DaynamicFields;
+use App\Models\DynamicFields;
 use App\Models\Speakers;
 use App\Models\State;
 use App\Models\User;
@@ -35,12 +35,12 @@ class HomeController
             ->orderBy('id')
             ->get();
 
-        $loginFields = DaynamicFields::where('status', 'active')
+        $loginFields = DynamicFields::where('status', 'active')
             ->where('login_with', 1)
             ->orderBy('index_no')
             ->get();
 
-        $registerFields = DaynamicFields::with('attributeInput')
+        $registerFields = DynamicFields::with('attributeInput')
             ->where('status', 'active')
             ->orderBy('index_no')
             ->get();
@@ -64,7 +64,7 @@ class HomeController
     }
     public function login(Request $request)
     {
-        $loginFields = DaynamicFields::where('status', 'active')
+        $loginFields = DynamicFields::where('status', 'active')
             ->where('login_with', 1)
             ->orderBy('index_no')
             ->get();
@@ -115,7 +115,7 @@ class HomeController
     public function register(Request $request)
     {
 //        dd($request->all());
-        $fields = DaynamicFields::where('status', 'active')->get();
+        $fields = DynamicFields::where('status', 'active')->get();
         $rules = [];
 
         foreach ($fields as $field) {

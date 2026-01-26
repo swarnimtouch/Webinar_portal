@@ -166,11 +166,11 @@
 
                                     </div>
                                 </th>
-                                <th class="min-w-125px">Banner</th>
-                                <th class="min-w-200px">Title</th>
-                                <th class="min-w-150px">Created At</th>
-                                <th class="min-w-100px">Status</th>
-                                <th class="text-end min-w-100px">Actions</th>
+                                <th >Banner</th>
+                                <th >Title</th>
+                                <th >Created At</th>
+                                <th >Status</th>
+                                <th >Actions</th>
                             </tr>
                             </thead>
                             <tbody class="fw-semibold text-gray-600">
@@ -309,7 +309,7 @@
                                 data: 'id',
                                 orderable: false,
                                 searchable: false,
-                                render: id => `<div class="text-end">
+                                render: id => `<div>
                                                     <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
                                                         <span class="svg-icon svg-icon-5 m-0">
                                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

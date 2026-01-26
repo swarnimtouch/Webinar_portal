@@ -91,13 +91,13 @@
                                                value="1" />
                                     </div>
                                 </th>
-                                <th class="min-w-125px">Photo</th>
-                                <th class="min-w-150px">Name</th>
-                                <th class="min-w-150px">Line 1</th>
-                                <th class="min-w-150px">Line 2</th>
-                                <th class="min-w-150px">Line 3</th>
-                                <th class="min-w-150px">Created At</th>
-                                <th class="text-end min-w-100px">Actions</th>
+                                <th >Photo</th>
+                                <th >Name</th>
+                                <th >Line 1</th>
+                                <th >Line 2</th>
+                                <th >Line 3</th>
+                                <th >Created At</th>
+                                <th >Actions</th>
                             </tr>
                             </thead>
 
@@ -146,7 +146,7 @@
             var toolbarSelected;
             var selectedCount;
 
-            var initUserTable = function () {
+            var initSpeakerTable = function () {
                 datatable = $(table).DataTable({
                     processing: true,
                     serverSide: true,
@@ -190,7 +190,7 @@
                             orderable: false,
                             searchable: false,
                             render: id => `
-                                            <div class="text-end">
+                                            <div >
                                                     <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
                                                         <span class="svg-icon svg-icon-5 m-0">
                                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -247,7 +247,7 @@
                         data: { _token: '{{ csrf_token() }}' },
                         success: function () {
                             toastr.success('Speaker has been deleted!');
-                            location.reload();
+                            datatable.draw(false);
                         }
                     });
                 });
@@ -337,7 +337,7 @@
             return {
                 init: function () {
                     if (!table) return;
-                    initUserTable();
+                    initSpeakerTable();
                     initToggleToolbar();
                     handleSearchDatatable();
                 }
