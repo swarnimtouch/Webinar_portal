@@ -51,12 +51,11 @@
                         <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_Content">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
-                                <th class="min-w-80px">ID</th>
-                                <th class="min-w-125px">Title</th>
-                                <th class="min-w-150px">Slug</th>
-                                <th class="min-w-150px">Content</th>
-                                <th class="min-w-150px">Created At</th>
-                                <th class="text-end min-w-100px">Actions</th>
+                                <th >ID</th>
+                                <th >Title</th>
+                                <th >Slug</th>
+                                <th >Created At</th>
+                                <th >Actions</th>
                             </tr>
                             </thead>
 
@@ -104,12 +103,6 @@
                     { data: 'id' },
                     { data: 'title' },
                     { data: 'slug' },
-                    {
-                        data: 'content',
-                        render: function (data) {
-                            return data; // ✅ HTML render hoga
-                        }
-                    },
 
                     { data: 'created_at' },
                     {

@@ -19,8 +19,8 @@ class UpdateAttributeInputIconsSeeder extends Seeder
         ];
 
         foreach ($icons as $name => $icon) {
-            DB::table('attribute_inputs')
-                ->where('input_name', $name)
+            DB::table('attributes')
+                ->where('name', $name)
                 ->whereNull('icon')
                 ->update(['icon' => $icon]);
         }

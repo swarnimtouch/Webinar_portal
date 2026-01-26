@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\UserAttendence;
-use App\Models\DaynamicFields;
+use App\Models\DynamicFields;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -12,7 +12,7 @@ class UserAttendenceController extends Controller
 {
     public function index()
     {
-        $activeFields = DaynamicFields::where('status', 'active')
+        $activeFields = DynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
 
@@ -27,7 +27,7 @@ class UserAttendenceController extends Controller
 
     public function datatable(Request $request)
     {
-        $activeFields = DaynamicFields::where('status', 'active')
+        $activeFields = DynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
 

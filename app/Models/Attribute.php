@@ -4,9 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AttributeInput extends Model
+class Attribute extends Model
 {
-    protected $table = 'attribute_inputs';
 
     protected $fillable = [
         'input_name',
@@ -16,6 +15,6 @@ class AttributeInput extends Model
 
     public function dynamicFields()
     {
-        return $this->hasMany(DaynamicFields::class, 'input_type');
+        return $this->hasMany(DynamicFields::class, 'attribute_id');
     }
 }

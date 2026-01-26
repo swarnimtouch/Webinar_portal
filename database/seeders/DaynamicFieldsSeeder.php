@@ -17,7 +17,7 @@ class DaynamicFieldsSeeder extends Seeder
                 'index_no' => 1,
                 'field_name' => 'first_name',
                 'label' => 'First Name',
-                'input_type' => 1, // Short Text
+                'attribute_id' => 1, // Short Text
                 'input_value' => null,
                 'type' => 'default',
             ],
@@ -25,7 +25,7 @@ class DaynamicFieldsSeeder extends Seeder
                 'index_no' => 2,
                 'field_name' => 'last_name',
                 'label' => 'Last Name',
-                'input_type' => 1,
+                'attribute_id' => 1,
                 'input_value' => null,
                 'type' => 'default',
             ],
@@ -33,7 +33,7 @@ class DaynamicFieldsSeeder extends Seeder
                 'index_no' => 3,
                 'field_name' => 'email',
                 'label' => 'Email',
-                'input_type' => 1,
+                'attribute_id' => 1,
                 'input_value' => null,
                 'type' => 'default',
             ],
@@ -41,7 +41,7 @@ class DaynamicFieldsSeeder extends Seeder
                 'index_no' => 4,
                 'field_name' => 'mobile_number',
                 'label' => 'Mobile Number',
-                'input_type' => 1,
+                'attribute_id' => 1,
                 'input_value' => null,
                 'type' => 'default',
             ],
@@ -49,7 +49,7 @@ class DaynamicFieldsSeeder extends Seeder
                 'index_no' => 5,
                 'field_name' => 'country',
                 'label' => 'Country',
-                'input_type' => 3, // Single Select
+                'attribute_id' => 3, // Single Select
                 'input_value' => json_encode([
                     'source' => 'countries',   // table name
                     'value'  => 'id',
@@ -61,7 +61,7 @@ class DaynamicFieldsSeeder extends Seeder
                 'index_no' => 6,
                 'field_name' => 'state',
                 'label' => 'State',
-                'input_type' => 3,
+                'attribute_id' => 3,
                 'input_value' => json_encode([
                     'source'      => 'states',
                     'value'       => 'id',
@@ -74,7 +74,7 @@ class DaynamicFieldsSeeder extends Seeder
                 'index_no' => 7,
                 'field_name' => 'city',
                 'label' => 'City',
-                'input_type' => 3,
+                'attribute_id' => 3,
                 'input_value' => json_encode([
                     'source'      => 'cities',
                     'value'       => 'id',
@@ -87,7 +87,7 @@ class DaynamicFieldsSeeder extends Seeder
                 'index_no' => 8,
                 'field_name' => 'password',
                 'label' => 'Password',
-                'input_type' => 7, // Password
+                'attribute_id' => 7, // Password
                 'input_value' => null,
                 'type' => 'password',
             ],
@@ -95,7 +95,7 @@ class DaynamicFieldsSeeder extends Seeder
 
 
         foreach ($fields as $field) {
-            DB::table('daynamic_fields')->updateOrInsert(
+            DB::table('dynamic_fields')->updateOrInsert(
                 ['field_name' => $field['field_name']],
                 array_merge($field, [
                     'html_class' => 'col-12',

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\DaynamicFields;
+use App\Models\DynamicFields;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
@@ -13,27 +14,33 @@ class UserController extends Controller
     public function index()
     {
 
-        $activeFields = DaynamicFields::where('status', 'active')
+        $dynamicFields = DynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
-
+        $usersColumns = Schema::getColumnListing('users');
+        $excludeColumns = ['password'];
+        $validDynamicFields = $dynamicFields->filter(function ($field) use ($usersColumns, $excludeColumns) {
+            if (in_array($field->field_name, $excludeColumns)) {
+                return false;
+            }
+            return in_array($field->field_name, $usersColumns);
+        });
         $users = User::where('type', 'doctor')->get();
 
-
-        return view('admin.users.index', ['users' => $users, 'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index')])]);
+        return view('admin.users.index', ['users' => $users, 'valid_dynamic_fields' => $validDynamicFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index')])]);
     }
 
     public function create()
     {
-        $activeFields = DaynamicFields::where('status', 'active')
+        $activeFields = DynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
-        return view('admin.users.add_edit', ['activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'),'Add User'=>''])]);
+        return view('admin.users.add_edit', ['activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'), 'Add User' => ''])]);
     }
 
     public function store(Request $request)
     {
-        $activeFields = DaynamicFields::where('status', 'active')->get();
+        $activeFields = DynamicFields::where('status', 'active')->get();
 
         $rules = [];
         $messages = [];
@@ -113,28 +120,28 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $activeFields = DaynamicFields::where('status', 'active')
+        $activeFields = DynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
 
-        return view('admin.users.show', ['user'=>$user,'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'),'User Details'=>''])]);
+        return view('admin.users.show', ['user' => $user, 'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'), 'User Details' => ''])]);
     }
 
     public function edit($id)
     {
         $user = User::findOrFail($id);
 
-        $activeFields = DaynamicFields::where('status', 'active')
+        $activeFields = DynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
 
-        return view('admin.users.add_edit', ['user'=>$user,'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'),'Edit User'=>''])]);
+        return view('admin.users.add_edit', ['user' => $user, 'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'), 'Edit User' => ''])]);
     }
 
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $activeFields = DaynamicFields::where('status', 'active')->get();
+        $activeFields = DynamicFields::where('status', 'active')->get();
 
         $rules = [];
         $messages = [];
@@ -252,61 +259,49 @@ class UserController extends Controller
 
         return response()->json(['success' => true]);
     }
+
     public function datatable(Request $request)
     {
-        $fields = DaynamicFields::where('status', 'active')
-            ->orderBy('index_no')
-            ->get();
+        $activeFields = DynamicFields::where('status', 'active')->orderBy('index_no')->get();
 
-        $query = User::where('type', 'doctor');
+        // VALID fields in user table
+        $userTableColumns = \Schema::getColumnListing('users');
 
-        if (!empty($request->search['value'])) {
-            $search = $request->search['value'];
+        $validDynamicFields = $activeFields->filter(function ($field) use ($userTableColumns) {
+            return in_array($field->field_name, $userTableColumns);
+        });
 
-            $query->where(function ($q) use ($fields, $search) {
-                foreach ($fields as $field) {
-                    $q->orWhere($field->field_name, 'like', "%{$search}%");
+        // Build SELECT
+        $select = ['id'];
+        foreach ($validDynamicFields as $field) {
+            $select[] = $field->field_name;
+        }
+
+        $query = User::select($select)->where('type', 'doctor');
+        /*** GLOBAL SEARCH ***/
+        if ($request->search) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($validDynamicFields, $search) {
+                foreach ($validDynamicFields as $field) {
+                    $q->orWhere($field->field_name, 'LIKE', "%$search%");
                 }
             });
         }
 
-        $total = $query->count();
+        /*** PAGINATION ***/
+        $recordsTotal = $query->count();
 
-        if ($request->has('order')) {
-            $order = $request->order[0];
-            $columnName = $request->columns[$order['column']]['data'];
-            $direction  = $order['dir'];
-
-            if (\Schema::hasColumn('users', $columnName)) {
-                $query->orderBy($columnName, $direction);
-            }
-        } else {
-            $query->orderBy('id', 'desc');
-        }
-
-        $length = $request->length ?? 10;
-        $start  = $request->start ?? 0;
-
-        $users = $query->skip($start)->take($length)->get();
-
-        $data = $users->map(function ($user) use ($fields) {
-            $row = ['id' => $user->id];
-
-            foreach ($fields as $field) {
-                $row[$field->field_name] = $user->{$field->field_name} ?? '';
-            }
-
-            $row['actions'] = '';
-
-            return $row;
-        });
+        $data = $query
+            ->skip($request->start)
+            ->take($request->length)
+            ->get();
 
         return response()->json([
-            'draw' => intval($request->draw),
-            'recordsTotal' => $total,
-            'recordsFiltered' => $total,
-            'data' => $data
+            "draw" => intval($request->draw),
+            "recordsTotal" => $recordsTotal,
+            "recordsFiltered" => $recordsTotal,
+            "data" => $data
         ]);
     }
-
 }

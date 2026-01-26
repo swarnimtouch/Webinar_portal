@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BrandsController;
 use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\DaynamicFieldsController;
+use App\Http\Controllers\Admin\DynamicFieldsController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SiteSettingsController;
 use App\Http\Controllers\Admin\SpeakersController;
@@ -68,11 +68,11 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::put('content/update/{id}', [ContentController::class, 'update'])->name('content.update');
     Route::get('content/datatable', [ContentController::class, 'datatable'])->name('content.datatable');
 
-    Route::get('dynamic-fields', [DaynamicFieldsController::class, 'index'])->name('dynamic-fields');
-    Route::post('dynamic-fields/store', [DaynamicFieldsController::class, 'store'])->name('dynamic-fields.store');
+    Route::get('dynamic-fields', [DynamicFieldsController::class, 'index'])->name('dynamic-fields');
+    Route::post('dynamic-fields/store', [DynamicFieldsController::class, 'store'])->name('dynamic-fields.store');
 
 
-    Route::get('home_setting',[HomeSettingController::class, 'index'])    ->name('home_setting');
+    Route::get('home-setting',[HomeSettingController::class, 'index'])    ->name('home_setting');
     Route::post('/home-setting/save', [HomeSettingController::class, 'save'])->name('home_setting.save');
 
     Route::get('attendance', [UserAttendenceController::class, 'index'])->name('user_attendance');
