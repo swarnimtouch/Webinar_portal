@@ -17,6 +17,7 @@ Route::post('/website/register', [HomeController::class, 'register'])
 Route::get('/website/logout', [HomeController::class, 'logout'])->name('website.logout');
 Route::middleware(['auth'])->prefix('website')->group(function () {
     Route::get('/dashboard',[DashboardController::class, 'dashboard'])->name('website.dashboard');
+    Route::post('/dashboard/attendance/update', [DashboardController::class, 'updateSessionTime'])->name('dashboard.attendance.update');
 });
 Route::get('/get-countries', [HomeController::class, 'countries']);
 Route::get('/get-states/{country}', [HomeController::class, 'states']);
