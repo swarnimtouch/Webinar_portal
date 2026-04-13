@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Models\Feedback;
+use App\Models\Poll;
+use App\Models\UserQuizAnswer;
 use App\Models\HomeSetting;
 use App\Models\UserAttendence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Models\Certificate;
 
 class DashboardController
 {
@@ -18,8 +22,14 @@ class DashboardController
         if ($home_setting && $home_setting->user_attendance) {
             $this->trackUserAttendance($home_setting);
         }
+            $polls = Poll::where('status', 'active')
+                ->where('is_hidden', 0)
+                ->orderBy('id', 'desc')
+                ->get();
+        $activeCertificate = Certificate::where('status', 'active')->first();
 
-        return view('website.dashboard', compact('home_setting'));
+        return view('website.dashboard', compact('home_setting', 'polls', 'activeCertificate'));
+
     }
 
     public function updateSessionTime(Request $request)
@@ -151,4 +161,79 @@ class DashboardController
             Log::info('Attendance: Updated for user ' . $userId);
         }
     }
+    public function store(Request $request)
+    {
+        $request->validate([
+            'rating'  => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string',
+        ]);
+
+        $userId = auth()->id();
+
+        $feedback = Feedback::firstOrNew(['user_id' => $userId]);
+
+        $feedback->rating = $request->rating;
+        $feedback->comment = $request->filled('comment') ? $request->comment : null;
+
+        $feedback->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Feedback saved successfully'
+        ]);
+    }
+public function getPoll()
+{
+    $poll = Poll::where('status', 'active')
+        ->where('is_hidden', 0)
+        ->latest()
+        ->first();
+
+    if (!$poll) {
+        return response()->json(['poll' => null]);
+    }
+
+    $vote = UserQuizAnswer::where('poll_id', $poll->id)
+        ->where('user_id', Auth::id())
+        ->first();
+
+    return response()->json([
+        'poll'  => $poll,
+        'voted' => $vote
+    ]);
+}
+
+public function submitPoll(Request $request)
+{
+    $request->validate([
+        'poll_id' => 'required|exists:polls,id',
+        'answer'  => 'required|string',
+    ]);
+
+    $alreadyVoted = UserQuizAnswer::where('poll_id', $request->poll_id)
+        ->where('user_id', Auth::id())
+        ->exists();
+
+    if ($alreadyVoted) {
+        return response()->json([
+            'status' => false,
+            'message' => 'You have already voted'
+        ], 409);
+    }
+
+    UserQuizAnswer::create([
+        'poll_id' => $request->poll_id,
+        'user_id' => Auth::id(),
+        'answer'  => $request->answer,
+    ]);
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Vote submitted successfully'
+    ]);
+}
+
+
+
+
 }

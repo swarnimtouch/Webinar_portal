@@ -27,8 +27,8 @@
         </div>
         <div class="nav-links">
             <a href="#">About Event</a>
-            <a href="#">Speakers</a>
-            <a href="#">Brands</a>
+            <a href="#speakers">Speakers</a>
+            <a href="#brands">Brands</a>
         </div>
         <button class="btn btn-gold" id="openLoginModal">Login</button>
     </nav>
@@ -36,45 +36,39 @@
     <main>
         <div class="container">
             <div class="header-section">
-                <h1>TechNova IT Summit 2025 by CodeMasters Hub</h1>
+                <h1>{{$homesetting->title}}</h1>
                 <button class="btn btn-gold" id="openRegisterModal">Register</button>
             </div>
 
             <div class="intro-card">
                 <div class="hero-banner">
-    
-    <div class="banner-backdrop">
-        <img id="bgImage" class="bg-media" src="" alt="">
-        <video id="bgVideo" class="bg-media" muted loop playsinline></video>
-    </div>
 
-    <div class="slider-wrapper">
-        <div class="slider-track" id="sliderTrack"></div>
-    </div>
-</div>
+                <div class="banner-backdrop">
+                    <img id="bgImage" class="bg-media" src="" alt="">
+                    <video id="bgVideo" class="bg-media" muted loop playsinline></video>
+                </div>
+
+                <div class="slider-wrapper">
+                    <div class="slider-track" id="sliderTrack"></div>
+                </div>
+            </div>
 
                 <div class="info-bar">
                     <div class="info-item">
                         <i class="fa-regular fa-calendar"></i>
                         <div class="info-text">
-                            <span>24 Dec, 2025 - 25 Dec, 2025</span>
+                            <span>{{ \Carbon\Carbon::parse($homesetting->event_start_time)->format('j F, Y') }} - {{ \Carbon\Carbon::parse($homesetting->event_end_time)->format('j F, Y') }}</span>
                             <small>Summit Date</small>
                         </div>
                     </div>
                     <div class="info-item">
                         <i class="fa-regular fa-clock"></i>
                         <div class="info-text">
-                            <span>09:00 AM Onwards</span>
+                            <span>{{ \Carbon\Carbon::parse($homesetting->event_start_time)->format('H:i A') }} Onwards</span>
                             <small>Reporting</small>
                         </div>
                     </div>
-                    <div class="info-item">
-                        <i class="fa-solid fa-location-dot"></i>
-                        <div class="info-text">
-                            <span>Gujarat Tech Park, InfoCity, Gandhinagar</span>
-                            <small>Tech Zone</small>
-                        </div>
-                    </div>
+                    
                     <div class="info-item no-border">
                         <i class="fa-solid fa-hourglass-end"></i>
                         <div class="info-text">
@@ -141,7 +135,7 @@
                 </div>
             </div>
 
-            <div class="speakers-section">
+            <div class="speakers-section" id="speakers">
                 <h3>Speakers</h3>
                 <div class="speakers-grid">
                     @forelse($speakers as $speaker)
@@ -161,7 +155,7 @@
                 </div>
             </div>
 
-            <div class="sponsors-section">
+            <div class="sponsors-section" id="brands">
                 <h3>Brands</h3>
                 <div class="sponsors-grid">
                     @forelse($brands as $brand)
@@ -218,15 +212,18 @@
                     @endphp
 
                     <div class="email-input-group mb-3">
-                        @if($field->input_type == 1)
+                        @if($field->attribute_id == 1)
                             <input type="text" data-is-required="{{ $field->is_required }}" name="{{ $field->field_name }}" data-label="{{ $field->label }}" placeholder="{{ $field->label }}"
                                    value="{{ old($field->field_name) }}" class="form-control">
 
-                        @elseif($field->input_type == 2)
+                        @elseif($field->attribute_id == 2)
                             <textarea name="{{ $field->field_name }}" data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" class="form-control"
                                       placeholder="{{ $field->label }}">{{ old($field->field_name) }}</textarea>
+                        @elseif($field->attribute_id == 7)
+                            <input type="password" data-is-required="{{ $field->is_required }}" name="{{ $field->field_name }}" data-label="{{ $field->label }}" placeholder="{{ $field->label }}"
+                                   value="{{ old($field->field_name) }}" class="form-control">
 
-                        @elseif(in_array($field->input_type, [3,13]))
+                        @elseif(in_array($field->attribute_id, [3,13]))
 
                             @if($field->field_name === 'country')
                                 <select
@@ -258,6 +255,7 @@
                                     <option value="">Select City</option>
                                 </select>
 
+
                             @else
                                 <select
                                     name="{{ $field->field_name }}"
@@ -271,23 +269,23 @@
                                 </select>
                             @endif
 
-                        @elseif($field->input_type == 4)
+                        @elseif($field->attribute_id == 4)
                             <select data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" name="{{ $field->field_name }}[]" multiple class="form-control">
                                 @foreach($options as $k => $v)
                                     <option value="{{ $k }}">{{ $v }}</option>
                                 @endforeach
                             </select>
 
-                        @elseif($field->input_type == 5)
+                        @elseif($field->attribute_id == 5)
                             <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="date" name="{{ $field->field_name }}" class="form-control">
 
-                        @elseif($field->input_type == 6)
+                        @elseif($field->attribute_id == 6)
                             <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="file" name="{{ $field->field_name }}" class="form-control">
 
-                        @elseif($field->input_type == 7)
+                        @elseif($field->attribute_id == 7)
                             <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="password" name="{{ $field->field_name }}" class="form-control">
 
-                        @elseif($field->input_type == 9)
+                        @elseif($field->attribute_id == 9)
                             @forelse($options as $k => $v)
                                 <label>
                                     <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}"  type="checkbox" name="{{ $field->field_name }}[]" value="{{ $k }}">
@@ -298,12 +296,12 @@
                             @endforelse
 
 
-                        @elseif($field->input_type == 10)
+                        @elseif($field->attribute_id == 10)
                             <label>
                                 <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="checkbox" name="{{ $field->field_name }}"> {{ $field->label }}
                             </label>
 
-                        @elseif($field->input_type == 11)
+                        @elseif($field->attribute_id == 11)
                             <label class="me-3">
                                 {{ $field->label }}
                             </label>
@@ -316,7 +314,7 @@
                             @endforelse
 
 
-                        @elseif($field->input_type == 12)
+                        @elseif($field->attribute_id == 12)
                             <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}" type="datetime-local" name="{{ $field->field_name }}" class="form-control">
 
                         @endif
@@ -368,7 +366,6 @@
 
         </script>
 
-        //validation
         <script>
             $(document).ready(function () {
 
@@ -499,7 +496,6 @@
             });
         </script>
 
-        //country wise state and state wise city
         <script>
             $(document).ready(function () {
 

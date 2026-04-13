@@ -4,6 +4,8 @@
 use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Website\HomeController;
 use App\Http\Controllers\Website\DashboardController;
+use App\Http\Controllers\Website\ChatController;
+use App\Http\Controllers\Website\CertificateController;
 
 
 use Illuminate\Support\Facades\Route;
@@ -18,6 +20,17 @@ Route::get('/website/logout', [HomeController::class, 'logout'])->name('website.
 Route::middleware(['auth'])->prefix('website')->group(function () {
     Route::get('/dashboard',[DashboardController::class, 'dashboard'])->name('website.dashboard');
     Route::post('/dashboard/attendance/update', [DashboardController::class, 'updateSessionTime'])->name('dashboard.attendance.update');
+    Route::post('/feedback/store', [DashboardController::class, 'store'])
+        ->name('feedback.store');
+        Route::get('/poll', [DashboardController::class, 'getPoll']);
+    Route::post('/poll/vote', [DashboardController::class, 'submitPoll']);
+
+    Route::get('/chat/messages', [ChatController::class,'fetchMessages']);
+
+    Route::post('/chat/send', [ChatController::class,'sendMessage']);
+    Route::get('certificate/generate/{certificateId}/{userId}',
+        [CertificateController::class, 'generate']
+    )->name('admin.certificate.generate');
 });
 Route::get('/get-countries', [HomeController::class, 'countries']);
 Route::get('/get-states/{country}', [HomeController::class, 'states']);

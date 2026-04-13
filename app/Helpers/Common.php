@@ -145,6 +145,48 @@ function getModules($user_type = 'admin'): array
                 'child' =>[],
                 'all_routes' => ['admin.user_attendance']
             ],
+            [
+                'route' => route('admin.feedback.index'),
+                'name' => 'Feedback',
+                'icon' => 'bi bi-people fs-3',
+                'child' => [],
+                'all_routes' => ['admin.feedback.index']
+            ],
+            [
+                'route' => route('admin.poll'),
+                'name' => 'Polls',
+                'icon' => 'bi bi-tags',
+                'child' => [],
+                'all_routes' => ['admin.poll', 'admin.poll.add_edit_form']
+            ],
+            [
+                'route' => route('admin.user_quiz_result'),
+                'name' => 'User Quiz Answers',
+                'icon' => 'bi bi-tags',
+                'child' => [],
+                'all_routes' => ['admin.user_quiz_result']
+            ],
+            [
+                'route' => route('admin.chatmessage'),
+                'name' => 'Chat Message',
+                'icon' => 'bi bi-tags',
+                'child' => [],
+                'all_routes' => ['admin.chatmessage']
+            ],
+            [
+                'route' => route('admin.certificate'),
+                'name' => 'Certificate',
+                'icon' => 'bi bi-tags',
+                'child' => [],
+                'all_routes' => ['admin.certificate','admin.certificate.add_edit_form']
+            ],
+            [
+                'route' => route('admin.certificate-download'),
+                'name' => 'Certificate Download',
+                'icon' => 'bi bi-tags',
+                'child' => [],
+                'all_routes' => ['admin.certificate-download']
+            ],
         ];
     }
 
