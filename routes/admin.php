@@ -20,7 +20,6 @@ use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\CertificateDownloadController;
 
 
-
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', [LoginController::class, 'index'])->name('login');
@@ -64,7 +63,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
     Route::get('brand', [BrandsController::class, 'index'])->name('brand');
     Route::get('brand/add-edit/{id?}', [BrandsController::class, 'addEditForm'])->name('brand.add_edit_form');
-    Route::match(['POST', 'PUT'], 'brand/store/{id?}', [BrandsController::class, 'store'])->name('brand.store');
+    Route::match(['POST', 'PUT'], 'brand/store/{id?}', [BrandsController::class, 'save'])->name('brand.save');
     Route::delete('brand/delete/{id}', [BrandsController::class, 'delete'])->name('brand.delete');
     Route::post('brand/delete-multiple', [BrandsController::class, 'deleteMultiple'])->name('brand.deleteMultiple');
     Route::post('brand/toggle-status/{id}', [BrandsController::class, 'toggleStatus'])->name('brand.toggleStatus');
@@ -79,7 +78,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('dynamic-fields/store', [DynamicFieldsController::class, 'store'])->name('dynamic-fields.store');
 
 
-    Route::get('home-setting',[HomeSettingController::class, 'index'])    ->name('home_setting');
+    Route::get('home-setting', [HomeSettingController::class, 'index'])->name('home_setting');
     Route::post('/home-setting/save', [HomeSettingController::class, 'save'])->name('home_setting.save');
 
     Route::get('attendance', [UserAttendenceController::class, 'index'])->name('user_attendance');

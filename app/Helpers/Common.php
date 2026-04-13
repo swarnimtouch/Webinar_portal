@@ -79,7 +79,7 @@ function getModules($user_type = 'admin'): array
                 'name' => 'Users',
                 'icon' => 'bi bi-people fs-3',
                 'child' => [],
-                'all_routes' => ['admin.user.index','admin.user.create']
+                'all_routes' => ['admin.user.index', 'admin.user.create']
             ],
             [
                 'route' => '#',
@@ -114,14 +114,14 @@ function getModules($user_type = 'admin'): array
                         'route' => route('admin.content'),
                         'name' => 'Content',
                         'icon' => 'bi bi-file-text',
-                        'all_routes' => ['admin.content','admin.content.add_edit_form']
+                        'all_routes' => ['admin.content', 'admin.content.add_edit_form']
                     ],
                 ],
                 'all_routes' => [
-                    'admin.settings', 'admin.banners','admin.banner.add_edit_form',
-                    'admin.speakers','admin.speaker.add_edit_form',
+                    'admin.settings', 'admin.banners', 'admin.banner.add_edit_form',
+                    'admin.speakers', 'admin.speaker.add_edit_form',
                     'admin.brand', 'admin.brand.add_edit_form',
-                    'admin.content','admin.content.add_edit_form'
+                    'admin.content', 'admin.content.add_edit_form'
                 ]
             ],
             [
@@ -129,20 +129,20 @@ function getModules($user_type = 'admin'): array
                 'name' => 'Dynamic Fields',
                 'icon' => 'bi bi-sliders',
                 'child' => [],
-                'all_routes' => ['admin.dynamic-fields','admin.dynamic-fields.store']
+                'all_routes' => ['admin.dynamic-fields', 'admin.dynamic-fields.store']
             ],
             [
                 'route' => route('admin.home_setting'),
                 'name' => 'Home Settings',
                 'icon' => 'bi bi-gear',
-                'child' =>[],
-                'all_routes' => ['admin.home_setting','admin.home_setting.create']
+                'child' => [],
+                'all_routes' => ['admin.home_setting', 'admin.home_setting.create']
             ],
             [
                 'route' => route('admin.user_attendance'),
                 'name' => 'User Attendance',
                 'icon' => 'bi bi-people fs-3',
-                'child' =>[],
+                'child' => [],
                 'all_routes' => ['admin.user_attendance']
             ],
             [
@@ -178,7 +178,7 @@ function getModules($user_type = 'admin'): array
                 'name' => 'Certificate',
                 'icon' => 'bi bi-tags',
                 'child' => [],
-                'all_routes' => ['admin.certificate','admin.certificate.add_edit_form']
+                'all_routes' => ['admin.certificate', 'admin.certificate.add_edit_form']
             ],
             [
                 'route' => route('admin.certificate-download'),
@@ -227,7 +227,7 @@ function upload_file($file_name = "", $path = "")
     $request = \request();
     if ($request->hasFile($file_name) && $path) {
 
-        $file = $request->file($file_name)->store($path,'local');
+        $file = $request->file($file_name)->store($path, 'local');
     } else {
         echo 'Provide Valid Const from web controller';
         die();
@@ -336,11 +336,8 @@ if (!function_exists('pageTitle')) {
             return 'Dashboard';
         }
 
-        // admin.user.create → ['admin','user','create']
-        // user.edit → ['user','edit']
         $parts = explode('.', $route);
 
-        // words jo title nahi hone chahiye
         $ignore = ['index', 'create', 'edit', 'store', 'update', 'destroy', 'show'];
 
         foreach ($parts as $part) {
