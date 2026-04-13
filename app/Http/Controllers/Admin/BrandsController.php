@@ -26,7 +26,7 @@ class BrandsController extends Controller
 
     public function addEditForm($id = null)
     {
-        $brand = $id ? Brands::findOrFail($id) :new Brands();
+        $brand = $id ? Brands::findOrFail($id) : new Brands();
 
         $response = [
             'brand' => $brand,
@@ -36,7 +36,7 @@ class BrandsController extends Controller
         return view('admin.brands.add_edit', $response);
     }
 
-    public function store(Request $request, $id = null)
+    public function save(Request $request, $id = null)
     {
         $brand = $id ? Brands::findOrFail($id) : new Brands();
         $isUpdate = $brand->exists;
@@ -132,6 +132,7 @@ class BrandsController extends Controller
             return response()->json(['success' => false, 'message' => 'Error deleting Bramds'], 500);
         }
     }
+
     public function toggleStatus(Request $request, $id)
     {
         try {
@@ -160,8 +161,7 @@ class BrandsController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ;
+                $q->where('title', 'like', "%{$search}%");
             });
         }
         if ($request->has('type') && !empty($request->type)) {
