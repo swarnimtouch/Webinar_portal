@@ -15,12 +15,12 @@
     <div class="dropdown user-menu">
 
         <!-- 🔔 Bell -->
-        <a href="#" class=" me-3" data-bs-toggle="dropdown">
+        <a href="#" class=" me-3" >
             <i class="fa-solid fa-bell"></i>
         </a>
 
         <!-- ⚙️ Gear -->
-        <a href="#" class=" me-3" data-bs-toggle="dropdown">
+        <a href="#" class=" me-3" >
             <i class="fa-solid fa-gear"></i>
         </a>
 

@@ -112,11 +112,29 @@
                                                         @endif
                                                         >
                                                         @if(!empty($field['value']))
+                                                            @php
+                                                                $file = $field['value'];
+                                                                $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                                                                $fileUrl = asset('storage/site_settings/'.$file);
+                                                            @endphp
+
                                                             <div class="mt-3">
-                                                                <img
-                                                                    src="{{ asset('storage/site_settings/'.$field['value']) }}"
-                                                                    class="img-fluid"
-                                                                    style="max-height:60px">
+                                                                @if(in_array($extension, ['jpg','jpeg','png','gif','webp']))
+                                                                    <img
+                                                                        src="{{ $fileUrl }}"
+                                                                        class="img-fluid"
+                                                                        style="max-height:60px">
+
+                                                                @elseif($extension == 'pdf')
+                                                                    <a href="{{ $fileUrl }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                        View PDF
+                                                                    </a>
+                                                                @else
+                                                                    <a href="{{ $fileUrl }}" target="_blank">
+                                                                        Download File
+                                                                    </a>
+                                                                @endif
+
                                                             </div>
                                                         @endif
 

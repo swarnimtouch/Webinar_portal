@@ -1,13 +1,29 @@
+let Toast;
+let pollLoaded = false;
+let pollInterval = null;
+let lastPollHash = null;
+let chatInterval = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   const tabLinks = document.querySelectorAll(".tab-link");
   const tabContents = document.querySelectorAll(".tab-content");
 
+  Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+  });
+
+  /* =========================
+     TAB HANDLING
+  ========================= */
   tabLinks.forEach((link) => {
     link.addEventListener("click", () => {
       const tabId = link.getAttribute("data-tab");
 
       tabLinks.forEach((btn) => btn.classList.remove("active"));
-
       link.classList.add("active");
 
       tabContents.forEach((content) => {
@@ -15,15 +31,24 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const activeTab = document.getElementById(tabId);
-      if (activeTab) {
-        activeTab.style.display = "block";
-      }
+      if (activeTab) activeTab.style.display = "block";
 
       const chatInputArea = document.querySelector(".chat-input-area");
 
       if (chatInputArea) {
         if (tabId === "polls" || tabId === "feedback") {
           chatInputArea.style.display = "none";
+
+          if (tabId === "polls") {
+              loadPoll(true);
+
+              if (!pollInterval) {
+                  pollInterval = setInterval(() => {
+                      loadPoll(true);
+                  }, 10000);
+              }
+          }
+
         } else {
           chatInputArea.style.display = "block";
         }
@@ -31,23 +56,178 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  const pollOptions = document.querySelectorAll(".poll-option");
-  const votedSpanHTML = '<span><i class="fa-solid fa-check"></i> Voted</span>';
+  function loadChatMessages() {
+      fetch('/website/chat/messages')
+          .then(res => res.json())
+          .then(messages => {
+              const box = document.getElementById('chatMessages');
+              if (!box) return;
 
-  pollOptions.forEach((clickedOption) => {
-    clickedOption.addEventListener("click", () => {
-      pollOptions.forEach((option) => {
-        option.classList.remove("selected");
-        const votedSpan = option.querySelector("span");
-        if (votedSpan) {
-          votedSpan.remove();
-        }
-      });
+              box.innerHTML = '';
 
-      clickedOption.classList.add("selected");
-      clickedOption.insertAdjacentHTML("beforeend", votedSpanHTML);
-    });
+              messages.forEach(msg => {
+                  box.innerHTML += `
+                      <div class="message">
+                          <img src="/assets/Website/images/user.png" class="chat-avatar">
+                          <div class="message-content">
+                              <span class="username">${msg.user}</span>
+                              <p>${msg.message}</p>
+                          </div>
+                      </div>
+                  `;
+              });
+
+              box.scrollTop = box.scrollHeight;
+          });
+  }
+
+  /* =========================
+     SEND MESSAGE
+  ========================= */
+  document.getElementById('sendChatBtn')?.addEventListener('click', sendChat);
+  document.getElementById('chatInput')?.addEventListener('keypress', e => {
+      if (e.key === 'Enter') sendChat();
   });
+
+  function sendChat() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      fetch('/website/chat/send', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify({ message: msg })
+      }).then(() => {
+          input.value = '';
+          loadChatMessages();
+      });
+  }
+
+  /* =========================
+     CHAT TAB CLICK → start polling
+  ========================= */
+  document.querySelector('.tab-link[data-tab="chat"]')
+  ?.addEventListener('click', () => {
+      loadChatMessages();
+
+      if (!chatInterval) {
+          chatInterval = setInterval(loadChatMessages, 3000);
+      }
+  });
+
+  /* =========================
+     LOAD POLL (AJAX)
+  ========================= */
+  function loadPoll(force = false) {
+    if (pollLoaded && !force) return;
+    pollLoaded = true;
+
+    fetch("/website/poll")
+        .then(res => res.json())
+        .then(data => {
+
+            const pollQuestionEl = document.getElementById("pollQuestion");
+            const pollOptionsEl  = document.getElementById("pollOptions");
+            const pollMessageEl  = document.getElementById("pollMessage");
+
+            if (!data.poll) {
+                pollQuestionEl.innerText = "";
+                pollOptionsEl.innerHTML = "";
+                pollMessageEl.style.display = "block";
+                pollMessageEl.innerText = "Poll is not active right now.";
+                return;
+            }
+
+            pollMessageEl.style.display = "none";
+
+            const poll = data.poll;
+            const voted = data.voted;
+
+            const pollHash = JSON.stringify(poll);
+            if (lastPollHash === pollHash && !force) return;
+            lastPollHash = pollHash;
+
+            pollQuestionEl.innerText = poll.question;
+            pollOptionsEl.innerHTML = "";
+
+            let answers = poll.answers;
+            if (typeof answers === "string") {
+                try {
+                    answers = JSON.parse(answers);
+                } catch {
+                    answers = [];
+                }
+            }
+
+            if (!Array.isArray(answers)) answers = [];
+
+            answers.forEach((ans, index) => {
+                const label = String.fromCharCode(65 + index);
+
+                const btn = document.createElement("button");
+                btn.className = "poll-option";
+                btn.innerHTML = `<strong>${label}.</strong> ${ans}`;
+
+                if (voted && voted.answer === ans) {
+                    btn.classList.add("selected");
+                    btn.innerHTML +=
+                        ' <span><i class="fa-solid fa-check"></i> Voted</span>';
+                    btn.disabled = true;
+                }
+
+                btn.onclick = () => submitPollVote(poll.id, ans, btn);
+                pollOptionsEl.appendChild(btn);
+            });
+        })
+        .catch(() => {
+            console.warn("Poll fetch failed");
+        });
+  }
+
+  /* =========================
+     SUBMIT POLL VOTE
+  ========================= */
+  function submitPollVote(pollId, answer, btn) {
+    fetch("/website/poll/vote", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-TOKEN": document
+          .querySelector('meta[name="csrf-token"]')
+          .getAttribute("content"),
+      },
+      body: JSON.stringify({ poll_id: pollId, answer }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.status) {
+          Toast.fire({ icon: "info", title: data.message });
+          return;
+        }
+
+        document.querySelectorAll(".poll-option").forEach((b) => {
+          b.classList.remove("selected");
+          const s = b.querySelector("span");
+          if (s) s.remove();
+          b.disabled = true;
+        });
+
+        btn.classList.add("selected");
+        btn.insertAdjacentHTML(
+          "beforeend",
+          '<span><i class="fa-solid fa-check"></i> Voted</span>'
+        );
+
+        Toast.fire({ icon: "success", title: "Vote submitted" });
+      })
+      .catch(() => {
+        Toast.fire({ icon: "error", title: "Vote failed" });
+      });
+  }
 
   function initMobileChatButton() {
     const mobileChatBtn = document.getElementById("mobileChatBtn");
@@ -94,9 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
           isChatSidebarVisible = entry.isIntersecting;
         });
       },
-      {
-        threshold: 1,
-      }
+      { threshold: 1 }
     );
 
     observer.observe(chatSidebar);
@@ -129,14 +307,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isVideoSectionAtBottom() && event.deltaY > 0) {
         if (isChatSidebarVisible) {
           isScrolling = true;
-
           chatScrollable.scrollTop += event.deltaY * 2;
-
           clearTimeout(scrollTimer);
-          scrollTimer = setTimeout(() => {
-            isScrolling = false;
-          }, 50);
-
+          scrollTimer = setTimeout(() => { isScrolling = false; }, 50);
           event.preventDefault();
         }
       } else if (isVideoSectionAtTop() && event.deltaY < 0) {
@@ -149,118 +322,71 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (isChatSidebarAtTop() && event.deltaY < 0) {
         isScrolling = true;
-
         videoSection.scrollTop += event.deltaY * 2;
-
         clearTimeout(scrollTimer);
-        scrollTimer = setTimeout(() => {
-          isScrolling = false;
-        }, 50);
-
+        scrollTimer = setTimeout(() => { isScrolling = false; }, 50);
         event.preventDefault();
       } else if (isChatSidebarAtBottom() && event.deltaY > 0) {
         return true;
       }
     }
 
-    videoSection.addEventListener("wheel", handleVideoSectionScroll, {
-      passive: false,
-    });
-    chatScrollable.addEventListener("wheel", handleChatSidebarScroll, {
-      passive: false,
-    });
+    videoSection.addEventListener("wheel", handleVideoSectionScroll, { passive: false });
+    chatScrollable.addEventListener("wheel", handleChatSidebarScroll, { passive: false });
 
     let startY = 0;
-    let currentElement = null;
 
-    videoSection.addEventListener(
-      "touchstart",
-      (e) => {
-        startY = e.touches[0].clientY;
-        currentElement = videoSection;
-      },
-      { passive: true }
-    );
+    videoSection.addEventListener("touchstart", (e) => {
+      startY = e.touches[0].clientY;
+    }, { passive: true });
 
-    videoSection.addEventListener(
-      "touchmove",
-      (e) => {
-        if (isScrolling) return;
+    videoSection.addEventListener("touchmove", (e) => {
+      if (isScrolling) return;
+      const currentY = e.touches[0].clientY;
+      const deltaY = startY - currentY;
 
-        const currentY = e.touches[0].clientY;
-        const deltaY = startY - currentY;
-
-        if (isVideoSectionAtBottom() && deltaY < -5) {
-          if (isChatSidebarVisible) {
-            isScrolling = true;
-
-            chatScrollable.scrollTop -= deltaY * 0.5;
-
-            clearTimeout(scrollTimer);
-            scrollTimer = setTimeout(() => {
-              isScrolling = false;
-            }, 50);
-
-            e.preventDefault();
-          }
-        }
-
-        startY = currentY;
-      },
-      { passive: false }
-    );
-
-    chatScrollable.addEventListener(
-      "touchstart",
-      (e) => {
-        startY = e.touches[0].clientY;
-        currentElement = chatScrollable;
-      },
-      { passive: true }
-    );
-
-    chatScrollable.addEventListener(
-      "touchmove",
-      (e) => {
-        if (isScrolling) return;
-
-        const currentY = e.touches[0].clientY;
-        const deltaY = startY - currentY;
-
-        if (isChatSidebarAtTop() && deltaY > 5) {
+      if (isVideoSectionAtBottom() && deltaY < -5) {
+        if (isChatSidebarVisible) {
           isScrolling = true;
-
-          videoSection.scrollTop -= deltaY * 0.5;
-
+          chatScrollable.scrollTop -= deltaY * 0.5;
           clearTimeout(scrollTimer);
-          scrollTimer = setTimeout(() => {
-            isScrolling = false;
-          }, 50);
-
+          scrollTimer = setTimeout(() => { isScrolling = false; }, 50);
           e.preventDefault();
         }
+      }
+      startY = currentY;
+    }, { passive: false });
 
-        startY = currentY;
-      },
-      { passive: false }
-    );
+    chatScrollable.addEventListener("touchstart", (e) => {
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    chatScrollable.addEventListener("touchmove", (e) => {
+      if (isScrolling) return;
+      const currentY = e.touches[0].clientY;
+      const deltaY = startY - currentY;
+
+      if (isChatSidebarAtTop() && deltaY > 5) {
+        isScrolling = true;
+        videoSection.scrollTop -= deltaY * 0.5;
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => { isScrolling = false; }, 50);
+        e.preventDefault();
+      }
+      startY = currentY;
+    }, { passive: false });
   }
 
   function initScrollToBottom() {
     const bottomBtn = document.getElementById("scrollToBottomBtn");
-
     if (!bottomBtn) return;
 
     bottomBtn.addEventListener("click", () => {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: "smooth",
-      });
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
     });
 
     window.addEventListener("scroll", () => {
       const scrollPosition = window.scrollY + window.innerHeight;
-
       const totalHeight = document.documentElement.scrollHeight;
 
       if (scrollPosition >= totalHeight - 100) {
@@ -275,9 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (window.innerWidth <= 767) return;
 
     const videoSection = document.querySelector(".video-section");
-    const chatScrollable = document.querySelector(
-      ".sidebar-scrollable-content"
-    );
+    const chatScrollable = document.querySelector(".sidebar-scrollable-content");
 
     if (!videoSection || !chatScrollable) return;
 
@@ -288,10 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
           videoSection.scrollTop + videoSection.clientHeight >=
           videoSection.scrollHeight - 1;
 
-        if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
-          return true;
-        }
-
+        if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) return true;
         e.stopPropagation();
       }
     });
@@ -303,10 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
           chatScrollable.scrollTop + chatScrollable.clientHeight >=
           chatScrollable.scrollHeight - 1;
 
-        if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
-          return true;
-        }
-
+        if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) return true;
         e.stopPropagation();
       }
     });
@@ -330,15 +448,11 @@ document.addEventListener("DOMContentLoaded", () => {
     internalLinks.forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
-
         const targetId = link.getAttribute("href");
         const targetElement = document.querySelector(targetId);
 
         if (targetElement) {
-          targetElement.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
+          targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       });
     });
@@ -354,8 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
           followBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Follow';
           followBtn.style.backgroundColor = "";
         } else {
-          followBtn.innerHTML =
-            '<i class="fa-solid fa-user-check"></i> Following';
+          followBtn.innerHTML = '<i class="fa-solid fa-user-check"></i> Following';
           followBtn.style.backgroundColor = "#22c55e";
         }
       });
@@ -372,13 +485,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const likeCount = parseInt(currentText.match(/\d+/)?.[0]) || 1234;
 
         if (currentText.includes("fa-thumbs-up")) {
-          likeBtn.innerHTML = `<i class="fa-solid fa-thumbs-up" style="color: #3b82f6;"></i> ${
-            likeCount + 1
-          }`;
+          likeBtn.innerHTML = `<i class="fa-solid fa-thumbs-up" style="color: #3b82f6;"></i> ${likeCount + 1}`;
         } else {
-          likeBtn.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> ${
-            likeCount - 1
-          }`;
+          likeBtn.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> ${likeCount - 1}`;
         }
       });
     }
@@ -392,10 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (window.innerWidth <= 767) {
             const chatSidebar = document.querySelector(".chat-sidebar");
             if (chatSidebar) {
-              chatSidebar.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              });
+              chatSidebar.scrollIntoView({ behavior: "smooth", block: "start" });
             }
           }
         }
@@ -403,59 +509,80 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function initQuickActions() {
-    const actionBoxes = document.querySelectorAll(".action-box");
 
-    actionBoxes.forEach((box) => {
-      box.addEventListener("click", () => {
-        const actionText = box.querySelector("span").textContent;
 
-        box.style.backgroundColor = "var(--bg-light-hover)";
-        box.style.borderColor = "var(--accent-blue)";
 
-        setTimeout(() => {
-          box.style.backgroundColor = "";
-          box.style.borderColor = "";
-        }, 300);
+  /* =========================
+     FEEDBACK SYSTEM
+  ========================= */
+  function initFeedbackSystem() {
+    const stars = document.querySelectorAll(".star-rating-widget .star");
+    const ratingText = document.querySelector(".rating-text");
+    const submitBtn = document.getElementById("submitFeedbackBtn");
+    let currentRating = 0;
 
-        console.log(`Action clicked: ${actionText}`);
+    const messages = ["Poor", "Fair", "Good", "Very Good", "Excellent"];
 
-        if (actionText === "Raise Hand") {
-          const participantIcon = document.querySelector(
-            ".participant-icon.raised"
-          );
-          if (participantIcon) {
-            participantIcon.style.color =
-              participantIcon.style.color === "var(--text-secondary)"
-                ? "#eab308"
-                : "var(--text-secondary)";
+    stars.forEach((star) => {
+      star.addEventListener("click", () => {
+        currentRating = parseInt(star.getAttribute("data-value"));
+
+        stars.forEach((s) => {
+          const value = parseInt(s.getAttribute("data-value"));
+          if (value <= currentRating) {
+            s.classList.add("active");
+          } else {
+            s.classList.remove("active");
           }
+        });
+
+        if (currentRating > 0) {
+          ratingText.textContent = messages[currentRating - 1];
+          ratingText.style.color = "var(--text-primary)";
         }
       });
     });
-  }
 
-  function initDownloadButtons() {
-    const downloadButtons = document.querySelectorAll(
-      ".card-link, .action-btn.download"
-    );
+    if (submitBtn) {
+      submitBtn.addEventListener("click", () => {
+        const textVal = document.getElementById("feedbackText").value.trim();
 
-    downloadButtons.forEach((button) => {
-      button.addEventListener("click", (e) => {
-        e.preventDefault();
+        if (currentRating === 0) {
+          Toast.fire({ icon: "warning", title: "Please select a star rating" });
+          return;
+        }
 
-        const originalText = button.innerHTML;
-        button.innerHTML = '<i class="fa-solid fa-check"></i> Downloading...';
-        button.style.color = "#22c55e";
+        fetch("/website/feedback/store", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document
+              .querySelector('meta[name="csrf-token"]')
+              .getAttribute("content"),
+          },
+          body: JSON.stringify({
+            rating: currentRating,
+            comment: textVal !== "" ? textVal : null,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status) {
+              Toast.fire({ icon: "success", title: "Thank you! Feedback saved" });
 
-        setTimeout(() => {
-          button.innerHTML = originalText;
-          button.style.color = "";
-        }, 2000);
-
-        console.log("Download initiated");
+              currentRating = 0;
+              document.getElementById("feedbackText").value = "";
+              document
+                .querySelectorAll(".star-rating-widget .star")
+                .forEach((s) => s.classList.remove("active"));
+              ratingText.textContent = "Select stars to rate";
+            }
+          })
+          .catch(() => {
+            Toast.fire({ icon: "error", title: "Server error" });
+          });
       });
-    });
+    }
   }
 
   function initializeAllFeatures() {
@@ -464,74 +591,51 @@ document.addEventListener("DOMContentLoaded", () => {
     initMobileChatButton();
     initFollowButton();
     initActionButtons();
-    initQuickActions();
-    initDownloadButtons();
     initScrollToBottom();
     initFeedbackSystem();
   }
 
   initializeAllFeatures();
 
-  window.addEventListener("resize", handleResize);
+  /* =========================
+     PAGE LOAD — default active tab detect
+     Refresh pe click nahi hota, isliye manually
+     active tab check kar ke init karna padta hai
+  ========================= */
+  const activeTabLink = document.querySelector(".tab-link.active");
+  const defaultTabId = activeTabLink ? activeTabLink.getAttribute("data-tab") : null;
+
+  if (defaultTabId === "chat") {
+    loadChatMessages();
+    if (!chatInterval) {
+      chatInterval = setInterval(loadChatMessages, 3000);
+    }
+  } else if (defaultTabId === "polls") {
+    loadPoll(true);
+    if (!pollInterval) {
+      pollInterval = setInterval(() => { loadPoll(true); }, 10000);
+    }
+  }
+
+  // chatInputArea visibility bhi set karo on load
+  const chatInputArea = document.querySelector(".chat-input-area");
+  if (chatInputArea && (defaultTabId === "polls" || defaultTabId === "feedback")) {
+    chatInputArea.style.display = "none";
+  }
+
+  const debouncedResize = debounce(handleResize, 250);
+  window.addEventListener("resize", debouncedResize);
 
   window.addEventListener("beforeunload", () => {
-    window.removeEventListener("resize", handleResize);
+    window.removeEventListener("resize", debouncedResize);
+    if (chatInterval)  clearInterval(chatInterval);
+    if (pollInterval)  clearInterval(pollInterval);
   });
 });
 
-function initFeedbackSystem() {
-  const stars = document.querySelectorAll(".star-rating-widget .star");
-  const ratingText = document.querySelector(".rating-text");
-  const submitBtn = document.getElementById("submitFeedbackBtn");
-  const feedbackContainer = document.querySelector(".feedback-container");
-  const successMessage = document.querySelector(".feedback-success");
-  let currentRating = 0;
-
-  const messages = ["Poor", "Fair", "Good", "Very Good", "Excellent"];
-
-  stars.forEach((star) => {
-    star.addEventListener("click", () => {
-      currentRating = parseInt(star.getAttribute("data-value"));
-
-      stars.forEach((s) => {
-        const value = parseInt(s.getAttribute("data-value"));
-        if (value <= currentRating) {
-          s.classList.add("active");
-        } else {
-          s.classList.remove("active");
-        }
-      });
-
-      if (currentRating > 0) {
-        ratingText.textContent = messages[currentRating - 1];
-        ratingText.style.color = "var(--text-primary)";
-      }
-    });
-  });
-
-  if (submitBtn) {
-    submitBtn.addEventListener("click", () => {
-      const textVal = document.getElementById("feedbackText").value;
-
-      if (currentRating === 0) {
-        alert("Please select a star rating first.");
-        return;
-      }
-
-      feedbackContainer.style.display = "none";
-      successMessage.style.display = "block";
-
-      console.log(
-        `Feedback Submitted: Rating ${currentRating}, Text: ${textVal}`
-      );
-    });
-  }
-}
-
-function isMobileDevice() {
-  return window.innerWidth <= 767;
-}
-
+/* =========================
+   UTILITY
+========================= */
 function debounce(func, wait) {
   let timeout;
   return function executedFunction(...args) {
@@ -544,8 +648,8 @@ function debounce(func, wait) {
   };
 }
 
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = { isMobileDevice };
+function isMobileDevice() {
+  return window.innerWidth <= 767;
 }
 
 console.log("LiveStream Pro initialized successfully!");

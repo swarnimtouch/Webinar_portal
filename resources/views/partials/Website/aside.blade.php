@@ -21,35 +21,8 @@
 
 
             <div class="tab-content" id="chat">
-                <div class="chat-messages">
-                    <div class="message">
-                        <img src="{{asset('assets/Website/images/user.png')}}" alt="Jane Doe" class="chat-avatar">
-                        <div class="message-content">
-                            <span class="username">Jane Doe</span>
-                            <p>This is an amazing presentation! So insightful.</p>
-                        </div>
-                    </div>
-                    <div class="message">
-                        <img src="{{asset('assets/Website/images/user.png')}}" alt="John Smith" class="chat-avatar">
-                        <div class="message-content">
-                            <span class="username">John Smith</span>
-                            <p>Could you elaborate on the multi-modal capabilities?</p>
-                        </div>
-                    </div>
-                    <div class="message">
-                        <img src="{{asset('assets/Website/images/user.png')}}" alt="Sarah Lee" class="chat-avatar">
-                        <div class="message-content">
-                            <span class="username">Sarah Lee</span>
-                            <p>Loving the examples. Really helps clarify the concepts.</p>
-                        </div>
-                    </div>
-                    <div class="message">
-                        <img src="{{asset('assets/Website/images/user.png')}}" alt="Mike Chen" class="chat-avatar">
-                        <div class="message-content">
-                            <span class="username">Mike Chen</span>
-                            <p>Will the slides be available for download after the session?</p>
-                        </div>
-                    </div>
+                <div class="chat-messages" id="chatMessages">
+
                 </div>
             </div>
             <div class="tab-content" id="qa" style="display: none;">
@@ -78,16 +51,24 @@
             </div>
 
             <div class="tab-content" id="polls" style="display: none;">
-                <div class="poll-container">
-                    <p class="poll-question">What is your experience level with generative AI?</p>
-                    <div class="poll-options">
-                        <button class="poll-option">Beginner</button>
-                        <button class="poll-option">Intermediate</button>
-                        <button class="poll-option">Expert</button>
+                <div class="poll-container" id="pollBox">
+                    <p class="poll-question" id="pollQuestion">
+                        <!-- Question loaded from DB -->
+                    </p>
+
+                    <div class="poll-options" id="pollOptions">
+                        <!-- Options loaded dynamically -->
                     </div>
-                    <p class="poll-footer">Poll closes in 2 minutes</p>
+                            <p class="poll-message" id="pollMessage" style="display:none;">
+                        Poll is not active right now.
+                    </p>
+
+                    <p class="poll-footer" id="pollFooter">
+                        <!-- Optional footer -->
+                    </p>
                 </div>
             </div>
+
 
             <div class="tab-content" id="feedback" style="display: none;">
                 <div class="feedback-container">
@@ -114,8 +95,8 @@
 
             <div class="chat-input-area">
                 <div class="input-wrapper">
-                    <input type="text" placeholder="Type your message...">
-                    <button class="send-btn">
+                    <input type="text" id="chatInput"  placeholder="Type your message...">
+                    <button class="send-btn"id="sendChatBtn">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
@@ -134,14 +115,26 @@
                             <i class="fa-solid fa-share-from-square"></i>
                             <span>Share Screen</span>
                         </button>
-                        <button class="action-box">
-                            <i class="fa-solid fa-file-lines"></i>
-                            <span>Resources</span>
-                        </button>
-                        <button class="action-box">
-                            <i class="fa-solid fa-certificate"></i>
-                            <span>Certificate</span>
-                        </button>
+                        @php
+                            $file = siteSetting('resources');
+                        @endphp
+
+                        @if(!empty($file))
+                            <a href="{{ asset('storage/site_settings/'.$file) }}"
+                               class="action-box"
+                               target="_blank"
+                               download>
+                                <i class="fa-solid fa-file-lines"></i>
+                                <span>Resources</span>
+                            </a>
+                        @endif
+                        @if($activeCertificate)
+                            <a href="{{ route('admin.certificate.generate', ['certificateId' => $activeCertificate->id, 'userId' => auth()->id()]) }}"
+                               class="action-box">
+                                <i class="fa-solid fa-certificate"></i>
+                                <span>Certificate</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
 

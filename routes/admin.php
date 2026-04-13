@@ -12,6 +12,13 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\HomeSettingController;
 use App\Http\Controllers\Admin\UserAttendenceController;
+use App\Http\Controllers\Admin\FeedbackController;
+use App\Http\Controllers\Admin\PollController;
+use App\Http\Controllers\Admin\UserQuizResult;
+use App\Http\Controllers\Admin\ChatMessageController;
+use App\Http\Controllers\Admin\CertificateController;
+use App\Http\Controllers\Admin\CertificateDownloadController;
+
 
 
 use Illuminate\Support\Facades\Route;
@@ -80,4 +87,39 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('attendance/delete-multiple', [UserAttendenceController::class, 'deleteMultiple'])->name('user_attendance.deleteMultiple');
     Route::get('attendance/datatable', [UserAttendenceController::class, 'datatable'])->name('user_attendance.datatable');
 
+    Route::get('feedback', [FeedbackController::class, 'index'])->name('feedback.index');
+    Route::delete('feedback/delete/{id}', [FeedbackController::class, 'delete'])->name('feedback.delete');
+    Route::post('feedback/delete-multiple', [FeedbackController::class, 'deleteMultiple'])->name('feedback.deleteMultiple');
+    Route::get('feedback/datatable', [FeedbackController::class, 'datatable'])->name('feedback.datatable');
+
+    Route::get('poll', [PollController::class, 'index'])->name('poll');
+    Route::get('poll/add-edit/{id?}', [PollController::class, 'addEditForm'])->name('poll.add_edit_form');
+    Route::match(['POST', 'PUT'], 'poll/store/{id?}', [PollController::class, 'store'])->name('poll.store');
+    Route::delete('poll/delete/{id}', [PollController::class, 'delete'])->name('poll.delete');
+    Route::post('poll/delete-multiple', [PollController::class, 'deleteMultiple'])->name('poll.deleteMultiple');
+    Route::post('poll/toggle-status/{id}', [PollController::class, 'toggleStatus'])->name('poll.toggleStatus');
+    Route::get('poll/datatable', [PollController::class, 'datatable'])->name('poll.datatable');
+
+    Route::get('user_quiz_result', [UserQuizResult::class, 'index'])->name('user_quiz_result');
+    Route::delete('user_quiz_result/delete/{id}', [UserQuizResult::class, 'delete'])->name('user_quiz_result.delete');
+    Route::post('user_quiz_result/delete-multiple', [UserQuizResult::class, 'deleteMultiple'])->name('user_quiz_result.deleteMultiple');
+    Route::get('user_quiz_result/datatable', [UserQuizResult::class, 'datatable'])->name('user_quiz_result.datatable');
+
+    Route::get('chatmessage', [ChatMessageController::class, 'index'])->name('chatmessage');
+    Route::delete('chatmessage/delete/{id}', [ChatMessageController::class, 'delete'])->name('chatmessage.delete');
+    Route::post('chatmessage/delete-multiple', [ChatMessageController::class, 'deleteMultiple'])->name('chatmessage.deleteMultiple');
+    Route::get('chatmessage/datatable', [ChatMessageController::class, 'datatable'])->name('chatmessage.datatable');
+
+    Route::get('certificate', [CertificateController::class, 'index'])->name('certificate');
+    Route::get('certificate/add-edit/{id?}', [CertificateController::class, 'addEditForm'])->name('certificate.add_edit_form');
+    Route::match(['POST', 'PUT'], 'certificate/store/{id?}', [CertificateController::class, 'store'])->name('certificate.store');
+    Route::delete('certificate/delete/{id}', [CertificateController::class, 'delete'])->name('certificate.delete');
+    Route::post('certificate/delete-multiple', [CertificateController::class, 'deleteMultiple'])->name('certificate.deleteMultiple');
+    Route::post('certificate/toggle-status/{id}', [CertificateController::class, 'toggleStatus'])->name('certificate.toggleStatus');
+    Route::get('certificate/datatable', [CertificateController::class, 'datatable'])->name('certificate.datatable');
+
+    Route::get('certificate-download', [CertificateDownloadController::class, 'index'])->name('certificate-download');
+    Route::delete('certificate-download/delete/{id}', [CertificateDownloadController::class, 'delete'])->name('certificate-download.delete');
+    Route::post('certificate-download/delete-multiple', [CertificateDownloadController::class, 'deleteMultiple'])->name('certificate-download.deleteMultiple');
+    Route::get('certificate-download/datatable', [CertificateDownloadController::class, 'datatable'])->name('certificate-download.datatable');
 });

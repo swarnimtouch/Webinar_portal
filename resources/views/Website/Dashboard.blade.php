@@ -18,7 +18,7 @@
 
                 <div class="webinar-details">
                     <p class="category">TECHNOLOGY & AI</p>
-                    <h1>The Future of Generative AI in Modern Development</h1>
+                    <h1>{{ $home_setting->title}}</h1>
                     <p class="description">
                         Join industry experts as we explore the cutting-edge applications of generative AI, from code
                         generation to automated testing and beyond.
@@ -30,16 +30,16 @@
                         </button>
                     </div>
 
-                    <div class="presenter-info">
-                        <img src="{{asset('assets/Website/images/user.png')}}" alt="Alex Morgan" class="presenter-avatar">
-                        <div class="presenter-details">
-                            <span class="name">Alex Morgan</span>
-                            <span class="title">Principal AI Engineer @ TechCorp</span>
-                        </div>
-                        <button class="follow-btn">
-                            <i class="fa-solid fa-user-plus"></i> Follow
-                        </button>
-                    </div>
+{{--                    <div class="presenter-info">--}}
+{{--                        <img src="{{asset('assets/Website/images/user.png')}}" alt="Alex Morgan" class="presenter-avatar">--}}
+{{--                        <div class="presenter-details">--}}
+{{--                            <span class="name">Alex Morgan</span>--}}
+{{--                            <span class="title">Principal AI Engineer @ TechCorp</span>--}}
+{{--                        </div>--}}
+{{--                        <button class="follow-btn">--}}
+{{--                            <i class="fa-solid fa-user-plus"></i> Follow--}}
+{{--                        </button>--}}
+{{--                    </div>--}}
 
                     <div class="webinar-info-container">
 
@@ -48,49 +48,60 @@
                             <p>{!!$home_setting->about_us!!}</p>
                         </div>
 
-                        <div class="key-topics">
-                            <h3>Key Topics Covered</h3>
-                            <div class="key-topics-grid">
-                                <div class="topic-item">
-                                    <div class="topic-icon"><i class="fa-solid fa-brain"></i></div>
-                                    <div class="topic-text">
-                                        <h4>Machine Learning Fundamentals</h4>
-                                        <p>Core concepts and applications</p>
-                                    </div>
-                                </div>
-                                <div class="topic-item">
-                                    <div class="topic-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                                    <div class="topic-text">
-                                        <h4>AI Ethics & Governance</h4>
-                                        <p>Responsible AI implementation</p>
-                                    </div>
-                                </div>
-                                <div class="topic-item">
-                                    <div class="topic-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                                    <div class="topic-text">
-                                        <h4>ROI Optimization</h4>
-                                        <p>Measuring AI impact</p>
-                                    </div>
-                                </div>
-                                <div class="topic-item">
-                                    <div class="topic-icon"><i class="fa-solid fa-rocket"></i></div>
-                                    <div class="topic-text">
-                                        <h4>Future Trends</h4>
-                                        <p>What's coming in 2025</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+{{--                        <div class="key-topics">--}}
+{{--                            <h3>Key Topics Covered</h3>--}}
+{{--                            <div class="key-topics-grid">--}}
+{{--                                <div class="topic-item">--}}
+{{--                                    <div class="topic-icon"><i class="fa-solid fa-brain"></i></div>--}}
+{{--                                    <div class="topic-text">--}}
+{{--                                        <h4>Machine Learning Fundamentals</h4>--}}
+{{--                                        <p>Core concepts and applications</p>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+{{--                                <div class="topic-item">--}}
+{{--                                    <div class="topic-icon"><i class="fa-solid fa-shield-halved"></i></div>--}}
+{{--                                    <div class="topic-text">--}}
+{{--                                        <h4>AI Ethics & Governance</h4>--}}
+{{--                                        <p>Responsible AI implementation</p>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+{{--                                <div class="topic-item">--}}
+{{--                                    <div class="topic-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>--}}
+{{--                                    <div class="topic-text">--}}
+{{--                                        <h4>ROI Optimization</h4>--}}
+{{--                                        <p>Measuring AI impact</p>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+{{--                                <div class="topic-item">--}}
+{{--                                    <div class="topic-icon"><i class="fa-solid fa-rocket"></i></div>--}}
+{{--                                    <div class="topic-text">--}}
+{{--                                        <h4>Future Trends</h4>--}}
+{{--                                        <p>What's coming in 2025</p>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
 
                         <div class="webinar-actions">
-                            <div class="action-group-left">
-                                <button class="action-btn"><i class="fa-solid fa-thumbs-up"></i> 1,234</button>
-                                <button class="action-btn"><i class="fa-solid fa-comment"></i> 456</button>
-                                <button class="action-btn"><i class="fa-solid fa-share"></i> Share</button>
-                            </div>
+{{--                            <div class="action-group-left">--}}
+{{--                                <button class="action-btn"><i class="fa-solid fa-thumbs-up"></i> 1,234</button>--}}
+{{--                                <button class="action-btn"><i class="fa-solid fa-comment"></i> 456</button>--}}
+{{--                                <button class="action-btn"><i class="fa-solid fa-share"></i> Share</button>--}}
+{{--                            </div>--}}
                             <div class="action-group-right">
-                                <button class="action-btn download"><i class="fa-solid fa-download"></i> Download Resources</button>
-                                <button class="action-btn save"><i class="fa-solid fa-bookmark"></i> Save</button>
+                                @php
+                                    $file = siteSetting('resources');
+                                @endphp
+
+                                @if(!empty($file))
+                                    <a href="{{ asset('storage/site_settings/'.$file) }}"
+                                       class="action-btn download"
+                                       download
+                                       target="_blank">
+                                        <i class="fa-solid fa-download"></i> Download Resources
+                                    </a>
+                                @endif
+{{--                                <button class="action-btn save"><i class="fa-solid fa-bookmark"></i> Save</button>--}}
                             </div>
                         </div>
                     </div>

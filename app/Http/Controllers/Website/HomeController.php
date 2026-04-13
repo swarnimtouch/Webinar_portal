@@ -8,6 +8,7 @@ use App\Models\City;
 use App\Models\Content;
 use App\Models\Country;
 use App\Models\DynamicFields;
+use App\Models\HomeSetting;
 use App\Models\Speakers;
 use App\Models\State;
 use App\Models\User;
@@ -35,6 +36,8 @@ class HomeController
             ->orderBy('id')
             ->get();
 
+        $homesetting = HomeSetting::first();
+        
         $loginFields = DynamicFields::where('status', 'active')
             ->where('login_with', 1)
             ->orderBy('index_no')
@@ -60,55 +63,66 @@ class HomeController
             return $data;
         });
 
-        return view('Website.home', compact('banners','registerFields', 'contents', 'speakers', 'brands', 'loginFields', 'sliderData'));
+        return view('Website.home', compact('homesetting','banners','registerFields', 'contents', 'speakers', 'brands', 'loginFields', 'sliderData'));
     }
-    public function login(Request $request)
-    {
-        $loginFields = DynamicFields::where('status', 'active')
-            ->where('login_with', 1)
-            ->orderBy('index_no')
-            ->get();
+  public function login(Request $request)
+{
+    $loginFields = DynamicFields::where('status', 'active')
+        ->where('login_with', 1)
+        ->orderBy('index_no')
+        ->get();
 
-        $rules = [];
-        foreach ($loginFields as $field) {
-            if (str_contains($field->field_name, 'mobile')) {
-                $rules[$field->field_name] = 'required|digits:10';
-            } elseif (str_contains($field->field_name, 'email')) {
-                $rules[$field->field_name] = 'required|email';
-            } else {
-                $rules[$field->field_name] = 'required';
-            }
+    $rules = [];
+    foreach ($loginFields as $field) {
+        if (str_contains($field->field_name, 'mobile')) {
+            $rules[$field->field_name] = 'required|digits:10';
+        } elseif (str_contains($field->field_name, 'email')) {
+            $rules[$field->field_name] = 'required|email';
+        } else {
+            $rules[$field->field_name] = 'required';
         }
-
-        $validated = $request->validate($rules);
-
-        $fieldMapping = [
-            'mobile_number' => 'mobile',
-            'alternative_mobile_number' => 'alternative_mobile',
-        ];
-
-        $query = User::query();
-
-        foreach ($validated as $field => $value) {
-            $dbField = $fieldMapping[$field] ?? $field;
-            $query->where($dbField, $value);
-        }
-
-        $user = $query->first();
-
-        if (!$user) {
-            return back()
-                ->with('toast_error', 'User not found. Please register first.')
-                ->withInput()
-                ->with('open_login_modal', true);
-        }
-
-        Auth::login($user);
-
-        return redirect()
-            ->route('website.dashboard')
-            ->with('toast_success', 'Login successful!');
     }
+
+    $validated = $request->validate($rules);
+
+    $fieldMapping = [
+        'mobile_number' => 'mobile',
+        'alternative_mobile_number' => 'alternative_mobile',
+    ];
+
+    $query = User::query();
+
+    foreach ($validated as $field => $value) {
+        $dbField = $fieldMapping[$field] ?? $field;
+        $query->where($dbField, $value);
+    }
+
+    $user = $query->first();
+
+    if (!$user) {
+        return back()
+            ->with('toast_error', 'User not found. Please register first.')
+            ->withInput()
+            ->with('open_login_modal', true);
+    }
+
+    /* =========================
+       ✅ DOCTOR CHECK
+    ========================= */
+    if ($user->type !== 'doctor') {   // change column/value if needed
+        return back()
+            ->with('toast_error', 'Only doctors are allowed to login.')
+            ->withInput()
+            ->with('open_login_modal', true);
+    }
+
+    Auth::login($user);
+
+    return redirect()
+        ->route('website.dashboard')
+        ->with('toast_success', 'Login successful!');
+}
+
 
 
 
@@ -152,6 +166,13 @@ class HomeController
             $data['mobile'] = $data['mobile_number'];
             unset($data['mobile_number']);
         }
+        if (!empty($data['first_name']) || !empty($data['last_name'])) {
+            $data['name'] = trim(
+                ($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')
+            );
+
+        }
+
 //        dd($data);
         $user = new User();
         $user->fill($data);
