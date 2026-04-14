@@ -7,31 +7,31 @@ const closeRegisterBtn = document.querySelector(".close-register-btn");
 const body = document.body;
 
 function openLoginModal() {
-    if (loginModal) {
-        loginModal.style.display = "flex";
-        body.style.overflow = "hidden";
-    }
+  if (loginModal) {
+    loginModal.style.display = "flex";
+    body.style.overflow = "hidden";
+  }
 }
 
 function closeLoginModal() {
-    if (loginModal) {
-        loginModal.style.display = "none";
-        body.style.overflow = "auto";
-    }
+  if (loginModal) {
+    loginModal.style.display = "none";
+    body.style.overflow = "auto";
+  }
 }
 
 function openRegisterModal() {
-    if (registerModal) {
-        registerModal.style.display = "flex";
-        body.style.overflow = "hidden";
-    }
+  if (registerModal) {
+    registerModal.style.display = "flex";
+    body.style.overflow = "hidden";
+  }
 }
 
 function closeRegisterModal() {
-    if (registerModal) {
-        registerModal.style.display = "none";
-        body.style.overflow = "auto";
-    }
+  if (registerModal) {
+    registerModal.style.display = "none";
+    body.style.overflow = "auto";
+  }
 }
 
 if (loginBtn) loginBtn.addEventListener("click", openLoginModal);
@@ -61,7 +61,7 @@ $(document).ready(function () {
     let slideInterval;
     const slideDuration = 3000;
 
-    if ($track.length === 0 || sliderData.length === 0) return;
+  if ($track.length === 0 || sliderData.length === 0) return;
 
     function initSlider() {
         $track.empty();
@@ -116,12 +116,12 @@ $(document).ready(function () {
         updateSlider();
     }
 
-    function startAutoSlide() {
-        if (slideInterval) clearInterval(slideInterval);
-        slideInterval = setInterval(nextSlide, slideDuration);
-    }
+  function startAutoSlide() {
+    if (slideInterval) clearInterval(slideInterval);
+    slideInterval = setInterval(nextSlide, slideDuration);
+  }
 
-    initSlider();
+  initSlider();
 });
 
 $(document).ready(function () {
@@ -212,9 +212,35 @@ $(document).ready(function () {
 });
 
 
-$(document).ready(function () {
+    $(document).ready(function () {
+        $('.select2').select2({
+            width: '100%',
+            allowClear: false,
+            dropdownParent: $('#registerModal'),
+            minimumResultsForSearch: 0
+    });
 
-    $('.select2').select2({width: '100%', allowClear: true});
+
+    $(document).on('select2:open', (e) => {
+        setTimeout(() => {
+            const searchInput = document.querySelector('.select2-search__field');
+            if (searchInput) searchInput.focus();
+
+            const $select = $(e.target);
+            const $parentGroup = $select.closest('.email-input-group');
+
+            if ($parentGroup.length) {
+            const fullWidth = $parentGroup.outerWidth();
+            
+            const innerSelectLeft = $select.next('.select2-container').offset().left;
+            const outerGroupLeft = $parentGroup.offset().left;
+            const offsetDiff = innerSelectLeft - outerGroupLeft;
+
+            document.documentElement.style.setProperty('--dynamic-width', fullWidth + 'px');
+            document.documentElement.style.setProperty('--dynamic-margin', `-${offsetDiff}px`);
+            }
+        }, 10);
+    });
 
     $.get('/get-countries', function (countries) {
         $('#country').append(

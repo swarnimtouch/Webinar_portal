@@ -567,6 +567,27 @@ img {
   padding: 1rem;
 }
 
+#qa.tab-content,
+#polls.tab-content,
+#feedback.tab-content {
+  display: none;
+}
+
+.hide-initially {
+  display: none;
+}
+
+.text-center-padded {
+  text-align: center;
+  padding: 2rem;
+}
+
+.success-check-icon {
+  font-size: 3rem;
+  color: #22c55e;
+  margin-bottom: 1rem;
+}
+
 .chat-messages {
   height: 350px;
   overflow-y: auto; 
@@ -975,6 +996,95 @@ img {
   transform: translateY(-2px);
 }
 
+.cursor-pointer { cursor: pointer; }
+
+.profile-dropdown {
+    position: absolute;
+    top: 150%;
+    right: -10px; 
+    width: 180px; 
+    background-color: var(--bg-dark-secondary); 
+    border: 1px solid var(--border-color); 
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 1050;
+}
+
+.profile-dropdown::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    right: 15px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid var(--bg-dark-secondary); 
+}
+
+.profile-info::after {
+    content: "";
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    right: 0;
+    height: 20px;
+}
+
+.profile-info:hover .profile-dropdown,
+.profile-info.active .profile-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    top: calc(100% + 15px);
+}
+
+.profile-info:hover .profile-chevron,
+.profile-info.active .profile-chevron { 
+    transform: rotate(180deg); 
+}
+
+.profile-chevron { 
+    transition: transform 0.3s ease; 
+    color: var(--text-secondary);
+}
+
+.profile-name-box {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.profile-name-box i {
+    color: var(--accent-blue);
+}
+
+.profile-dropdown .dropdown-item {
+    color: var(--text-primary) !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.profile-dropdown .dropdown-item i {
+    color: var(--accent-blue);
+}
+
+.profile-dropdown .dropdown-item.text-danger,
+.profile-dropdown .dropdown-item.text-danger i {
+    color: #ef4444 !important; 
+}
+
+.profile-dropdown .dropdown-item:hover { 
+    background-color: var(--bg-light-hover); 
+}
+
+.profile-dropdown .dropdown-divider {
+    border-color: var(--border-color);
+}
+
 @keyframes pulse-glow {
   0% {
     transform: scale(1);
@@ -1107,6 +1217,12 @@ img {
   background-color: #2563eb;
 }
 
+.site-logo-img {
+  width:50px;
+  height:50px;
+  object-fit:contain;
+}
+
 @media (max-width: 575px) {
   body {
     overflow-y: auto;
@@ -1168,7 +1284,6 @@ img {
     grid-column: 1 / -1;
     justify-content: space-around;
     width: 100%;
-
     position: fixed;
     bottom: 0;
     left: 0;
