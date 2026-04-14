@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\ChatMessage;
+use App\Models\Messages;
 use App\Models\User;
-use App\Models\ChatGroup;
 use Illuminate\Http\Request;
 
-class ChatMessageController extends Controller
+class ChatLogController extends Controller
 {
     /**
      * Chat messages listing page
      */
     public function index()
     {
-        
-        return view('admin.chatmessage.index', [
-            'title' => __('Chat Messages'),
+
+        return view('admin.chatlog.index', [
+            'title' => __('Chat Log'),
             'breadcrumb' => breadcrumb([
-                __('Chat Messages') => route('admin.chatmessage')
+                __('Chat Log') => route('admin.chatlog')
             ])
         ]);
     }
@@ -29,7 +28,7 @@ class ChatMessageController extends Controller
     public function delete($id)
     {
         try {
-            $chatMessage = ChatMessage::findOrFail($id);
+            $chatMessage = Messages::findOrFail($id);
             $chatMessage->delete();
 
             return response()->json([
@@ -59,7 +58,7 @@ class ChatMessageController extends Controller
                 ], 400);
             }
 
-            ChatMessage::whereIn('id', $ids)->delete();
+            Messages::whereIn('id', $ids)->delete();
 
             return response()->json([
                 'success' => true,
@@ -78,44 +77,41 @@ class ChatMessageController extends Controller
      */
     public function datatable(Request $request)
     {
-        $query = ChatMessage::with(['sender', 'group']);
+        $query = Messages::with(['sender', 'group']);
 
-        /* ===== SEARCH ===== */
         if ($request->filled('search')) {
             $search = $request->search;
 
             $query->where(function ($q) use ($search) {
                 $q->where('message', 'like', "%{$search}%")
-                  ->orWhereHas('sender', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('group', function ($groupQuery) use ($search) {
-                      $groupQuery->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('sender', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('group', function ($groupQuery) use ($search) {
+                        $groupQuery->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
-        /* ===== GROUP FILTER (optional) ===== */
         if ($request->filled('group_id')) {
             $query->where('group_id', $request->group_id);
         }
 
         $total = $query->count();
 
-        /* ===== ORDER ===== */
         if ($request->has('order')) {
             $columns = $request->columns;
 
             foreach ($request->order as $order) {
                 $columnIndex = $order['column'];
-                $columnName  = $columns[$columnIndex]['data'];
-                $direction   = $order['dir'];
+                $columnName = $columns[$columnIndex]['data'];
+                $direction = $order['dir'];
 
                 $dbColumn = match ($columnName) {
-                    'message'    => 'message',
+                    'message' => 'message',
                     'created_at' => 'created_at',
-                    default      => 'id',
+                    default => 'id',
                 };
 
                 $query->orderBy($dbColumn, $direction);
@@ -124,41 +120,39 @@ class ChatMessageController extends Controller
             $query->orderBy('id', 'desc');
         }
 
-        /* ===== PAGINATION ===== */
         $length = $request->input('length', 10);
-        $start  = $request->input('start', 0);
+        $start = $request->input('start', 0);
 
         $chatMessages = $query->skip($start)->take($length)->get();
-        
-        /* ===== RESPONSE FORMAT ===== */
-        $data = $chatMessages->map(function ($chatMessage) {
-                $seenUserNames = 'Not seen';
 
-        if (!empty($chatMessage->seen_by)) {
-        $seenUserIds = array_keys($chatMessage->seen_by);
-        
-        $seenUserNames = User::whereIn('id', $seenUserIds)
-            ->pluck('name')
-            ->implode(', ');
-        }
+        $data = $chatMessages->map(function ($chatMessage) {
+            $seenUserNames = 'Not seen';
+
+            if (!empty($chatMessage->seen_by)) {
+                $seenUserIds = array_keys($chatMessage->seen_by);
+
+                $seenUserNames = User::whereIn('id', $seenUserIds)
+                    ->pluck('name')
+                    ->implode(', ');
+            }
 
             return [
-                'id'          => $chatMessage->id,
-                'group_name'  => optional($chatMessage->group)->name ?? 'N/A',
+                'id' => $chatMessage->id,
+                'group_name' => optional($chatMessage->group)->name ?? 'N/A',
                 'sender_name' => optional($chatMessage->sender)->name ?? 'N/A',
-                'message'     => $chatMessage->message,
-                        'seen_by'     => $seenUserNames,
+                'message' => $chatMessage->message,
+                'seen_by' => $seenUserNames,
 
-                'created_at'  => $chatMessage->created_at->format('d M Y'),
-                'actions'     => '',
+                'created_at' => $chatMessage->created_at->format('d M Y'),
+                'actions' => '',
             ];
         });
 
         return response()->json([
-            'draw'            => (int) $request->input('draw'),
-            'recordsTotal'    => $total,
+            'draw' => (int)$request->input('draw'),
+            'recordsTotal' => $total,
             'recordsFiltered' => $total,
-            'data'            => $data,
+            'data' => $data,
         ]);
     }
 }

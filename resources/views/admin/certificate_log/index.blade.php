@@ -14,9 +14,13 @@
                         <div class="card-title">
                             <div class="d-flex align-items-center position-relative my-1">
                                 <span class="svg-icon svg-icon-1 position-absolute ms-6">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="black"/>
-                                        <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="black"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         fill="none">
+                                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1"
+                                              transform="rotate(45 17.0365 15.1223)" fill="black"/>
+                                        <path
+                                            d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
+                                            fill="black"/>
                                     </svg>
                                 </span>
                                 <input type="text" data-kt-user-table-filter="search"
@@ -79,7 +83,8 @@
                         </div>
                     </div>
                     <div class="card-body pt-0">
-                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_certificate_downloads">
+                        <table class="table align-middle table-row-dashed fs-6 gy-5"
+                               id="kt_table_certificate_downloads">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
                                 <th class="w-10px pe-2">
@@ -121,7 +126,7 @@
                 serverSide: true,
                 searching: false,
                 ajax: {
-                    url: '{{ route("admin.certificate-download.datatable") }}',
+                    url: '{{ route("admin.certificate-log.datatable") }}',
                     data: d => {
                         d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
                     }
@@ -173,7 +178,7 @@
                         }
                     },
                     /* DOWNLOADED AT */
-                    { data: 'downloaded_at' },
+                    {data: 'downloaded_at'},
 
                     /* ACTIONS */
                     {
@@ -216,9 +221,9 @@
         /* ===== SHOW / HIDE BULK TOOLBAR ===== */
         function toggleBulkToolbar() {
             const selected = document.querySelectorAll('.row-checkbox:checked').length;
-            const baseToolbar     = document.querySelector('[data-kt-user-table-toolbar="base"]');
+            const baseToolbar = document.querySelector('[data-kt-user-table-toolbar="base"]');
             const selectedToolbar = document.querySelector('[data-kt-user-table-toolbar="selected"]');
-            const countEl         = document.querySelector('[data-kt-user-table-select="selected_count"]');
+            const countEl = document.querySelector('[data-kt-user-table-select="selected_count"]');
 
             if (selected > 0) {
                 baseToolbar.classList.add('d-none');
@@ -237,7 +242,7 @@
                 const ids = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.value);
 
                 if (!ids.length) {
-                    Swal.fire({ text: "Please select at least one record", icon: "info", confirmButtonText: "OK" });
+                    Swal.fire({text: "Please select at least one record", icon: "info", confirmButtonText: "OK"});
                     return;
                 }
 
@@ -249,27 +254,30 @@
                 }).then(result => {
                     if (!result.isConfirmed) return;
 
-                    fetch('{{ route("admin.certificate-download.deleteMultiple") }}', {
+                    fetch('{{ route("admin.certificate-log.deleteMultiple") }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
-                        body: JSON.stringify({ ids })
+                        body: JSON.stringify({ids})
                     })
-                        .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+                        .then(res => {
+                            if (!res.ok) throw new Error();
+                            return res.json();
+                        })
                         .then(() => {
-                            Swal.fire({ text: "Selected records deleted successfully", icon: "success" });
+                            Swal.fire({text: "Selected records deleted successfully", icon: "success"});
                             downloadTable.draw(false);
                             toggleBulkToolbar();
                         })
                         .catch(() => {
-                            Swal.fire({ text: "Failed to delete records", icon: "error" });
+                            Swal.fire({text: "Failed to delete records", icon: "error"});
                         });
                 });
             });
 
-           var handleExport = function () {
+        var handleExport = function () {
             const exportBtn = document.getElementById('export-btn');
 
             if (exportBtn) {
@@ -308,7 +316,7 @@
                         }
                     });
 
-                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.setAttribute('href', url);
@@ -327,7 +335,7 @@
                             icon: "success",
                             buttonsStyling: false,
                             confirmButtonText: "Ok, got it!",
-                            customClass: { confirmButton: "btn fw-bold btn-primary" }
+                            customClass: {confirmButton: "btn fw-bold btn-primary"}
                         });
                     }, 500);
                 });
@@ -352,9 +360,9 @@
                 if (!r.isConfirmed) return;
 
                 $.ajax({
-                    url: '{{ route("admin.certificate-download.delete", ":id") }}'.replace(':id', id),
+                    url: '{{ route("admin.certificate-log.delete", ":id") }}'.replace(':id', id),
                     method: 'DELETE',
-                    data: { _token: '{{ csrf_token() }}' },
+                    data: {_token: '{{ csrf_token() }}'},
                     success: () => {
                         toastr.success('Record deleted');
                         downloadTable.draw(false);

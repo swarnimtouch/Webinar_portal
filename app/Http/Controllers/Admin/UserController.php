@@ -30,16 +30,29 @@ class UserController extends Controller
         return view('admin.users.index', ['users' => $users, 'valid_dynamic_fields' => $validDynamicFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index')])]);
     }
 
-    public function create()
+    public function addEditForm($id = null)
     {
+        $user = $id ? User::findOrFail($id) : null;
+
         $activeFields = DynamicFields::where('status', 'active')
             ->orderBy('index_no')
             ->get();
-        return view('admin.users.add_edit', ['activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'), 'Add User' => ''])]);
+
+        $breadcrumb = $id
+            ? breadcrumb([__('Users') => route('admin.user.index'), 'Edit User' => ''])
+            : breadcrumb([__('Users') => route('admin.user.index'), 'Add User' => '']);
+
+        return view('admin.users.add_edit', [
+            'user' => $user,
+            'activeFields' => $activeFields,
+            'title' => __('Users'),
+            'breadcrumb' => $breadcrumb,
+        ]);
     }
 
-    public function store(Request $request)
+    public function save(Request $request, $id = null)
     {
+        $user = $id ? User::findOrFail($id) : null;
         $activeFields = DynamicFields::where('status', 'active')->get();
 
         $rules = [];
@@ -56,21 +69,27 @@ class UserController extends Controller
             $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
 
             if ($field->is_required) {
-                if ($fieldName == 'email') {
-                    $rules[$dbFieldName] = 'required|email|unique:users,email';
-                } elseif ($fieldName == 'password') {
-                    $rules['password'] = 'required|min:6';
-                } elseif ($fieldName == 'avatar') {
-                    $rules['avatar'] = 'required|image|mimes:jpg,jpeg,png,gif|max:5120';
+                if ($fieldName === 'email') {
+                    $rules[$dbFieldName] = 'required|email|unique:users,email' . ($id ? ",$id" : '');
+                } elseif ($fieldName === 'password') {
+                    // Required only on create; optional on update
+                    $rules['password'] = $id ? 'nullable|min:6' : 'required|min:6';
+                } elseif ($fieldName === 'avatar') {
+                    if ($id && $request->avatar_removed == '1' && !$request->hasFile('avatar')) {
+                        $rules['avatar'] = 'required|image|mimes:jpg,jpeg,png,gif|max:5120';
+                    } else {
+                        $rules['avatar'] = $id ? 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120'
+                            : 'required|image|mimes:jpg,jpeg,png,gif|max:5120';
+                    }
                 } elseif (in_array($fieldName, ['mobile_number', 'alternative_mobile_number'])) {
                     $rules[$dbFieldName] = 'required|digits:10';
                 } else {
                     $rules[$dbFieldName] = 'required';
                 }
             } else {
-                if ($fieldName == 'email' && $request->has($dbFieldName)) {
-                    $rules[$dbFieldName] = 'nullable|email|unique:users,email';
-                } elseif ($fieldName == 'avatar' && $request->hasFile('avatar')) {
+                if ($fieldName === 'email' && $request->has($dbFieldName)) {
+                    $rules[$dbFieldName] = 'nullable|email|unique:users,email' . ($id ? ",$id" : '');
+                } elseif ($fieldName === 'avatar' && $request->hasFile('avatar')) {
                     $rules['avatar'] = 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120';
                 } elseif (in_array($fieldName, ['mobile_number', 'alternative_mobile_number']) && $request->has($dbFieldName)) {
                     $rules[$dbFieldName] = 'nullable|digits:10';
@@ -80,7 +99,7 @@ class UserController extends Controller
             $messages[$dbFieldName . '.required'] = $field->label . ' is required';
         }
 
-        $validated = $request->validate($rules, $messages);
+        $request->validate($rules, $messages);
 
         $userData = [];
 
@@ -94,11 +113,21 @@ class UserController extends Controller
 
             $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
 
-            if ($fieldName == 'avatar') {
+            if ($fieldName === 'avatar') {
+                if ($id && $request->avatar_removed == '1') {
+                    if ($user->avatar) {
+                        Storage::disk('public')->delete($user->avatar);
+                    }
+                    $userData['avatar'] = null;
+                }
+
                 if ($request->hasFile('avatar')) {
+                    if ($user?->avatar) {
+                        Storage::disk('public')->delete($user->avatar);
+                    }
                     $userData['avatar'] = $request->file('avatar')->store('avatars', 'public');
                 }
-            } elseif ($fieldName == 'password') {
+            } elseif ($fieldName === 'password') {
                 if ($request->filled('password')) {
                     $userData['password'] = Hash::make($request->password);
                 }
@@ -111,9 +140,15 @@ class UserController extends Controller
 
         $userData['type'] = 'doctor';
 
-        User::create($userData);
+        if ($user) {
+            $user->update($userData);
+            $message = 'User updated successfully';
+        } else {
+            User::create($userData);
+            $message = 'User created successfully';
+        }
 
-        return redirect()->route('admin.user.index')->with('success', 'User created successfully');
+        return redirect()->route('admin.user.index')->with('success', $message);
     }
 
     public function show($id)
@@ -127,108 +162,6 @@ class UserController extends Controller
         return view('admin.users.show', ['user' => $user, 'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'), 'User Details' => ''])]);
     }
 
-    public function edit($id)
-    {
-        $user = User::findOrFail($id);
-
-        $activeFields = DynamicFields::where('status', 'active')
-            ->orderBy('index_no')
-            ->get();
-
-        return view('admin.users.add_edit', ['user' => $user, 'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'), 'Edit User' => ''])]);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-        $activeFields = DynamicFields::where('status', 'active')->get();
-
-        $rules = [];
-        $messages = [];
-
-        foreach ($activeFields as $field) {
-            $fieldName = $field->field_name;
-
-            $fieldMapping = [
-                'mobile_number' => 'mobile',
-                'alternative_mobile_number' => 'alternative_mobile',
-            ];
-
-            $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
-
-            if ($field->is_required) {
-                if ($fieldName == 'email') {
-                    $rules[$dbFieldName] = 'required|email|unique:users,email,' . $id;
-                } elseif ($fieldName == 'password') {
-                    $rules['password'] = 'nullable|min:6';
-                } elseif ($fieldName == 'avatar') {
-                    if ($request->avatar_removed == '1' && !$request->hasFile('avatar')) {
-                        $rules['avatar'] = 'required|image|mimes:jpg,jpeg,png,gif|max:5120';
-                    } else {
-                        $rules['avatar'] = 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120';
-                    }
-                } elseif (in_array($fieldName, ['mobile_number', 'alternative_mobile_number'])) {
-                    $rules[$dbFieldName] = 'required|digits:10';
-                } else {
-                    $rules[$dbFieldName] = 'required';
-                }
-            } else {
-                if ($fieldName == 'email' && $request->has($dbFieldName)) {
-                    $rules[$dbFieldName] = 'nullable|email|unique:users,email,' . $id;
-                } elseif ($fieldName == 'avatar' && $request->hasFile('avatar')) {
-                    $rules['avatar'] = 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120';
-                } elseif (in_array($fieldName, ['mobile_number', 'alternative_mobile_number']) && $request->has($dbFieldName)) {
-                    $rules[$dbFieldName] = 'nullable|digits:10';
-                }
-            }
-
-            $messages[$dbFieldName . '.required'] = $field->label . ' is required';
-        }
-
-        $validated = $request->validate($rules, $messages);
-
-        $userData = [];
-
-        foreach ($activeFields as $field) {
-            $fieldName = $field->field_name;
-
-            $fieldMapping = [
-                'mobile_number' => 'mobile',
-                'alternative_mobile_number' => 'alternative_mobile',
-            ];
-
-            $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
-
-            if ($fieldName == 'avatar') {
-                if ($request->avatar_removed == '1') {
-                    if ($user->avatar) {
-                        Storage::disk('public')->delete($user->avatar);
-                    }
-                    $userData['avatar'] = null;
-                }
-
-                if ($request->hasFile('avatar')) {
-                    // Delete old avatar
-                    if ($user->avatar) {
-                        Storage::disk('public')->delete($user->avatar);
-                    }
-                    $userData['avatar'] = $request->file('avatar')->store('avatars', 'public');
-                }
-            } elseif ($fieldName == 'password') {
-                if ($request->filled('password')) {
-                    $userData['password'] = Hash::make($request->password);
-                }
-            } else {
-                if ($request->has($dbFieldName)) {
-                    $userData[$dbFieldName] = $request->$dbFieldName;
-                }
-            }
-        }
-
-        $user->update($userData);
-
-        return redirect()->route('admin.user.index')->with('success', 'User updated successfully');
-    }
 
     public function destroy($id)
     {
@@ -264,14 +197,12 @@ class UserController extends Controller
     {
         $activeFields = DynamicFields::where('status', 'active')->orderBy('index_no')->get();
 
-        // VALID fields in user table
         $userTableColumns = \Schema::getColumnListing('users');
 
         $validDynamicFields = $activeFields->filter(function ($field) use ($userTableColumns) {
             return in_array($field->field_name, $userTableColumns);
         });
 
-        // Build SELECT
         $select = ['id'];
         foreach ($validDynamicFields as $field) {
             $select[] = $field->field_name;

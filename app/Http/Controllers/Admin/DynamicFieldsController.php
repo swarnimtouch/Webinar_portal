@@ -28,7 +28,7 @@ class DynamicFieldsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function save(Request $request)
     {
         try {
             if ($request->filled('order_data')) {

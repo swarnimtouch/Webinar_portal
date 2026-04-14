@@ -9,7 +9,7 @@ class AddDropdownInputSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('attribute_inputs')->insertOrIgnore([
+        DB::table('attribute')->insertOrIgnore([
             'input_name' => 'Dropdown Select',
             'icon' => 'bi bi-caret-down-square',
             'status' => 'active',

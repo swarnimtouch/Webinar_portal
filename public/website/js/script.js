@@ -1,26 +1,3 @@
-function showPopup(type, message) {
-    const popup = document.getElementById("statusPopup");
-    const text = document.getElementById("popupMessage");
-
-    if (!popup || !text) {
-        alert(message); 
-        return;
-    }
-
-    popup.className = `status-popup ${type}`;
-    text.innerText = message;
-
-    popup.style.display = "block";
-
-    setTimeout(() => {
-        popup.style.display = "none";
-    }, 2000);
-}
-
-/* =========================================
-   1. MODAL & LOGIN LOGIC
-   ========================================= */
-
 const loginModal = document.getElementById("loginModal");
 const registerModal = document.getElementById("registerModal");
 
@@ -86,24 +63,21 @@ window.addEventListener("click", function (event) {
 });
 
 
-/* =========================================
-   2. SLIDER LOGIC (OPTIMIZED & STABLE)
-   ========================================= */
-$(document).ready(function() {
+$(document).ready(function () {
 
     const $track = $("#sliderTrack");
     const $heroBanner = $(".hero-banner");
     const sliderData = window.sliderData || [];
     let slideIndex = 0;
     let slideInterval;
-    const slideDuration = 3000; 
+    const slideDuration = 3000;
 
     if ($track.length === 0 || sliderData.length === 0) return;
 
     function initSlider() {
-        $track.empty(); 
+        $track.empty();
 
-        $.each(sliderData, function(index, item) {
+        $.each(sliderData, function (index, item) {
             let mediaElement = '';
 
             if (item.type === 'image') {
@@ -125,11 +99,9 @@ $(document).ready(function() {
 
     function updateSlider() {
         $track.css("transform", `translateX(-${slideIndex * 100}%)`);
-
         updateBackground(slideIndex);
-
         const $allVideos = $(".slide video");
-        $allVideos.each(function() {
+        $allVideos.each(function () {
             $(this).get(0).pause();
             $(this).get(0).currentTime = 0;
         });
@@ -146,31 +118,28 @@ $(document).ready(function() {
     }
 
     function updateBackground(index) {
-    const data = sliderData[index];
-    
-    const $bgImage = $("#bgImage");
-    const $bgVideo = $("#bgVideo");
+        const data = sliderData[index];
+        const $bgImage = $("#bgImage");
+        const $bgVideo = $("#bgVideo");
 
-    $(".bg-media").removeClass("active");
+        $(".bg-media").removeClass("active");
 
-    if (data.type === 'image') {
-        $bgVideo.trigger('pause'); 
-        
-        $bgImage.attr("src", data.src); 
-        $bgImage.addClass("active");    
+        if (data.type === 'image') {
+            $bgVideo.trigger('pause');
+            $bgImage.attr("src", data.src);
+            $bgImage.addClass("active");
 
-    } else if (data.type === 'video') {
-        $bgVideo.attr("src", data.src); 
-        $bgVideo.addClass("active");    
-        
-        const videoEl = $bgVideo.get(0);
-        videoEl.load();
-        const playPromise = videoEl.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => console.log("Bg Video Auto-play blocked:", error));
+        } else if (data.type === 'video') {
+            $bgVideo.attr("src", data.src);
+            $bgVideo.addClass("active");
+            const videoEl = $bgVideo.get(0);
+            videoEl.load();
+            const playPromise = videoEl.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => console.log("Bg Video Auto-play blocked:", error));
+            }
         }
     }
-}
 
     function nextSlide() {
         slideIndex++;

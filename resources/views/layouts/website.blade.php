@@ -3,7 +3,7 @@
 
 @include('partials.website.header')
 
-<body>
+<body class="webinar-app">
 
 @yield('body')
 @if(Route::is('home'))

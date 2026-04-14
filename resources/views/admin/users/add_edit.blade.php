@@ -20,16 +20,16 @@
                         </ul>
                     </div>
                 @endif
-                <div class="card">
 
+                <div class="card">
                     <div class="card-header">
-                        <div class="card-title fs-3 fw-bolder">{{$title}}</div>
+                        <div class="card-title fs-3 fw-bolder">{{ $title }}</div>
                     </div>
-                    <!-- Create/Edit User Card -->
+
                     <div class="card mb-5 mb-xl-10">
                         <div id="kt_user_wrapper" class="collapse show">
                             <form method="POST"
-                                  action="{{ isset($user) ? route('admin.user.update', $user->id) : route('admin.user.store') }}"
+                                  action="{{ route('admin.user.save', isset($user) ? $user->id : '') }}"
                                   id="kt_user_form"
                                   enctype="multipart/form-data">
                                 @csrf
@@ -44,25 +44,29 @@
                                 <div class="card-body border-top p-9">
                                     @foreach($activeFields as $field)
                                         @php
-                                            $fieldName = $field->field_name;
-                                            $label = $field->label;
-                                            $isRequired = $field->is_required ? 'required' : '';
+                                            $fieldName   = $field->field_name;
+                                            $label       = $field->label;
+                                            $isRequired  = $field->is_required ? 'required' : '';
 
-                                            // Field name mapping for database columns
                                             $fieldMapping = [
-                                                'mobile_number' => 'mobile',
+                                                'mobile_number'             => 'mobile',
                                                 'alternative_mobile_number' => 'alternative_mobile',
                                             ];
 
                                             $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
-                                            $value = old($dbFieldName, $user->$dbFieldName ?? '');
+                                            $value       = old($dbFieldName, $user->$dbFieldName ?? '');
                                         @endphp
 
                                         @if($fieldName == 'avatar')
-                                            <!-- Avatar Upload -->
+                                            @php
+                                                $avatarUrl = (isset($user) && $user->avatar)
+                                                    ? Storage::url($user->avatar)
+                                                    : asset('assets/media/avatars/blank.png');
+                                            @endphp
                                             <div class="row mb-6" id="avatarUploadSection">
-                                                <label
-                                                    class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">{{ $label }}</label>
+                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
+                                                    {{ $label }}
+                                                </label>
                                                 <div class="col-lg-8">
                                                     <div class="image-input image-input-outline"
                                                          data-kt-image-input="true"
@@ -70,12 +74,13 @@
 
                                                         <div class="image-input-wrapper w-125px h-125px"
                                                              id="avatarPreview"
-                                                             style="background-image: url('{{ $user->avatar?? asset('assets/media/avatars/blank.png') }}')">
+                                                             style="background-image: url('{{ $avatarUrl }}')">
                                                         </div>
 
                                                         <label
                                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                            data-kt-image-input-action="change" data-bs-toggle="tooltip"
+                                                            data-kt-image-input-action="change"
+                                                            data-bs-toggle="tooltip"
                                                             title="Change avatar">
                                                             <i class="bi bi-pencil-fill fs-7"></i>
                                                             <input type="file" name="avatar" id="avatar"
@@ -85,19 +90,20 @@
 
                                                         <span
                                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                            data-kt-image-input-action="cancel" data-bs-toggle="tooltip"
+                                                            data-kt-image-input-action="cancel"
+                                                            data-bs-toggle="tooltip"
                                                             title="Cancel">
-                                                        <i class="bi bi-x fs-2"></i>
-                                                    </span>
+                                                            <i class="bi bi-x fs-2"></i>
+                                                        </span>
 
                                                         <span
                                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                            data-kt-image-input-action="remove" data-bs-toggle="tooltip"
+                                                            data-kt-image-input-action="remove"
+                                                            data-bs-toggle="tooltip"
                                                             title="Remove">
-                                                        <i class="bi bi-x fs-2"></i>
-                                                    </span>
+                                                            <i class="bi bi-x fs-2"></i>
+                                                        </span>
                                                     </div>
-
                                                     <div class="form-text">Allowed file types: jpg, jpeg, png, gif. Max
                                                         size: 5MB
                                                     </div>
@@ -105,10 +111,11 @@
                                             </div>
 
                                         @elseif($fieldName == 'email')
-                                            <!-- Email Field -->
+                                            {{-- Email Field --}}
                                             <div class="row mb-6">
-                                                <label
-                                                    class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">{{ $label }}</label>
+                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
+                                                    {{ $label }}
+                                                </label>
                                                 <div class="col-lg-8">
                                                     <input type="email"
                                                            name="email"
@@ -119,83 +126,81 @@
                                             </div>
 
                                         @elseif(in_array($fieldName, ['mobile_number', 'alternative_mobile_number']))
-                                            <!-- Mobile Number Fields -->
+                                            {{-- Mobile Number Fields --}}
                                             <div class="row mb-6">
-                                                <label
-                                                    class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">{{ $label }}</label>
+                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
+                                                    {{ $label }}
+                                                </label>
                                                 <div class="col-lg-8">
                                                     <input type="tel"
                                                            name="{{ $dbFieldName }}"
                                                            value="{{ $value }}"
-                                                           class="form-control form-control-lg form-control-solid"
+                                                           inputmode="numeric"
+                                                           pattern="[0-9]*"
+                                                           class="form-control form-control-lg form-control-solid mobile-number-input"
                                                            placeholder="Enter mobile number"/>
                                                 </div>
                                             </div>
 
                                         @elseif($fieldName == 'password')
-                                            <!-- Password Field -->
+                                            {{-- Password Field --}}
                                             <div class="row mb-6">
                                                 <label
                                                     class="col-lg-4 col-form-label {{ isset($user) ? '' : $isRequired }} fw-bold fs-6">
-                                                    {{ $label }} {{ isset($user) ? '(Leave blank to keep current)' : '' }}
+                                                    {{ $label }}
+                                                    @if(isset($user))
+                                                        <span class="text-muted fs-7 fw-normal ms-1">(Leave blank to keep current)</span>
+                                                    @endif
                                                 </label>
                                                 <div class="col-lg-8">
                                                     <input type="password"
                                                            name="password"
                                                            class="form-control form-control-lg form-control-solid"
-                                                           placeholder="Enter password"
+                                                           placeholder="{{ isset($user) ? 'Leave blank to keep current' : 'Enter password' }}"
                                                            autocomplete="new-password"/>
                                                 </div>
                                             </div>
 
                                         @elseif($fieldName == 'address')
-                                            <!-- Address Textarea -->
+                                            {{-- Address Textarea --}}
                                             <div class="row mb-6">
-                                                <label
-                                                    class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">{{ $label }}</label>
+                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
+                                                    {{ $label }}
+                                                </label>
                                                 <div class="col-lg-8">
-                                                <textarea name="address"
-                                                          class="form-control form-control-lg form-control-solid"
-                                                          rows="3"
-                                                          placeholder="Enter address">{{ $value }}</textarea>
+                                                    <textarea name="address"
+                                                              class="form-control form-control-lg form-control-solid"
+                                                              rows="3"
+                                                              placeholder="Enter address">{{ $value }}</textarea>
                                                 </div>
                                             </div>
 
                                         @elseif($fieldName == 'country')
-                                            <!-- Country Dropdown -->
+                                            {{-- Country Dropdown --}}
                                             <div class="row mb-6">
-                                                <label
-                                                    class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">{{ $label }}</label>
+                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
+                                                    {{ $label }}
+                                                </label>
                                                 <div class="col-lg-8">
                                                     <select name="country"
                                                             class="form-select form-select-lg form-select-solid">
                                                         <option value="">Select Country</option>
-                                                        <option value="India" {{ $value == 'India' ? 'selected' : '' }}>
-                                                            India
-                                                        </option>
-                                                        <option value="USA" {{ $value == 'USA' ? 'selected' : '' }}>
-                                                            USA
-                                                        </option>
-                                                        <option value="UK" {{ $value == 'UK' ? 'selected' : '' }}>UK
-                                                        </option>
-                                                        <option
-                                                            value="Canada" {{ $value == 'Canada' ? 'selected' : '' }}>
-                                                            Canada
-                                                        </option>
-                                                        <option
-                                                            value="Australia" {{ $value == 'Australia' ? 'selected' : '' }}>
-                                                            Australia
-                                                        </option>
-                                                        <!-- Add more countries as needed -->
+                                                        @foreach(['India', 'USA', 'UK', 'Canada', 'Australia'] as $country)
+                                                            <option
+                                                                value="{{ $country }}" {{ $value == $country ? 'selected' : '' }}>
+                                                                {{ $country }}
+                                                            </option>
+                                                        @endforeach
                                                     </select>
                                                 </div>
                                             </div>
 
                                         @else
-                                            <!-- Default Text Input (includes first_name, last_name, etc.) -->
+                                            {{-- Default Text Input --}}
                                             <div class="row mb-6">
-                                                <label
-                                                    class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">{{ $label }}</label>
+                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
+                                                    {{ $label }}
+                                                </label>
                                                 <div class="col-lg-8">
                                                     <input type="text"
                                                            name="{{ $dbFieldName }}"
@@ -213,15 +218,17 @@
                                        class="btn btn-light btn-active-light-primary me-2">Cancel</a>
                                     <button type="submit" class="btn btn-primary" id="kt_user_submit">
                                         <span class="indicator-label">{{ isset($user) ? 'Update' : 'Save' }}</span>
-                                        <span class="indicator-progress">Please wait...
-                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                                    </span>
+                                        <span class="indicator-progress">
+                                            Please wait...
+                                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                        </span>
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -242,34 +249,32 @@
             let avatarWasRemoved = false;
             let newAvatarSelected = false;
 
-            // Avatar Remove
             if (avatarRemovedInput) {
+                // Remove button
                 document.querySelectorAll('[data-kt-image-input-action="remove"]').forEach(btn => {
                     btn.addEventListener('click', function () {
                         avatarWasRemoved = true;
                         newAvatarSelected = false;
                         avatarRemovedInput.value = '1';
-
                         setTimeout(() => {
                             if (validator) validator.revalidateField('avatar');
                         }, 100);
                     });
                 });
 
-                // Avatar Cancel
+                // Cancel button
                 document.querySelectorAll('[data-kt-image-input-action="cancel"]').forEach(btn => {
                     btn.addEventListener('click', function () {
                         avatarWasRemoved = false;
                         newAvatarSelected = false;
                         avatarRemovedInput.value = '0';
-
                         setTimeout(() => {
                             if (validator) validator.revalidateField('avatar');
                         }, 100);
                     });
                 });
 
-                // New Avatar Select
+                // New file selected
                 if (avatarInput) {
                     avatarInput.addEventListener('change', function () {
                         if (this.files && this.files.length > 0) {
@@ -285,9 +290,9 @@
 
             @foreach($activeFields as $field)
                 @php
-                    $fieldName = $field->field_name;
+                    $fieldName    = $field->field_name;
                     $fieldMapping = [
-                        'mobile_number' => 'mobile',
+                        'mobile_number'             => 'mobile',
                         'alternative_mobile_number' => 'alternative_mobile',
                     ];
                     $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
@@ -301,18 +306,10 @@
                         message: 'Avatar is required',
                         callback: function () {
                             if (isEditMode && hasExistingAvatar) {
-                                if (avatarWasRemoved && !newAvatarSelected) {
-                                    return false;
-                                }
-                                if (!avatarWasRemoved) {
-                                    return true;
-                                }
+                                if (avatarWasRemoved && !newAvatarSelected) return false;
+                                if (!avatarWasRemoved) return true;
                             }
-
-                            if (!avatarInput.files || avatarInput.files.length === 0) {
-                                return false;
-                            }
-                            return true;
+                            return !!(avatarInput && avatarInput.files && avatarInput.files.length > 0);
                         }
                     },
                     @endif
@@ -324,48 +321,46 @@
                     }
                 }
             };
+
             @elseif($fieldName == 'email')
                 validationFields['email'] = {
                 validators: {
                     @if($field->is_required)
-                    notEmpty: {
-                        message: 'Email is required'
-                    },
+                    notEmpty: {message: 'Email is required'},
                     @endif
-                    emailAddress: {
-                        message: 'Please enter a valid email address'
-                    }
+                    emailAddress: {message: 'Please enter a valid email address'}
                 }
             };
+
             @elseif($fieldName == 'password')
                 validationFields['password'] = {
                 validators: {
-                    @if($field->is_required && !isset($user))
-                    notEmpty: {
-                        message: 'Password is required'
-                    },
-                    @endif
-                        @if($field->is_required || isset($user))
                     callback: {
-                        message: 'Password must be at least 6 characters',
                         callback: function (input) {
                             const value = input.value;
-                            if (isEditMode && value === '') {
-                                return true;
+
+                            // Edit mode mein blank = keep current, koi error nahi
+                            if (isEditMode && value === '') return true;
+
+                            @if($field->is_required && !isset($user))
+                            if (value === '') return {valid: false, message: 'Password is required'};
+                            @endif
+
+                            if (value.length > 0 && value.length < 6) {
+                                return {valid: false, message: 'Password must be at least 6 characters'};
                             }
-                            return value.length >= 6;
+
+                            return true;
                         }
                     }
-                    @endif
                 }
             };
+
             @elseif(in_array($fieldName, ['mobile_number', 'alternative_mobile_number']))
                 validationFields['{{ $dbFieldName }}'] = {
                 validators: {
                     @if($field->is_required)
-                    notEmpty: {
-                        message: '{{ $field->label }} is required'
-                    },
+                    notEmpty: {message: '{{ $field->label }} is required'},
                     @endif
                     regexp: {
                         regexp: /^[0-9]{10}$/,
@@ -373,18 +368,16 @@
                     }
                 }
             };
+
             @elseif($field->is_required)
                 validationFields['{{ $dbFieldName }}'] = {
                 validators: {
-                    notEmpty: {
-                        message: '{{ $field->label }} is required'
-                    }
+                    notEmpty: {message: '{{ $field->label }} is required'}
                 }
             };
             @endif
             @endforeach
 
-            // Form Validation
             const validator = FormValidation.formValidation(form, {
                 fields: validationFields,
                 plugins: {
@@ -394,10 +387,23 @@
                     })
                 }
             });
+            document.querySelectorAll('.mobile-number-input').forEach(function (input) {
+                input.addEventListener('keydown', function (e) {
+                    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+                        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                        'Home', 'End'];
+                    if (allowedKeys.includes(e.key)) return;
+                    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) return;
+                    if (!/^[0-9]$/.test(e.key)) e.preventDefault();
+                });
+                input.addEventListener('paste', function (e) {
+                    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                    if (!/^[0-9]+$/.test(pasted)) e.preventDefault();
+                });
+            });
 
             submitBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
                         submitBtn.setAttribute('data-kt-indicator', 'on');

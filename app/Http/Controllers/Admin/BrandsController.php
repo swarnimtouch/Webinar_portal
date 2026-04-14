@@ -46,7 +46,6 @@ class BrandsController extends Controller
             'title' => 'required|string|max:255',
         ];
 
-        // File validation - required in create mode, optional in edit mode
         if (!$isUpdate) {
             $rules['filename'] = 'required|file|mimes:jpg,jpeg,png,gif,webp,mp4,mov,avi,webm|max:20480';
         } else {
@@ -58,28 +57,20 @@ class BrandsController extends Controller
         $brand->title = $request->title;
         $brand->status = $brand->status ?? 'active';
 
-        // Handle file upload
         if ($request->hasFile('filename')) {
-            // Delete old file if exists
+
             if ($brand->filename && Storage::disk('public')->exists('brands/' . $brand->filename)) {
                 Storage::disk('public')->delete('brands/' . $brand->filename);
             }
-
             $file = $request->file('filename');
-
-            // Auto-detect type
             $mimeType = $file->getMimeType();
             $type = str_starts_with($mimeType, 'image/') ? 'image' : 'video';
-
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $file->storeAs('brands', $filename, 'public');
-
             $brand->filename = $filename;
             $brand->type = $type;
         }
-
         $brand->save();
-
         return redirect()->route('admin.brand')
             ->with('success', $isUpdate ? 'Brand updated successfully' : 'Brand created successfully');
     }
@@ -88,15 +79,10 @@ class BrandsController extends Controller
     {
         try {
             $brands = Brands::findOrFail($id);
-
-            // Delete the file from storage
             if (Storage::exists('public/brands/' . $brands->filename)) {
                 Storage::delete('public/brands/' . $brands->filename);
             }
-
-            // Delete the database record
             $brands->delete();
-
             return response()->json(['success' => true, 'message' => 'Brands deleted successfully']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error deleting Brands'], 500);
@@ -110,23 +96,16 @@ class BrandsController extends Controller
     {
         try {
             $ids = $request->input('ids', []);
-
             if (empty($ids)) {
                 return response()->json(['success' => false, 'message' => 'No brands selected'], 400);
             }
-
             $brands = Brands::whereIn('id', $ids)->get();
-
             foreach ($brands as $brand) {
-                // Delete the file from storage
                 if (Storage::exists('public/brands/' . $brand->filename)) {
                     Storage::delete('public/brands/' . $brand->filename);
                 }
-
-                // Delete the database record
                 $brand->delete();
             }
-
             return response()->json(['success' => true, 'message' => 'Brands deleted successfully']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error deleting Bramds'], 500);
@@ -137,10 +116,8 @@ class BrandsController extends Controller
     {
         try {
             $brands = Brands::findOrFail($id);
-
             $brands->status = $request->input('status');
             $brands->save();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Status updated successfully',
@@ -157,7 +134,6 @@ class BrandsController extends Controller
     public function datatable(Request $request)
     {
         $query = Brands::query();
-
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -168,37 +144,30 @@ class BrandsController extends Controller
             $type = $request->type;
             $query->where('type', $type);
         }
-
         if ($request->has('status') && !empty($request->status)) {
             $status = $request->status;
             $query->where('status', $status);
         }
-
         $total = $query->count();
-
         if ($request->has('order')) {
             $columns = $request->columns;
             foreach ($request->order as $order) {
                 $columnIndex = $order['column'];
                 $columnName = $columns[$columnIndex]['data'];
                 $direction = $order['dir'];
-
                 $dbColumn = match ($columnName) {
                     'title' => 'title',
                     'type' => 'type',
                     default => 'id'
                 };
-
                 $query->orderBy($dbColumn, $direction);
             }
         } else {
             $query->orderBy('id', 'desc');
         }
-
         $length = $request->input('length', 10);
         $start = $request->input('start', 0);
         $brands = $query->skip($start)->take($length)->get();
-
         $data = $brands->map(function ($brand) {
             return [
                 'id' => $brand->id,
@@ -209,7 +178,6 @@ class BrandsController extends Controller
                 'actions' => '',
             ];
         });
-
         return response()->json([
             'draw' => $request->input('draw', 1),
             'recordsTotal' => $total,

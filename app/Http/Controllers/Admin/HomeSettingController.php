@@ -13,7 +13,6 @@ class HomeSettingController extends Controller
      */
     public function index()
     {
-        // Get the first (and only) home setting record, or create new instance
         $homeSetting = HomeSetting::first();
 
         if (!$homeSetting) {
@@ -49,10 +48,10 @@ class HomeSettingController extends Controller
             'player_id' => 'required|string|max:255',
             'publish_date' => 'required|date',
             'about_us' => 'nullable|string',
-            'event_start_time' => 'required|date',
-            'event_end_time' => 'required|date|after_or_equal:event_start_time',
-            'active_from_date' => 'required|date',
-            'active_to_date' => 'required|date|after_or_equal:active_from_date',
+            'event_start_time' => 'nullable|date',
+            'event_end_time' => 'nullable|date|after_or_equal:event_start_time',
+            'active_from_date' => 'nullable|date',
+            'active_to_date' => 'nullable|date|after_or_equal:active_from_date',
             'user_attendance' => 'nullable|boolean'
         ], [
             'player_type.required' => 'Player type is required',
@@ -76,7 +75,6 @@ class HomeSettingController extends Controller
         }
 
         try {
-            // Get existing record or create new
             $homeSetting = HomeSetting::first() ?? new HomeSetting();
 
             $homeSetting->title = $request->title;
@@ -85,10 +83,10 @@ class HomeSettingController extends Controller
             $homeSetting->player_id = $request->player_id;
             $homeSetting->publish_date = $request->publish_date;
             $homeSetting->about_us = $request->about_us;
-            $homeSetting->event_start_time = $request->event_start_time;
-            $homeSetting->event_end_time = $request->event_end_time;
-            $homeSetting->active_from_date = $request->active_from_date;
-            $homeSetting->active_to_date = $request->active_to_date;
+            $homeSetting->event_start_time = $request->event_start_time ?: null;
+            $homeSetting->event_end_time = $request->event_end_time ?: null;
+            $homeSetting->active_from_date = $request->active_from_date ?: null;
+            $homeSetting->active_to_date = $request->active_to_date ?: null;
             $homeSetting->user_attendance = $request->has('user_attendance') ? 1 : 0;
 
             $homeSetting->save();

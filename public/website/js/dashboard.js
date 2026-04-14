@@ -16,9 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
         timerProgressBar: true,
     });
 
-    /* =========================
-       TAB HANDLING
-    ========================= */
+
     tabLinks.forEach((link) => {
         link.addEventListener("click", () => {
             const tabId = link.getAttribute("data-tab");
@@ -57,7 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function loadChatMessages() {
-        fetch('/website/chat/messages')
+        fetch(window.chatMessagesUrl)
+
             .then(res => res.json())
             .then(messages => {
                 const box = document.getElementById('chatMessages');
@@ -81,9 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    /* =========================
-       SEND MESSAGE
-    ========================= */
+
     document.getElementById('sendChatBtn')?.addEventListener('click', sendChat);
     document.getElementById('chatInput')?.addEventListener('keypress', e => {
         if (e.key === 'Enter') sendChat();
@@ -94,7 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const msg = input.value.trim();
         if (!msg) return;
 
-        fetch('/website/chat/send', {
+        fetch(window.chatSendUrl, {
+
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -107,9 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* =========================
-       CHAT TAB CLICK → start polling
-    ========================= */
     document.querySelector('.tab-link[data-tab="chat"]')
         ?.addEventListener('click', () => {
             loadChatMessages();
@@ -119,14 +114,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-    /* =========================
-       LOAD POLL (AJAX)
-    ========================= */
     function loadPoll(force = false) {
         if (pollLoaded && !force) return;
         pollLoaded = true;
 
-        fetch("/website/poll")
+        fetch(window.pollUrl)
+
             .then(res => res.json())
             .then(data => {
 
@@ -188,11 +181,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    /* =========================
-       SUBMIT POLL VOTE
-    ========================= */
     function submitPollVote(pollId, answer, btn) {
-        fetch("/website/poll/vote", {
+        fetch(window.pollVoteUrl, {
+
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -517,10 +508,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
-    /* =========================
-       FEEDBACK SYSTEM
-    ========================= */
     function initFeedbackSystem() {
         const stars = document.querySelectorAll(".star-rating-widget .star");
         const ratingText = document.querySelector(".rating-text");
@@ -558,7 +545,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                fetch("/website/feedback/store", {
+                fetch(window.feedbackStoreUrl, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -602,6 +589,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     initializeAllFeatures();
+    if (window._toastSuccess) {
+        Toast.fire({
+            icon: "success",
+            title: window._toastSuccess
+        });
+        window._toastSuccess = null;
+    }
 
     const activeTabLink = document.querySelector(".tab-link.active");
     const defaultTabId = activeTabLink ? activeTabLink.getAttribute("data-tab") : null;
@@ -635,9 +629,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-/* =========================
-   UTILITY
-========================= */
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {

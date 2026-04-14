@@ -6,33 +6,6 @@
 @endpush
 
 @section('body')
-    @php
-        $siteLogo = siteSetting('site_logo');
-        $siteName = siteSetting('site_name', config('app.name'));
-    @endphp
-
-
-    <nav class="navbar">
-        <div class="logo">
-            @if($siteLogo)
-                <img src="{{ asset('storage/site_settings/' . $siteLogo) }}"
-                     alt="{{ $siteName }}"
-                     class="site-logo-img"
-                     >
-            @else
-                <h2>TECH<span>NOVA</span></h2>
-            @endif
-
-
-        </div>
-        <div class="nav-links">
-            <a href="#">About Event</a>
-            <a href="#speakers">Speakers</a>
-            <a href="#brands">Brands</a>
-        </div>
-        <button class="btn btn-gold" id="openLoginModal">Login</button>
-    </nav>
-
     <main>
         <div class="container">
             <div class="header-section">
@@ -57,14 +30,28 @@
                     <div class="info-item">
                         <i class="fa-regular fa-calendar"></i>
                         <div class="info-text">
-                            <span>{{ \Carbon\Carbon::parse($homesetting->event_start_time)->format('j F, Y') }} - {{ \Carbon\Carbon::parse($homesetting->event_end_time)->format('j F, Y') }}</span>
+                            <span>
+                                {{ $homesetting?->event_start_time
+                                    ? \Carbon\Carbon::parse($homesetting->event_start_time)->format('j F, Y')
+                                    : 'TBD' }}
+                                -
+                                {{ $homesetting?->event_end_time
+                                    ? \Carbon\Carbon::parse($homesetting->event_end_time)->format('j F, Y')
+                                    : 'TBD' }}
+                            </span>
+
                             <small>Summit Date</small>
                         </div>
                     </div>
                     <div class="info-item">
                         <i class="fa-regular fa-clock"></i>
                         <div class="info-text">
-                            <span>{{ \Carbon\Carbon::parse($homesetting->event_start_time)->format('H:i A') }} Onwards</span>
+                            <span>
+                                {{ $homesetting?->event_start_time
+                                    ? \Carbon\Carbon::parse($homesetting->event_start_time)->format('H:i') . ' Onwards'
+                                    : 'Time TBD' }}
+                            </span>
+
                             <small>Reporting</small>
                         </div>
                     </div>
@@ -560,11 +547,60 @@
                         )
                     );
 
-                    if (window.oldCountry) {
-                        $('#country').val(window.oldCountry).trigger('change');
+                    let india = countries.find(c => c.name.toLowerCase() === 'india');
+
+                    if (india) {
+
+                        if ($('#country').is(':visible')) {
+                            $('#country').val(india.name).trigger('change');
+                        } else {
+                            loadStates(india.id);
+                        }
                     }
+
                 });
 
+                function loadStates(countryId) {
+
+                    $('#state').empty().append('<option value="">Select State</option>').trigger('change');
+                    $('#city').empty().append('<option value="">Select City</option>').trigger('change');
+
+                    $.get(`/get-states/${countryId}`, function (states) {
+
+                        $('#state').append(
+                            states.map(s =>
+                                `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`
+                            )
+                        );
+
+                        let gujarat = states.find(s => s.name.toLowerCase() === 'gujarat');
+
+                        if (gujarat) {
+
+                            if ($('#state').is(':visible')) {
+                                $('#state').val(gujarat.name).trigger('change');
+                            } else {
+                                loadCities(gujarat.id);
+                            }
+                        }
+
+                    });
+                }
+
+                function loadCities(stateId) {
+
+                    $('#city').empty().append('<option value="">Select City</option>').trigger('change');
+
+                    $.get(`/get-cities/${stateId}`, function (cities) {
+
+                        $('#city').append(
+                            cities.map(c =>
+                                `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`
+                            )
+                        );
+
+                    });
+                }
 
                 $('#country').on('change', function () {
 
