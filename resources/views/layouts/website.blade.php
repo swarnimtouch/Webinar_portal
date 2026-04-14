@@ -26,7 +26,7 @@
 
 @elseif(Route::is('website.dashboard'))
 
-    <script src="{{ asset('website/js/home.js') }}"></script>
+    <script src="{{ asset('website/js/dashboard.js') }}"></script>
 
 @else
 

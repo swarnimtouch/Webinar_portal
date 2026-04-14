@@ -18,7 +18,7 @@
                 <img src="{{ asset('storage/site_settings/' . $siteLogo) }}"
                      alt="{{ $siteName }}"
                      class="site-logo-img"
-                     style="width:50px; height:50px; object-fit:contain;">
+                     >
             @else
                 <h2>TECH<span>NOVA</span></h2>
             @endif
@@ -88,7 +88,7 @@
                     <div class="sidebar-card organizer-card-layout">
                         <div class="org-top-row">
                             <span class="org-label">Powered By</span>
-                            <img src="{{asset('assets/website/images/organizer-logo.png')}}"
+                            <img src="{{asset('website/images/organizer-logo.png')}}"
                                  alt="CodeMasters Logo"
                                  class="org-logo-small"/>
                         </div>
@@ -128,7 +128,7 @@
                             <div class="map-frame">
                                 <iframe
                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3667.3187229380155!2d72.63344267408078!3d23.19505250987198!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395c2a39d06fe04f%3A0xa5c52a12a1286368!2sInfocity%20-%20The%20Global%20IT%20Park%20in%20Gujarat!5e0!3m2!1sen!2sin!4v1766053887093!5m2!1sen!2sin"
-                                    width="100%" height="100%" style="border: 0" allowfullscreen=""
+                                    width="100%" height="100%" allowfullscreen=""
                                     loading="lazy"></iframe>
                             </div>
                             <button class="btn btn-gold full-width">Locate Venue</button>
@@ -199,21 +199,57 @@
     </div>
 
     {{-- Register Modal --}}
-    <div id="registerModal" class="modal-overlay" style="display:none;">
+    <div id="registerModal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-register-btn">×</span>
+            <span class="close-modal-btn close-register-btn">×</span>
             <h2>Doctor Registration</h2>
             <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm">
                 @csrf
                 @foreach($registerFields as $field)
 
                     @php
+                        // Options fetch karne ka existing logic
                         $options = is_array(json_decode($field->input_value, true))
                           ? json_decode($field->input_value, true)
                           : [];
+
+                        // NAYA ADD KIYA: Dynamic Icon set karne ka logic
+                        $iconClass = $field->icon; // Pehle check karenge DB me icon hai ya nahi
+                        
+                        if (empty($iconClass)) {
+                            $fieldName = strtolower($field->field_name);
+                            
+                            // Field name ke according icon set kar rahe hain
+                            if (str_contains($fieldName, 'name')) {
+                                $iconClass = 'fa-solid fa-user';
+                            } elseif (str_contains($fieldName, 'email')) {
+                                $iconClass = 'fa-solid fa-envelope';
+                            } elseif (str_contains($fieldName, 'mobile') || str_contains($fieldName, 'phone')) {
+                                $iconClass = 'fa-solid fa-phone';
+                            } elseif (str_contains($fieldName, 'password')) {
+                                $iconClass = 'fa-solid fa-lock';
+                            } elseif ($fieldName === 'country') {
+                                $iconClass = 'fa-solid fa-globe';
+                            } elseif ($fieldName === 'state') {
+                                $iconClass = 'fa-solid fa-map-location-dot';
+                            } elseif ($fieldName === 'city') {
+                                $iconClass = 'fa-solid fa-city';
+                            } elseif ($field->attribute_id == 5) { // Date field ke liye
+                                $iconClass = 'fa-solid fa-calendar-days';
+                            } elseif ($field->attribute_id == 6) { // File upload ke liye
+                                $iconClass = 'fa-solid fa-file-arrow-up';
+                            } else {
+                                $iconClass = 'fa-solid fa-pen'; // Default icon agar koi match na ho
+                            }
+                        }
                     @endphp
 
                     <div class="email-input-group mb-3">
+                        {{-- UPDATE KIYA: Ab dynamic $iconClass print hoga --}}
+                        <div class="icon-box">
+                            <i class="{{ $iconClass }}"></i>
+                        </div>
+
                         @if($field->attribute_id == 1)
                             <input type="text" data-is-required="{{ $field->is_required }}"
                                    name="{{ $field->field_name }}" data-label="{{ $field->label }}"

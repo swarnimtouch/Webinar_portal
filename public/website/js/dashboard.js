@@ -603,11 +603,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initializeAllFeatures();
 
-    /* =========================
-       PAGE LOAD — default active tab detect
-       Refresh pe click nahi hota, isliye manually
-       active tab check kar ke init karna padta hai
-    ========================= */
     const activeTabLink = document.querySelector(".tab-link.active");
     const defaultTabId = activeTabLink ? activeTabLink.getAttribute("data-tab") : null;
 
@@ -625,7 +620,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // chatInputArea visibility bhi set karo on load
     const chatInputArea = document.querySelector(".chat-input-area");
     if (chatInputArea && (defaultTabId === "polls" || defaultTabId === "feedback")) {
         chatInputArea.style.display = "none";

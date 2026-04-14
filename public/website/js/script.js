@@ -3,7 +3,7 @@ function showPopup(type, message) {
     const text = document.getElementById("popupMessage");
 
     if (!popup || !text) {
-        alert(message); // fallback
+        alert(message); 
         return;
     }
 
@@ -91,30 +91,24 @@ window.addEventListener("click", function (event) {
    ========================================= */
 $(document).ready(function() {
 
-    // --- VARIABLES ---
     const $track = $("#sliderTrack");
     const $heroBanner = $(".hero-banner");
     const sliderData = window.sliderData || [];
     let slideIndex = 0;
     let slideInterval;
-    const slideDuration = 3000; // ✅ 3 Seconds Timer
+    const slideDuration = 3000; 
 
-    // Agar track ya data nahi hai to return
     if ($track.length === 0 || sliderData.length === 0) return;
 
-    // --- 1. INITIALIZATION ---
     function initSlider() {
-        $track.empty(); // Purana content clear
+        $track.empty(); 
 
-        // Slides create karein
         $.each(sliderData, function(index, item) {
             let mediaElement = '';
 
             if (item.type === 'image') {
-                // Image
                 mediaElement = `<img src="${item.src}" alt="Event Banner">`;
             } else if (item.type === 'video') {
-                // Video (Muted, PlaysInline important for autoplay)
                 mediaElement = `
                     <video poster="${item.poster || ''}" muted playsinline loop>
                         <source src="${item.src}" type="video/mp4">
@@ -125,20 +119,15 @@ $(document).ready(function() {
             $track.append(slideHtml);
         });
 
-        // Start Slider
         updateSlider();
         startAutoSlide();
     }
 
-    // --- 2. UPDATE SLIDER (Movement & Background) ---
     function updateSlider() {
-        // A. Track Move karein
         $track.css("transform", `translateX(-${slideIndex * 100}%)`);
 
-        // B. Background Blur Effect Update karein
         updateBackground(slideIndex);
 
-        // C. Video Handling (Current video play, baaki pause)
         const $allVideos = $(".slide video");
         $allVideos.each(function() {
             $(this).get(0).pause();
@@ -149,7 +138,6 @@ $(document).ready(function() {
         const $activeVideo = $currentSlide.find("video");
 
         if ($activeVideo.length > 0) {
-            // Video hai to play karein
             const playPromise = $activeVideo.get(0).play();
             if (playPromise !== undefined) {
                 playPromise.catch(error => console.log("Auto-play blocked:", error));
@@ -157,30 +145,24 @@ $(document).ready(function() {
         }
     }
 
-    // --- 3. BACKGROUND UPDATER (Blur Effect) ---
     function updateBackground(index) {
     const data = sliderData[index];
     
-    // Background Elements select karein
     const $bgImage = $("#bgImage");
     const $bgVideo = $("#bgVideo");
 
-    // Reset Active Classes (Dono ko chupao pehle)
     $(".bg-media").removeClass("active");
 
     if (data.type === 'image') {
-        // --- Agar IMAGE hai ---
-        $bgVideo.trigger('pause'); // Video pause karo (CPU save karne ke liye)
+        $bgVideo.trigger('pause'); 
         
-        $bgImage.attr("src", data.src); // Image set karo
-        $bgImage.addClass("active");    // Image dikhao
+        $bgImage.attr("src", data.src); 
+        $bgImage.addClass("active");    
 
     } else if (data.type === 'video') {
-        // --- Agar VIDEO hai ---
-        $bgVideo.attr("src", data.src); // Video source set karo
-        $bgVideo.addClass("active");    // Video dikhao
+        $bgVideo.attr("src", data.src); 
+        $bgVideo.addClass("active");    
         
-        // Background video play karo
         const videoEl = $bgVideo.get(0);
         videoEl.load();
         const playPromise = videoEl.play();
@@ -190,7 +172,6 @@ $(document).ready(function() {
     }
 }
 
-    // --- 4. NEXT SLIDE ---
     function nextSlide() {
         slideIndex++;
         if (slideIndex >= sliderData.length) {
@@ -199,12 +180,10 @@ $(document).ready(function() {
         updateSlider();
     }
 
-    // --- 5. TIMER CONTROL ---
     function startAutoSlide() {
         if (slideInterval) clearInterval(slideInterval);
         slideInterval = setInterval(nextSlide, slideDuration);
     }
 
-    // Init Call
     initSlider();
 });

@@ -24,10 +24,8 @@
 
     @if(Route::is('home'))
         <link rel="stylesheet" href="{{ asset('website/css/style.css') }}">
-        <link rel="stylesheet" href="{{ asset('website/css/media.css') }}">
     @else
-        <link rel="stylesheet" href="{{ asset('website/css/home.css') }}">
-        <link rel="stylesheet" href="{{ asset('website/css/home_media.css') }}">
+        <link rel="stylesheet" href="{{ asset('website/css/dashboard.css') }}">
     @endif
 
 
@@ -41,15 +39,4 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
     @stack('styles')
-    <style>
-        .error-text {
-            margin-top: -14px;
-            color: red;
-            font-size: 14px;
-        }
-
-        .select2-container--default .select2-selection--single {
-            border: none;
-        }
-    </style>
 </head>

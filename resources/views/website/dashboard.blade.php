@@ -265,19 +265,16 @@
     @endsection
 
     @push('scripts')
-        // Add this script in your dashboard blade file
 
         <script>
-            // Attendance tracking - ping every 30 seconds
             let attendanceInterval;
 
             function startAttendanceTracking() {
-                // Initial ping
                 updateSessionTime();
 
                 attendanceInterval = setInterval(function () {
                     updateSessionTime();
-                }, 30000); // 30 seconds
+                }, 30000); 
             }
 
             function updateSessionTime() {
@@ -300,31 +297,25 @@
                     });
             }
 
-            // Start tracking when page loads
             document.addEventListener('DOMContentLoaded', function () {
                 @if(isset($home_setting) && $home_setting->user_attendance)
                 startAttendanceTracking();
                 @endif
             });
 
-            // Stop tracking when user leaves page
             window.addEventListener('beforeunload', function () {
                 if (attendanceInterval) {
                     clearInterval(attendanceInterval);
-                    // Final update before leaving
                     navigator.sendBeacon('{{ route("dashboard.attendance.update") }}', JSON.stringify({}));
                 }
             });
 
-            // Handle visibility change (user switches tabs)
             document.addEventListener('visibilitychange', function () {
                 if (document.hidden) {
-                    // User left the tab
                     if (attendanceInterval) {
                         clearInterval(attendanceInterval);
                     }
                 } else {
-                    // User returned to tab
                     @if(isset($home_setting) && $home_setting->user_attendance)
                     startAttendanceTracking();
                     @endif
