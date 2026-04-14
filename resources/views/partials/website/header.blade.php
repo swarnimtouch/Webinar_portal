@@ -39,8 +39,7 @@
         <div class="logo">
             <img src="{{site_logo}}"
                  alt="{{ site_name }}"
-                 class="site-logo-img"
-                 style="width:50px; height:50px; object-fit:contain;">
+                 class="site-logo-img">
 
 
         </div>
@@ -57,8 +56,7 @@
             <a href="#">
                 <img src="{{site_logo}}"
                      alt="{{ site_name }}"
-                     class="site-logo-img"
-                     style="width:50px; height:50px; object-fit:contain;">
+                     class="site-logo-img">
                 {{ site_name }}
             </a>
         </div>
@@ -70,40 +68,40 @@
         </nav>
 
         <div class="dropdown user-menu">
-            {{-- 🔔 Bell --}}
             <a href="#" class="me-3">
                 <i class="fa-solid fa-bell"></i>
             </a>
 
-            {{-- ⚙️ Gear --}}
             <a href="#" class="me-3">
                 <i class="fa-solid fa-gear"></i>
             </a>
 
-            {{-- 👤 User Image --}}
-            <a href="#" data-bs-toggle="dropdown">
+            <div class="profile-info position-relative d-flex align-items-center cursor-pointer">
                 <img src="{{ asset('website/images/user.png') }}"
-                     class="rounded-circle"
+                     class="rounded-circle me-2"
                      width="38"
                      height="38"
                      alt="User">
-            </a>
+                
+                <i class="fa-solid fa-chevron-down small profile-chevron ms-1"></i>
 
-            <ul class="dropdown-menu dropdown-menu-end mt-2 shadow">
-                <li>
-                    <a class="dropdown-item" href="{{ route('website.dashboard') }}">
-                        Welcome, {{ auth()->user()->first_name }}
-                    </a>
-                </li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <li>
-                    <a class="dropdown-item text-danger" href="{{ route('website.logout') }}">
-                        <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
-                    </a>
-                </li>
-            </ul>
+                <div class="profile-dropdown shadow-lg rounded-3">
+                    <ul class="list-unstyled mb-0 py-2">
+                        <li>
+                            <div class="d-flex align-items-center px-3 py-2">
+                                <i class="fa-regular fa-user me-3"></i> 
+                                {{ auth()->user()->first_name }}
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center text-danger px-3 py-2" href="{{ route('website.logout') }}">
+                                <i class="fa-solid fa-right-from-bracket me-3"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 

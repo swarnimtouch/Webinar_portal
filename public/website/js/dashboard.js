@@ -694,6 +694,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chatInterval) clearInterval(chatInterval);
         if (pollInterval) clearInterval(pollInterval);
     });
+
+        $('.profile-info').on('click', function(e) {
+            e.stopPropagation();
+            $(this).toggleClass('active'); 
+        });
+
+        $(document).on('click', function() {
+            $('.profile-info').removeClass('active');
+        });
+
+        $('.profile-dropdown').on('click', function(e) {
+            e.stopPropagation();
+        });
 });
 
 function debounce(func, wait) {

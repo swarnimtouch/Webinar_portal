@@ -24,7 +24,7 @@
 
                 </div>
             </div>
-            <div class="tab-content" id="qa" style="display: none;">
+            <div class="tab-content" id="qa">
                 <div class="qa-list">
                     <div class="qa-item">
                         <img src="{{asset('website/images/user.png')}}" alt="David Kim" class="chat-avatar">
@@ -51,7 +51,7 @@
                 </div>
             </div>
 
-            <div class="tab-content" id="polls" style="display: none;">
+            <div class="tab-content" id="polls">
                 <div class="poll-container" id="pollBox">
                     <p class="poll-question" id="pollQuestion">
                         <!-- Question loaded from DB -->
@@ -60,7 +60,7 @@
                     <div class="poll-options" id="pollOptions">
                         <!-- Options loaded dynamically -->
                     </div>
-                    <p class="poll-message" id="pollMessage" style="display:none;">
+                    <p class="poll-message" id="pollMessage">
                         Poll is not active right now.
                     </p>
 
@@ -71,7 +71,7 @@
             </div>
 
 
-            <div class="tab-content" id="feedback" style="display: none;">
+            <div class="tab-content" id="feedback">
                 <div class="feedback-container">
                     <h3>Rate this Session</h3>
                     <div class="star-rating-widget">
@@ -87,11 +87,10 @@
 
                     <button id="submitFeedbackBtn" class="btn-primary-full">Submit Feedback</button>
                 </div>
-                <div class="feedback-success" style="display: none; text-align: center; padding: 2rem;">
-                    <i class="fa-solid fa-circle-check"
-                       style="font-size: 3rem; color: #22c55e; margin-bottom: 1rem;"></i>
+                <div class="feedback-success">
+                    <i class="fa-solid fa-circle-check"></i>
                     <h3>Thank You!</h3>
-                    <p style="color: var(--text-secondary);">Your feedback has been recorded.</p>
+                    <p>Your feedback has been recorded.</p>
                 </div>
             </div>
 
