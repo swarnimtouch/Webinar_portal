@@ -283,7 +283,58 @@
                     checkbox.addEventListener('change', toggleToolbars);
                 });
             };
+            // Export
+            var handleExport = function () {
+                const exportBtn = document.getElementById('export-btn');
 
+                if (exportBtn) {
+                    exportBtn.addEventListener('click', function () {
+                        const originalHTML = exportBtn.innerHTML;
+                        exportBtn.disabled = true;
+                        exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
+
+                        let csv = 'User First Name,User Last Name,User Email,User Mobile Number,State,City,Time,Registration Date\n';
+
+                        const rows = document.querySelectorAll('#kt_table_user_attendance tbody tr');
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length > 1) {
+                                let rowData = [];
+                                for (let i = 1; i < cells.length - 1; i++) {
+                                    let text = cells[i].innerText.trim().replace(/\n/g, ' ');
+                                    rowData.push(`"${text}"`);
+                                }
+                                csv += rowData.join(',') + '\n';
+                            }
+                        });
+
+                        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', 'user_attendance' + new Date().toISOString().slice(0, 10) + '.csv');
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        setTimeout(() => {
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = originalHTML;
+
+                            Swal.fire({
+                                text: "User Attendance exported successfully!",
+                                icon: "success",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok, got it!",
+                                customClass: {
+                                    confirmButton: "btn fw-bold btn-primary",
+                                }
+                            });
+                        }, 500);
+                    });
+                }
+            }
             document
                 .querySelector('[data-kt-user-table-select="delete_selected"]')
                 ?.addEventListener('click', () => {
@@ -331,6 +382,7 @@
                     initUserTable();
                     initToggleToolbar();
                     handleSearchDatatable();
+                    handleExport();
                 }
             }
         }();
