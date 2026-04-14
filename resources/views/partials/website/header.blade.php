@@ -22,10 +22,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @if(Route::is('home'))
         <link rel="stylesheet" href="{{ asset('website/css/style.css') }}">
-        <link rel="stylesheet" href="{{ asset('website/css/media.css') }}">
     @else
-        <link rel="stylesheet" href="{{ asset('website/css/home.css') }}">
-        <link rel="stylesheet" href="{{ asset('website/css/home_media.css') }}">
+        <link rel="stylesheet" href="{{ asset('website/css/dashboard.css') }}">
     @endif
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -34,17 +32,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
     @stack('styles')
-    <style>
-        .error-text {
-            margin-top: -14px;
-            color: red;
-            font-size: 14px;
-        }
-
-        .select2-container--default .select2-selection--single {
-            border: none;
-        }
-    </style>
 </head>
 @if(Route::is('home'))
 
