@@ -24,14 +24,12 @@ class CertificateLogController
 
             $download = CertificateLogs::findOrFail($id);
 
-            // 🔥 Delete stored file
             if ($download->file_path &&
                 Storage::disk('public')->exists($download->file_path)) {
 
                 Storage::disk('public')->delete($download->file_path);
             }
 
-            // Delete DB record
             $download->delete();
 
             return response()->json([
@@ -91,8 +89,6 @@ class CertificateLogController
     public function datatable(Request $request)
     {
         $query = CertificateLogs::with(['certificate', 'user']);
-
-        /* ===== SEARCH ===== */
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -104,7 +100,6 @@ class CertificateLogController
         $recordsTotal = CertificateLogs::count();
         $recordsFiltered = $query->count();
 
-        /* ===== ORDER ===== */
         if ($request->has('order')) {
             $columns = $request->columns;
             foreach ($request->order as $order) {
@@ -119,13 +114,11 @@ class CertificateLogController
             $query->orderBy('id', 'desc');
         }
 
-        /* ===== PAGINATION ===== */
         $downloads = $query
             ->skip($request->start)
             ->take($request->length)
             ->get();
 
-        /* ===== RESPONSE DATA ===== */
         $data = $downloads->map(function ($download) {
             return [
                 'id' => $download->id,

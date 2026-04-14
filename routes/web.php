@@ -37,13 +37,13 @@ Route::middleware(['auth'])->prefix('website')->group(function () {
     Route::post('/feedback/store', [DashboardController::class, 'store'])
         ->name('feedback.store');
 
-    Route::get('/poll', [DashboardController::class, 'getPoll']);
+    Route::get('/poll', [DashboardController::class, 'getPoll'])->name('poll');
 
-    Route::post('/poll/vote', [DashboardController::class, 'submitPoll']);
+    Route::post('/poll/vote', [DashboardController::class, 'submitPoll'])->name('poll.vote');
 
-    Route::get('/chat/messages', [ChatController::class, 'fetchMessages']);
+    Route::get('/chat/messages', [ChatController::class, 'fetchMessages'])->name('chat.messages');
 
-    Route::post('/chat/send', [ChatController::class, 'sendMessage']);
+    Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
     Route::get('certificate/generate/{certificateId}/{userId}',
         [CertificateController::class, 'generate']
     )->name('admin.certificate.generate');

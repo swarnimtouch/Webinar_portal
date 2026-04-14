@@ -948,6 +948,11 @@ main {
   transform: translateY(-50%);
 }
 
+.select2-container--default .select2-dropdown {
+    width: var(--dynamic-width, 100%) !important;
+    margin-left: var(--dynamic-margin, 0px) !important;
+}
+
 @media (min-width: 1201px) and (max-width: 1920px) {
  .container {
   max-width: 1400px;

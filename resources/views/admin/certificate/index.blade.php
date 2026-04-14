@@ -137,7 +137,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
     <script>
         "use strict";
 
@@ -201,7 +200,7 @@
                     },
 
                     /* CREATED AT */
-                    { data: 'created_at' },
+                    {data: 'created_at'},
 
                     /* STATUS TOGGLE */
                     {
@@ -259,9 +258,9 @@
         /* ===== SHOW / HIDE BULK TOOLBAR ===== */
         function toggleBulkToolbar() {
             const selected = document.querySelectorAll('.row-checkbox:checked').length;
-            const baseToolbar     = document.querySelector('[data-kt-user-table-toolbar="base"]');
+            const baseToolbar = document.querySelector('[data-kt-user-table-toolbar="base"]');
             const selectedToolbar = document.querySelector('[data-kt-user-table-toolbar="selected"]');
-            const countEl         = document.querySelector('[data-kt-user-table-select="selected_count"]');
+            const countEl = document.querySelector('[data-kt-user-table-select="selected_count"]');
 
             if (selected > 0) {
                 baseToolbar.classList.add('d-none');
@@ -280,7 +279,7 @@
                 const ids = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.value);
 
                 if (!ids.length) {
-                    Swal.fire({ text: "Please select at least one certificate", icon: "info", confirmButtonText: "OK" });
+                    Swal.fire({text: "Please select at least one certificate", icon: "info", confirmButtonText: "OK"});
                     return;
                 }
 
@@ -298,16 +297,19 @@
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
-                        body: JSON.stringify({ ids })
+                        body: JSON.stringify({ids})
                     })
-                        .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+                        .then(res => {
+                            if (!res.ok) throw new Error();
+                            return res.json();
+                        })
                         .then(() => {
-                            Swal.fire({ text: "Selected certificates deleted successfully", icon: "success" });
+                            Swal.fire({text: "Selected certificates deleted successfully", icon: "success"});
                             certificateTable.draw(false);
                             toggleBulkToolbar();
                         })
                         .catch(() => {
-                            Swal.fire({ text: "Failed to delete certificates", icon: "error" });
+                            Swal.fire({text: "Failed to delete certificates", icon: "error"});
                         });
                 });
             });
@@ -324,11 +326,14 @@
                 icon: "warning",
                 showCancelButton: true
             }).then(res => {
-                if (!res.isConfirmed) { cb.checked = !cb.checked; return; }
+                if (!res.isConfirmed) {
+                    cb.checked = !cb.checked;
+                    return;
+                }
 
                 $.post(
                     '{{ route("admin.certificate.toggleStatus", ":id") }}'.replace(':id', id),
-                    { _token: '{{ csrf_token() }}' },
+                    {_token: '{{ csrf_token() }}'},
                     () => {
                         toastr.success('Status updated');
                         certificateTable.draw(false);
@@ -358,7 +363,7 @@
                 $.ajax({
                     url: '{{ route("admin.certificate.delete", ":id") }}'.replace(':id', id),
                     method: 'DELETE',
-                    data: { _token: '{{ csrf_token() }}' },
+                    data: {_token: '{{ csrf_token() }}'},
                     success: () => {
                         toastr.success('Certificate deleted');
                         certificateTable.draw(false);

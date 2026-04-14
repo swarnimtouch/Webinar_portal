@@ -69,14 +69,12 @@ class ProfileController extends Controller
 
         $user = auth()->user();
 
-        // 🔐 OLD PASSWORD MATCH CHECK
         if (!Hash::check($request->current_password, $user->password)) {
             return back()->withErrors([
                 'current_password' => 'Old password is incorrect'
             ])->withInput();
         }
 
-        // 🔐 UPDATE PASSWORD
         $user->password = Hash::make($request->password);
         $user->save();
 
@@ -84,7 +82,6 @@ class ProfileController extends Controller
             ->route('admin.dashboard')
             ->with('success', 'Password updated successfully');
     }
-
 
 
 }

@@ -53,7 +53,7 @@ class CertificateController
             'background_image' => $certificate->exists
                 ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
                 : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'font_file' => 'nullable|file', // TEXT se FILE
+            'font_file' => 'nullable|file',
             'font_size' => 'required|integer|min:1|max:300',
             'font_color' => 'required|string|max:20',
             'is_bold' => 'nullable|boolean',
@@ -66,7 +66,6 @@ class CertificateController
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Background image upload
         if ($request->hasFile('background_image')) {
             if ($certificate->exists && $certificate->background_image) {
                 Storage::disk('public')->delete($certificate->background_image);
@@ -76,13 +75,12 @@ class CertificateController
             $certificate->background_image = $bgImage->storeAs('certificates/backgrounds', $originalName, 'public');
         }
 
-        // Font file upload
         if ($request->hasFile('font_file')) {
             if ($certificate->exists && $certificate->font_file) {
                 Storage::disk('public')->delete($certificate->font_file);
             }
             $fontFile = $request->file('font_file');
-            $originalName = $fontFile->getClientOriginalName(); // original filename
+            $originalName = $fontFile->getClientOriginalName();
             $certificate->font_file = $fontFile->storeAs('certificates/fonts', $originalName, 'public');
         }
 
@@ -93,7 +91,7 @@ class CertificateController
         $certificate->start_x = $request->start_x;
         $certificate->end_x = $request->end_x;
         $certificate->y = $request->y;
-        $certificate->status = 'active'; // default active, index se toggle hoga
+        $certificate->status = 'active';
         $certificate->save();
 
         $message = $certificate->wasRecentlyCreated
@@ -111,7 +109,6 @@ class CertificateController
         try {
             $certificate = Certificate::findOrFail($id);
 
-            // Delete background image from storage
             if ($certificate->background_image) {
                 Storage::disk('public')->delete($certificate->background_image);
             }
@@ -145,7 +142,6 @@ class CertificateController
                 ], 400);
             }
 
-            // Delete images before bulk delete
             Certificate::whereIn('id', $ids)->each(function ($certificate) {
                 if ($certificate->background_image) {
                     Storage::disk('public')->delete($certificate->background_image);
@@ -196,7 +192,6 @@ class CertificateController
     {
         $query = Certificate::query();
 
-        /* ===== SEARCH ===== */
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -206,7 +201,6 @@ class CertificateController
             });
         }
 
-        /* ===== FILTER ===== */
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -214,7 +208,6 @@ class CertificateController
         $recordsTotal = Certificate::count();
         $recordsFiltered = $query->count();
 
-        /* ===== ORDER ===== */
         if ($request->has('order')) {
             $columns = $request->columns;
             foreach ($request->order as $order) {
@@ -229,13 +222,11 @@ class CertificateController
             $query->orderBy('id', 'desc');
         }
 
-        /* ===== PAGINATION ===== */
         $certificates = $query
             ->skip($request->start)
             ->take($request->length)
             ->get();
 
-        /* ===== RESPONSE DATA ===== */
         $data = $certificates->map(function ($certificate) {
             return [
                 'id' => $certificate->id,

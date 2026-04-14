@@ -166,83 +166,82 @@
 @endsection
 
 @push('scripts')
-    <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
-   <script>
-"use strict";
+    <script>
+        "use strict";
 
-let pollTable;
+        let pollTable;
 
-function initPollTable() {
-    pollTable = $('#kt_table_polls').DataTable({
-        processing: true,
-        serverSide: true,
-        searching: false,
-        ajax: {
-            url: '{{ route("admin.poll.datatable") }}',
-            data: d => {
-                d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
-                d.status = document.querySelector('[data-kt-user-table-filter="status"]').value;
-            }
-        },
-        order: [[4, 'desc']],
-        columns: [
+        function initPollTable() {
+            pollTable = $('#kt_table_polls').DataTable({
+                processing: true,
+                serverSide: true,
+                searching: false,
+                ajax: {
+                    url: '{{ route("admin.poll.datatable") }}',
+                    data: d => {
+                        d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
+                        d.status = document.querySelector('[data-kt-user-table-filter="status"]').value;
+                    }
+                },
+                order: [[4, 'desc']],
+                columns: [
 
-            /* CHECKBOX */
-            {
-                data: 'id',
-                orderable: false,
-                render: id => `
+                    /* CHECKBOX */
+                    {
+                        data: 'id',
+                        orderable: false,
+                        render: id => `
                     <div class="form-check form-check-sm form-check-custom form-check-solid">
                         <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
                     </div>`
-            },
+                    },
 
-            /* QUESTION */
-            {
-                data: 'question',
-                render: q => `<span class="fw-bold text-gray-800">${q}</span>`
-            },
+                    /* QUESTION */
+                    {
+                        data: 'question',
+                        render: q => `<span class="fw-bold text-gray-800">${q}</span>`
+                    },
 
-            /* ANSWERS */
-            {
-                data: 'answers',
-                orderable: false,
-                render: answers => {
-                    if (!answers.length) {
-                        return `<span class="badge badge-light-warning">No answers</span>`;
-                    }
-                    let html = `<div class="d-flex flex-column gap-1">`;
-                    answers.slice(0,2).forEach(a => {
-                        html += `<span class="badge badge-light-primary">• ${a}</span>`;
-                    });
-                    if (answers.length > 2) {
-                        html += `<span class="badge badge-light-secondary">+${answers.length-2} more</span>`;
-                    }
-                    html += `</div>`;
-                    return html;
-                }
-            },
+                    /* ANSWERS */
+                    {
+                        data: 'answers',
+                        orderable: false,
+                        render: answers => {
+                            if (!answers.length) {
+                                return `<span class="badge badge-light-warning">No answers</span>`;
+                            }
+                            let html = `<div class="d-flex flex-column gap-1">`;
+                            answers.slice(0, 2).forEach(a => {
+                                html += `<span class="badge badge-light-primary">• ${a}</span>`;
+                            });
+                            if (answers.length > 2) {
+                                html += `<span class="badge badge-light-secondary">+${answers.length - 2} more</span>`;
+                            }
+                            html += `</div>`;
+                            return html;
+                        }
+                    },
 
-            /* CREATED */
-            { data: 'created_at' },
+                    /* CREATED */
+                    {data: 'created_at'},
 
-            /* STATUS TOGGLE */
-            {
-                data: 'status',
-                orderable: false,
-                render: (status, type, row) => `
+                    /* STATUS TOGGLE */
+                    {
+                        data: 'status',
+                        orderable: false,
+                        render: (status, type, row) => `
                     <div class="form-check form-switch">
                         <input class="form-check-input poll-status-toggle"
                             data-id="${row.id}"
                             type="checkbox" ${status === 'active' ? 'checked' : ''}>
                     </div>`
-            },
+                    },
 
-            /* ACTIONS */
-            {
-                data: 'id',
-                orderable: false,
-                render: id => `
+                    /* ACTIONS */
+                    {
+                        data: 'id',
+                        orderable: false,
+                        render: id => `
                 <div>
                                                     <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
                                                         <span class="svg-icon svg-icon-5 m-0">
@@ -259,126 +258,127 @@ function initPollTable() {
                                                         </div>
                                                     </div>
                                             </div>`
-            }
-        ]
-    });
-}
-/* ===== SELECT ALL CHECKBOX ===== */
-document.addEventListener('change', e => {
-    if (!e.target.matches('[data-kt-check="true"]')) return;
-
-    const checked = e.target.checked;
-    document.querySelectorAll('.row-checkbox').forEach(cb => {
-        cb.checked = checked;
-    });
-
-    toggleBulkToolbar();
-});
-
-/* ===== SINGLE ROW CHECK ===== */
-document.addEventListener('change', e => {
-    if (!e.target.classList.contains('row-checkbox')) return;
-    toggleBulkToolbar();
-});
-
-/* ===== SHOW / HIDE BULK TOOLBAR ===== */
-function toggleBulkToolbar() {
-    const selected = document.querySelectorAll('.row-checkbox:checked').length;
-
-    const baseToolbar = document.querySelector('[data-kt-user-table-toolbar="base"]');
-    const selectedToolbar = document.querySelector('[data-kt-user-table-toolbar="selected"]');
-    const countEl = document.querySelector('[data-kt-user-table-select="selected_count"]');
-
-    if (selected > 0) {
-        baseToolbar.classList.add('d-none');
-        selectedToolbar.classList.remove('d-none');
-        countEl.textContent = selected;
-    } else {
-        baseToolbar.classList.remove('d-none');
-        selectedToolbar.classList.add('d-none');
-        countEl.textContent = '';
-    }
-}
-
-/* ===== MULTIPLE DELETE ===== */
-document.querySelector('[data-kt-user-table-select="delete_selected"]')
-    ?.addEventListener('click', () => {
-
-        const ids = [...document.querySelectorAll('.row-checkbox:checked')]
-            .map(cb => cb.value);
-
-        if (!ids.length) {
-            Swal.fire({
-                text: "Please select at least one poll",
-                icon: "info",
-                confirmButtonText: "OK"
+                    }
+                ]
             });
-            return;
         }
 
-        Swal.fire({
-            text: `Delete ${ids.length} selected poll(s)?`,
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, delete"
-        }).then(result => {
-            if (!result.isConfirmed) return;
+        /* ===== SELECT ALL CHECKBOX ===== */
+        document.addEventListener('change', e => {
+            if (!e.target.matches('[data-kt-check="true"]')) return;
 
-            fetch('{{ route("admin.poll.deleteMultiple") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ ids })
-            })
-            .then(res => {
-                if (!res.ok) throw new Error();
-                return res.json();
-            })
-                .then(() => {
-                toastr.success('Selected polls deleted successfully');
-                pollTable.draw(false);
-                toggleBulkToolbar();
-            })
-                .catch(() => {
-                    toastr.error('Failed to delete polls');
-                });
+            const checked = e.target.checked;
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.checked = checked;
+            });
 
+            toggleBulkToolbar();
         });
-    });
 
-    /* ===== STATUS TOGGLE ===== */
-    document.addEventListener('change', e => {
-        if (!e.target.classList.contains('poll-status-toggle')) return;
+        /* ===== SINGLE ROW CHECK ===== */
+        document.addEventListener('change', e => {
+            if (!e.target.classList.contains('row-checkbox')) return;
+            toggleBulkToolbar();
+        });
 
-        const cb = e.target;
-        const id = cb.dataset.id;
-        const status = cb.checked ? 'active' : 'inactive';
+        /* ===== SHOW / HIDE BULK TOOLBAR ===== */
+        function toggleBulkToolbar() {
+            const selected = document.querySelectorAll('.row-checkbox:checked').length;
 
-        Swal.fire({
-            text: "Change poll status?",
-            icon: "warning",
-            showCancelButton: true
-        }).then(res => {
-            if (!res.isConfirmed) {
-                cb.checked = !cb.checked;
-                return;
+            const baseToolbar = document.querySelector('[data-kt-user-table-toolbar="base"]');
+            const selectedToolbar = document.querySelector('[data-kt-user-table-toolbar="selected"]');
+            const countEl = document.querySelector('[data-kt-user-table-select="selected_count"]');
+
+            if (selected > 0) {
+                baseToolbar.classList.add('d-none');
+                selectedToolbar.classList.remove('d-none');
+                countEl.textContent = selected;
+            } else {
+                baseToolbar.classList.remove('d-none');
+                selectedToolbar.classList.add('d-none');
+                countEl.textContent = '';
             }
+        }
 
-            $.post(
-                '{{ route("admin.poll.toggleStatus", ":id") }}'.replace(':id', id),
-                {_token: '{{ csrf_token() }}', status},
-                () => {
-                    toastr.success('Status updated');
-                    pollTable.draw(false);
+        /* ===== MULTIPLE DELETE ===== */
+        document.querySelector('[data-kt-user-table-select="delete_selected"]')
+            ?.addEventListener('click', () => {
+
+                const ids = [...document.querySelectorAll('.row-checkbox:checked')]
+                    .map(cb => cb.value);
+
+                if (!ids.length) {
+                    Swal.fire({
+                        text: "Please select at least one poll",
+                        icon: "info",
+                        confirmButtonText: "OK"
+                    });
+                    return;
                 }
-            ).fail(() => {
-                cb.checked = !cb.checked;
-                toastr.error('Failed to update status');
+
+                Swal.fire({
+                    text: `Delete ${ids.length} selected poll(s)?`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, delete"
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+
+                    fetch('{{ route("admin.poll.deleteMultiple") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ids})
+                    })
+                        .then(res => {
+                            if (!res.ok) throw new Error();
+                            return res.json();
+                        })
+                        .then(() => {
+                            toastr.success('Selected polls deleted successfully');
+                            pollTable.draw(false);
+                            toggleBulkToolbar();
+                        })
+                        .catch(() => {
+                            toastr.error('Failed to delete polls');
+                        });
+
+                });
+            });
+
+        /* ===== STATUS TOGGLE ===== */
+        document.addEventListener('change', e => {
+            if (!e.target.classList.contains('poll-status-toggle')) return;
+
+            const cb = e.target;
+            const id = cb.dataset.id;
+            const status = cb.checked ? 'active' : 'inactive';
+
+            Swal.fire({
+                text: "Change poll status?",
+                icon: "warning",
+                showCancelButton: true
+            }).then(res => {
+                if (!res.isConfirmed) {
+                    cb.checked = !cb.checked;
+                    return;
+                }
+
+                $.post(
+                    '{{ route("admin.poll.toggleStatus", ":id") }}'.replace(':id', id),
+                    {_token: '{{ csrf_token() }}', status},
+                    () => {
+                        toastr.success('Status updated');
+                        pollTable.draw(false);
+                    }
+                ).fail(() => {
+                    cb.checked = !cb.checked;
+                    toastr.error('Failed to update status');
+                });
             });
         });
-    });
 
         /* ===== DELETE ===== */
         document.addEventListener('click', e => {
@@ -406,15 +406,15 @@ document.querySelector('[data-kt-user-table-select="delete_selected"]')
             });
         });
 
-/* ===== SEARCH ===== */
-document.querySelector('[data-kt-user-table-filter="search"]')
-    .addEventListener('keyup', () => pollTable.draw());
+        /* ===== SEARCH ===== */
+        document.querySelector('[data-kt-user-table-filter="search"]')
+            .addEventListener('keyup', () => pollTable.draw());
 
-/* ===== FILTER ===== */
-document.querySelector('[data-kt-user-table-filter="filter"]')
-    .addEventListener('click', () => pollTable.draw());
+        /* ===== FILTER ===== */
+        document.querySelector('[data-kt-user-table-filter="filter"]')
+            .addEventListener('click', () => pollTable.draw());
 
-KTUtil.onDOMContentLoaded(() => initPollTable());
-</script>
+        KTUtil.onDOMContentLoaded(() => initPollTable());
+    </script>
 
 @endpush

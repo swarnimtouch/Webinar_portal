@@ -41,7 +41,6 @@ class BrandsController extends Controller
         $brand = $id ? Brands::findOrFail($id) : new Brands();
         $isUpdate = $brand->exists;
 
-        // Validation rules - file required only on create or if not exists
         $rules = [
             'title' => 'required|string|max:255',
         ];

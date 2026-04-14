@@ -48,7 +48,6 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('banners/add-edit/{id?}', [BannerController::class, 'addEditForm'])->name('banner.add_edit_form');
     Route::match(['POST', 'PUT'], 'banners/save/{id?}', [BannerController::class, 'save'])
         ->name('banners.save');
-    Route::get('banner/show/{banner}', [BannerController::class, 'show'])->name('banner.show');
     Route::delete('delete/{id}', [BannerController::class, 'delete'])->name('banner.delete');
     Route::post('delete-multiple', [BannerController::class, 'deleteMultiple'])->name('banner.deleteMultiple');
     Route::post('banner/toggle-status/{id}', [BannerController::class, 'toggleStatus'])->name('banner.toggleStatus');
