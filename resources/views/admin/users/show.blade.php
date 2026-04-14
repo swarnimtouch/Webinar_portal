@@ -44,7 +44,8 @@
                                         $emailField = $activeFields->firstWhere('field_name', 'email');
                                     @endphp
                                     @if($emailField && $user->email)
-                                        <a href="mailto:{{ $user->email }}" class="fs-5 fw-bold text-gray-600 text-hover-primary mb-6">
+                                        <a href="mailto:{{ $user->email }}"
+                                           class="fs-5 fw-bold text-gray-600 text-hover-primary mb-6">
                                             {{ $user->email }}
                                         </a>
                                     @endif
@@ -81,7 +82,8 @@
                                     <div class="d-flex flex-stack fs-5 py-3">
                                         <div class="fw-bolder">Alternative Mobile:</div>
                                         <div class="text-gray-600">
-                                            <a href="tel:{{ $user->alternative_mobile }}" class="text-gray-600 text-hover-primary">
+                                            <a href="tel:{{ $user->alternative_mobile }}"
+                                               class="text-gray-600 text-hover-primary">
                                                 {{ $user->alternative_mobile }}
                                             </a>
                                         </div>
@@ -91,7 +93,8 @@
 
                                 <div class="d-flex flex-stack fs-5 py-3">
                                     <div class="fw-bolder">Created At:</div>
-                                    <div class="text-gray-600">    {{ $user->created_at ? $user->created_at->format('d M, Y') : '—' }}
+                                    <div
+                                        class="text-gray-600">    {{ $user->created_at ? $user->created_at->format('d M, Y') : '—' }}
                                     </div>
                                 </div>
                                 <!--end::Details-->
@@ -105,9 +108,14 @@
                             <div class="card-body">
                                 <a href="{{ route('admin.user.index') }}" class="btn btn-light w-100 mb-3">
                                     <span class="svg-icon svg-icon-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <path d="M9.60001 11H21C21.6 11 22 11.4 22 12C22 12.6 21.6 13 21 13H9.60001V11Z" fill="black"/>
-                                            <path opacity="0.3" d="M9.6 20V4L2.3 11.3C1.9 11.7 1.9 12.3 2.3 12.7L9.6 20Z" fill="black"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                             viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M9.60001 11H21C21.6 11 22 11.4 22 12C22 12.6 21.6 13 21 13H9.60001V11Z"
+                                                fill="black"/>
+                                            <path opacity="0.3"
+                                                  d="M9.6 20V4L2.3 11.3C1.9 11.7 1.9 12.3 2.3 12.7L9.6 20Z"
+                                                  fill="black"/>
                                         </svg>
                                     </span>
                                     Back
@@ -200,7 +208,8 @@
                                         @endif
 
                                         @if($displayedCount % 2 == 0 && !$loop->last)
-                                </div><div class="row mb-7">
+                                </div>
+                                <div class="row mb-7">
                                     @endif
                                     @endforeach
                                 </div>
@@ -219,5 +228,3 @@
     </div>
 @endsection
 
-@push('scripts')
-@endpush

@@ -137,7 +137,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 
     <script>
         "use strict";

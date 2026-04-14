@@ -118,7 +118,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
 
     <script>
         "use strict";
@@ -233,7 +232,7 @@
                         const url = window.URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.setAttribute('href', url);
-                        link.setAttribute('download', 'user_quiz_results_' + new Date().toISOString().slice(0,10) + '.csv');
+                        link.setAttribute('download', 'user_quiz_results_' + new Date().toISOString().slice(0, 10) + '.csv');
                         link.style.visibility = 'hidden';
                         document.body.appendChild(link);
                         link.click();

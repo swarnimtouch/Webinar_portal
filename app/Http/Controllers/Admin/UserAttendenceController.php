@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\UserAttendence;
+use App\Models\UserAttendance;
 use App\Models\DynamicFields;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -31,11 +31,11 @@ class UserAttendenceController extends Controller
             ->orderBy('index_no')
             ->get();
 
-        $query = UserAttendence::query()
-            ->join('users', 'user_attendences.user_id', '=', 'users.id')
+        $query = UserAttendance::query()
+            ->join('users', 'user_attendances.user_id', '=', 'users.id')
             ->select([
-                'user_attendences.id as attendance_id',
-                'user_attendences.session_time',
+                'user_attendances.id as attendance_id',
+                'user_attendances.session_time',
                 'users.created_at as registration_date',
                 'users.*'
             ]);
@@ -49,7 +49,7 @@ class UserAttendenceController extends Controller
                         $q->orWhere('users.' . $dbColumn, 'like', "%{$search}%");
                     }
                 }
-                $q->orWhere('user_attendences.session_time', 'like', "%{$search}%");
+                $q->orWhere('user_attendances.session_time', 'like', "%{$search}%");
             });
         }
 
@@ -62,7 +62,7 @@ class UserAttendenceController extends Controller
                 $direction = $order['dir'];
 
                 if ($columnName === 'session_time') {
-                    $query->orderBy('user_attendences.session_time', $direction);
+                    $query->orderBy('user_attendances.session_time', $direction);
                 } elseif ($columnName === 'registration_date') {
                     $query->orderBy('users.created_at', $direction);
                 } elseif ($columnName) {
@@ -130,7 +130,7 @@ class UserAttendenceController extends Controller
     public function delete($id)
     {
         try {
-            $attendance = UserAttendence::findOrFail($id);
+            $attendance = UserAttendance::findOrFail($id);
             $attendance->delete();
 
             return response()->json([
@@ -157,7 +157,7 @@ class UserAttendenceController extends Controller
                 ], 400);
             }
 
-            UserAttendence::whereIn('id', $ids)->delete();
+            UserAttendance::whereIn('id', $ids)->delete();
 
             return response()->json([
                 'success' => true,

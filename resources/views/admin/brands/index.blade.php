@@ -1,4 +1,3 @@
-
 @extends('layouts.admin')
 
 
@@ -40,7 +39,8 @@
 												</span>
                                 <!--end::Svg Icon-->
                                 <input type="text" data-kt-user-table-filter="search"
-                                       class="form-control form-control-solid w-250px ps-14" placeholder="Search brands"/>
+                                       class="form-control form-control-solid w-250px ps-14"
+                                       placeholder="Search brands"/>
                             </div>
                             <!--end::Search-->
                         </div>
@@ -78,7 +78,8 @@
                                         <!--begin::Input group-->
                                         <div class="mb-10">
                                             <label class="form-label fs-6 fw-bold">Status:</label>
-                                            <select class="form-select form-select-solid fw-bolder" data-kt-select2="true"
+                                            <select class="form-select form-select-solid fw-bolder"
+                                                    data-kt-select2="true"
                                                     data-placeholder="Select option" data-allow-clear="true"
                                                     data-kt-user-table-filter="status" data-hide-search="true">
                                                 <option></option>
@@ -127,7 +128,8 @@
                                 <div class="fw-bolder me-5">
                                     <span class="me-2" data-kt-user-table-select="selected_count"></span>Selected
                                 </div>
-                                <button type="button" class="btn btn-danger" data-kt-user-table-select="delete_selected">
+                                <button type="button" class="btn btn-danger"
+                                        data-kt-user-table-select="delete_selected">
                                     Delete Selected
                                 </button>
                             </div>
@@ -149,11 +151,11 @@
                                                data-kt-check-target="#kt_table_Brands .row-checkbox"/>
                                     </div>
                                 </th>
-                                <th >Preview</th>
-                                <th >Title</th>
-                                <th >Created At</th>
-                                <th >Status</th>
-                                <th >Actions</th>
+                                <th>Preview</th>
+                                <th>Title</th>
+                                <th>Created At</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                             </thead>
                             <tbody class="fw-semibold text-gray-600">
@@ -190,19 +192,18 @@
         @endsection
 
         @push('scripts')
-            <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
             <script>
                 "use strict";
 
-                const qs  = (s, p = document) => p.querySelector(s);
+                const qs = (s, p = document) => p.querySelector(s);
                 const qsa = (s, p = document) => [...p.querySelectorAll(s)];
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
                 function openBrandPreview(url) {
                     const modalEl = qs('#bannerPreviewModal');
-                    const modal   = new bootstrap.Modal(modalEl);
-                    const body    = qs('#bannerPreviewBody');
-                    const title   = qs('#bannerPreviewTitle');
+                    const modal = new bootstrap.Modal(modalEl);
+                    const body = qs('#bannerPreviewBody');
+                    const title = qs('#bannerPreviewTitle');
 
                     title.textContent = 'Brand';
                     body.innerHTML = `<img src="${url}" class="img-fluid rounded" style="max-height:70vh">`;
@@ -245,8 +246,8 @@
                         <img src="${row.media_url}" style="width:100%;height:100%;object-fit:cover">
                     </div>`
                             },
-                            { data: 'title' },
-                            { data: 'created_at' },
+                            {data: 'title'},
+                            {data: 'created_at'},
                             {
                                 data: 'status',
                                 render: (data, type, row) => `
@@ -317,7 +318,7 @@
                         $.ajax({
                             url: '{{ route("admin.brand.toggleStatus", ":id") }}'.replace(':id', id),
                             method: 'POST',
-                            data: { _token: '{{ csrf_token() }}', status },
+                            data: {_token: '{{ csrf_token() }}', status},
                             success: () => toastr.success('Status updated successfully!')
                         });
                     });
@@ -335,7 +336,7 @@
                         $.ajax({
                             url: '{{ route("admin.brand.delete", ":id") }}'.replace(':id', id),
                             method: 'DELETE',
-                            data: { _token: '{{ csrf_token() }}' },
+                            data: {_token: '{{ csrf_token() }}'},
                             success: () => {
                                 brandTable.draw();
                                 toastr.success('Brand has been deleted!');
@@ -378,11 +379,12 @@
                         counter.textContent = '';
                     }
                 }
+
                 qs('[data-kt-user-table-select="delete_selected"]')?.addEventListener('click', () => {
                     const ids = qsa('.row-checkbox:checked').map(cb => cb.value);
 
                     if (!ids.length) {
-                        Swal.fire({ text: "Please select at least one brand.", icon: "info" });
+                        Swal.fire({text: "Please select at least one brand.", icon: "info"});
                         return;
                     }
 
@@ -400,10 +402,10 @@
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': csrf
                             },
-                            body: JSON.stringify({ ids })
+                            body: JSON.stringify({ids})
                         })
                             .then(() => {
-                                Swal.fire({ text: "Selected brands deleted successfully.", icon: "success" });
+                                Swal.fire({text: "Selected brands deleted successfully.", icon: "success"});
                                 brandTable.draw(false);
                                 location.reload();
                             });

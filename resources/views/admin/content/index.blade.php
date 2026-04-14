@@ -38,7 +38,8 @@
 												</span>
                                 <!--end::Svg Icon-->
                                 <input type="text" data-kt-user-table-filter="search"
-                                       class="form-control form-control-solid w-250px ps-14" placeholder="Search Content"/>
+                                       class="form-control form-control-solid w-250px ps-14"
+                                       placeholder="Search Content"/>
                             </div>
                             <!--end::Search-->
                         </div>
@@ -51,11 +52,11 @@
                         <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_Content">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
-                                <th >ID</th>
-                                <th >Title</th>
-                                <th >Slug</th>
-                                <th >Created At</th>
-                                <th >Actions</th>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Slug</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
                             </tr>
                             </thead>
 
@@ -78,7 +79,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
     <script>
         "use strict";
 
@@ -100,11 +100,11 @@
                 order: [[2, 'desc']],
                 pageLength: 10,
                 columns: [
-                    { data: 'id' },
-                    { data: 'title' },
-                    { data: 'slug' },
+                    {data: 'id'},
+                    {data: 'title'},
+                    {data: 'slug'},
 
-                    { data: 'created_at' },
+                    {data: 'created_at'},
                     {
                         data: 'id',
                         orderable: false,

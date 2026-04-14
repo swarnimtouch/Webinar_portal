@@ -16,9 +16,13 @@
                         <div class="card-title">
                             <div class="d-flex align-items-center position-relative my-1">
                                 <span class="svg-icon svg-icon-1 position-absolute ms-6">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="black"/>
-                                        <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="black"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         fill="none">
+                                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1"
+                                              transform="rotate(45 17.0365 15.1223)" fill="black"/>
+                                        <path
+                                            d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
+                                            fill="black"/>
                                     </svg>
                                 </span>
                                 <input type="text" data-kt-user-table-filter="search"
@@ -90,13 +94,13 @@
                                         <input class="form-check-input" type="checkbox"
                                                data-kt-check="true"
                                                data-kt-check-target="#kt_table_user_attendance .form-check-input"
-                                               value="1" />
+                                               value="1"/>
                                     </div>
                                 </th>
                                 @foreach($activeFields as $field)
                                     <th class="min-w-150px">{{ $field->label }}</th>
                                 @endforeach
-                                <th class="min-w-150px">Session Time (Minutes)</th>
+                                <th class="min-w-150px">Session Time</th>
                                 <th class="min-w-150px">Registration Date</th>
                                 <th class="text-end min-w-100px">Actions</th>
                             </tr>
@@ -112,7 +116,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
     <script>
         "use strict";
 
@@ -148,8 +151,17 @@
                 columns.push(
                     {
                         data: 'session_time',
-                        render: time => time ? `${time} min` : '0 min'
+                        render: function (seconds) {
+                            if (!seconds || seconds <= 0) return '0h 0m 0s';
+
+                            const h = Math.floor(seconds / 3600);
+                            const m = Math.floor((seconds % 3600) / 60);
+                            const s = seconds % 60;
+
+                            return `${h}h ${m}m ${s}s`;
+                        }
                     },
+
                     {
                         data: 'registration_date',
                         render: date => date || '-'
@@ -219,12 +231,12 @@
                     $.ajax({
                         url: '{{ route("admin.user_attendance.delete", ":id") }}'.replace(':id', id),
                         method: 'DELETE',
-                        data: { _token: '{{ csrf_token() }}' },
+                        data: {_token: '{{ csrf_token() }}'},
                         success: function () {
                             toastr.success('Attendance record has been deleted!');
                             datatable.draw(false);
                         },
-                        error: function() {
+                        error: function () {
                             toastr.error('Failed to delete attendance record.');
                         }
                     });
@@ -300,7 +312,7 @@
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
-                            body: JSON.stringify({ ids })
+                            body: JSON.stringify({ids})
                         })
                             .then(res => res.json())
                             .then(() => {

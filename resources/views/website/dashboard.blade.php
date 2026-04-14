@@ -1,8 +1,4 @@
 @extends('layouts.website')
-@push('styles')
-
-@endpush
-
 @section('body')
 
     <main class="main-content">
@@ -209,9 +205,7 @@
 
 @push('scripts')
     @if(session('toast_success'))
-        <script>
-            window._toastSuccess = "{{ session('toast_success') }}";
-        </script>
+        <script>window._toastSuccess = "{{ session('toast_success') }}";</script>
     @endif
     <script>
         window.feedbackStoreUrl = "{{ route('feedback.store') }}";
@@ -219,61 +213,8 @@
         window.chatSendUrl = "{{ url('website/chat/send') }}";
         window.pollUrl = "{{ url('website/poll') }}";
         window.pollVoteUrl = "{{ url('website/poll/vote') }}";
-    </script>
-
-    <script>
-        let attendanceInterval;
-
-        function startAttendanceTracking() {
-            updateSessionTime();
-            attendanceInterval = setInterval(function () {
-                updateSessionTime();
-            }, 30000);
-        }
-
-        function updateSessionTime() {
-            fetch('{{ route("dashboard.attendance.update") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({})
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log('Session time updated:', data.session_time, 'seconds');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error updating session time:', error);
-                });
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            @if(isset($home_setting) && $home_setting->user_attendance)
-            startAttendanceTracking();
-            @endif
-        });
-
-        window.addEventListener('beforeunload', function () {
-            if (attendanceInterval) {
-                clearInterval(attendanceInterval);
-                navigator.sendBeacon('{{ route("dashboard.attendance.update") }}', JSON.stringify({}));
-            }
-        });
-
-        document.addEventListener('visibilitychange', function () {
-            if (document.hidden) {
-                if (attendanceInterval) {
-                    clearInterval(attendanceInterval);
-                }
-            } else {
-                @if(isset($home_setting) && $home_setting->user_attendance)
-                startAttendanceTracking();
-                @endif
-            }
-        });
+        window.attendanceUrl = "{{ route('dashboard.attendance.update') }}";
+        window.csrfToken = "{{ csrf_token() }}";
+        window.trackingEnabled = {{ (isset($home_setting) && $home_setting->user_attendance) ? 'true' : 'false' }};
     </script>
 @endpush
