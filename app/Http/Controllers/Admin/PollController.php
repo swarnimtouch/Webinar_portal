@@ -28,7 +28,7 @@ class PollController
     public function addEditForm($id = null)
     {
         $poll = $id ? Poll::findOrFail($id) : new Poll();
-        
+
         $title = $poll->exists ? __('Edit Poll') : __('Add Poll');
 
         return view('admin.poll.add_edit', [
@@ -44,7 +44,7 @@ class PollController
     /**
      * Store or update poll
      */
-    public function store(Request $request, $id = null)
+    public function save(Request $request, $id = null)
     {
         $poll = $id ? Poll::findOrFail($id) : new Poll();
 
@@ -68,12 +68,10 @@ class PollController
                 ->withInput();
         }
 
-        // Filter out empty answers
-        $answers = array_values(array_filter($request->answers, function($answer) {
+        $answers = array_values(array_filter($request->answers, function ($answer) {
             return !empty(trim($answer));
         }));
 
-        // Ensure we have at least 2 answers
         if (count($answers) < 2) {
             return redirect()
                 ->back()
@@ -82,13 +80,13 @@ class PollController
         }
 
         $poll->question = $request->question;
-        $poll->answers = json_encode($answers); // Convert array to JSON string
+        $poll->answers = json_encode($answers);
         $poll->status = $request->status;
         $poll->is_hidden = $request->has('is_hidden') ? 1 : 0;
         $poll->save();
 
-        $message = $poll->wasRecentlyCreated 
-            ? __('Poll created successfully') 
+        $message = $poll->wasRecentlyCreated
+            ? __('Poll created successfully')
             : __('Poll updated successfully');
 
         return redirect()
@@ -124,7 +122,7 @@ class PollController
     {
         try {
             $ids = $request->ids;
-            
+
             if (empty($ids)) {
                 return response()->json([
                     'success' => false,
@@ -172,69 +170,64 @@ class PollController
     /**
      * DataTable for polls
      */
-   public function datatable(Request $request)
-{
-    $query = Poll::query();
+    public function datatable(Request $request)
+    {
+        $query = Poll::query();
 
-    /* ===== SEARCH ===== */
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('question', 'like', "%{$search}%")
-              ->orWhere('answers', 'like', "%{$search}%");
-        });
-    }
-
-    /* ===== FILTER ===== */
-    if ($request->filled('status')) {
-        $query->where('status', $request->status);
-    }
-
-    $recordsTotal = Poll::count();
-    $recordsFiltered = $query->count();
-
-    /* ===== ORDER ===== */
-    if ($request->has('order')) {
-        $columns = $request->columns;
-        foreach ($request->order as $order) {
-            $columnName = $columns[$order['column']]['data'];
-            $direction  = $order['dir'];
-
-            if (in_array($columnName, ['question', 'status', 'created_at'])) {
-                $query->orderBy($columnName, $direction);
-            }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('question', 'like', "%{$search}%")
+                    ->orWhere('answers', 'like', "%{$search}%");
+            });
         }
-    } else {
-        $query->orderBy('id', 'desc');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $recordsTotal = Poll::count();
+        $recordsFiltered = $query->count();
+
+        if ($request->has('order')) {
+            $columns = $request->columns;
+            foreach ($request->order as $order) {
+                $columnName = $columns[$order['column']]['data'];
+                $direction = $order['dir'];
+
+                if (in_array($columnName, ['question', 'status', 'created_at'])) {
+                    $query->orderBy($columnName, $direction);
+                }
+            }
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $polls = $query
+            ->skip($request->start)
+            ->take($request->length)
+            ->get();
+
+        $data = $polls->map(function ($poll) {
+
+            $answers = json_decode($poll->answers, true) ?? [];
+
+            return [
+                'id' => $poll->id,
+                'question' => $poll->question,
+                'answers' => $answers,
+                'status' => $poll->status,
+                'created_at' => $poll->created_at->format('d M, Y'),
+            ];
+        });
+
+        return response()->json([
+            'draw' => intval($request->draw),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ]);
     }
-
-    /* ===== PAGINATION ===== */
-    $polls = $query
-        ->skip($request->start)
-        ->take($request->length)
-        ->get();
-
-    /* ===== RESPONSE DATA ===== */
-    $data = $polls->map(function ($poll) {
-
-        $answers = json_decode($poll->answers, true) ?? [];
-
-        return [
-            'id'         => $poll->id,
-            'question'   => $poll->question,
-            'answers'    => $answers,
-            'status'     => $poll->status,
-            'created_at' => $poll->created_at->format('d M, Y'),
-        ];
-    });
-
-    return response()->json([
-        'draw'            => intval($request->draw),
-        'recordsTotal'    => $recordsTotal,
-        'recordsFiltered' => $recordsFiltered,
-        'data'            => $data,
-    ]);
-}
 
 
 }

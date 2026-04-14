@@ -22,7 +22,7 @@ class ContentController extends Controller
     }
 
 
-     /**
+    /**
      * Display the specified resource.
      */
     public function show($slug)
@@ -36,11 +36,10 @@ class ContentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id)
+    public function addEditForm($id)
     {
         $content = Content::findOrFail($id);
 
-        // 🔹 Edit page pe bhi same breadcrumb & title
         $response = [
             'content' => $content,
             'title' => __('Content'),
@@ -49,15 +48,14 @@ class ContentController extends Controller
         return view('admin.content.edit', $response);
 
 
-
     }
 
 
-    public function update(Request $request, $id)
+    public function save(Request $request, $id)
     {
         $validated = $request->validate([
-            'title'   => 'required|string|max:255',
-            'slug'    => 'required|string|max:255|unique:contents,slug,' . $id,
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:contents,slug,' . $id,
             'content' => 'required|string',
         ]);
 
@@ -77,8 +75,7 @@ class ContentController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                ;
+                $q->where('title', 'like', "%{$search}%");
             });
         }
 

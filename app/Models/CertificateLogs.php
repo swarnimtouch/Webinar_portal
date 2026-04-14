@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class CertificateDownload extends Model
+class CertificateLogs extends Model
 {
-    protected $table = 'certificate_downloads';
+    protected $table = 'certificate_logs';
 
     protected $fillable = [
         'certificate_id',

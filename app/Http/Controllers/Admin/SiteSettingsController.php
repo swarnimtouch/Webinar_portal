@@ -15,34 +15,33 @@ class SiteSettingsController extends Controller
             ->get()
             ->map(function ($setting) {
                 return [
-                    'id'          => $setting->id,
+                    'id' => $setting->id,
                     'unique_name' => $setting->unique_name,
-                    'label'       => $setting->label,
-                    'type'        => $setting->type,
-                    'value'       => $setting->value,
-                    'options'     => $setting->options,
-                    'extra'       => $setting->extra,
-                    'hint'        => $setting->hint,
+                    'label' => $setting->label,
+                    'type' => $setting->type,
+                    'value' => $setting->value,
+                    'options' => $setting->options,
+                    'extra' => $setting->extra,
+                    'hint' => $setting->hint,
                 ];
             });
 
-        return view('admin.site_settings.index', ['fields'=>$fields,'title' => __('Site Settings'), 'breadcrumb' => breadcrumb([__('Site Settings') => route('admin.settings')])]);
+        return view('admin.site_settings.index', ['fields' => $fields, 'title' => __('Site Settings'), 'breadcrumb' => breadcrumb([__('Site Settings') => route('admin.settings')])]);
     }
 
 
-    public function update(Request $request)
+    public function save(Request $request)
     {
         try {
+
             $settings = SiteSettings::where('status', 'active')->get();
 
-            // Build validation rules dynamically
             $rules = [];
             foreach ($settings as $setting) {
                 $extraArray = !empty($setting->extra) ? json_decode($setting->extra, true) : [];
                 $isRequired = isset($extraArray['required']) && $extraArray['required'] === 'required';
 
                 if ($setting->type === 'file') {
-                    // File validation
                     if ($isRequired && empty($setting->value)) {
                         $rules[$setting->unique_name] = 'required|file|max:5120'; // 5MB
                     } else {
@@ -65,24 +64,17 @@ class SiteSettingsController extends Controller
                 }
             }
 
-            // Validate request
             $validated = $request->validate($rules);
 
-            // Update settings
             foreach ($settings as $setting) {
                 $uniqueName = $setting->unique_name;
-
-                // Skip if field not in request
                 if (!$request->has($uniqueName) && $setting->type !== 'checkbox') {
                     continue;
                 }
-
                 $value = null;
-
                 switch ($setting->type) {
                     case 'file':
                         if ($request->hasFile($uniqueName)) {
-                            // Delete old file
                             if ($setting->value && Storage::disk('public')->exists('site_settings/' . $setting->value)) {
                                 Storage::disk('public')->delete('site_settings/' . $setting->value);
                             }
@@ -93,16 +85,14 @@ class SiteSettingsController extends Controller
                             $file->storeAs('site_settings', $filename, 'public');
                             $value = $filename;
                         } else {
-                            continue 2; // Skip to next setting if no file uploaded
+                            continue 2;
                         }
                         break;
 
                     case 'checkbox':
-                        // Checkbox values as JSON array
                         $checkboxValues = $request->input($uniqueName, []);
                         $value = !empty($checkboxValues) ? json_encode(array_values($checkboxValues)) : null;
                         break;
-
                     case 'radio':
                     case 'select':
                     case 'text':
@@ -114,8 +104,6 @@ class SiteSettingsController extends Controller
                         $value = $request->input($uniqueName);
                         break;
                 }
-
-                // Update setting
                 $setting->update(['value' => $value]);
             }
 

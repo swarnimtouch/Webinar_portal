@@ -35,7 +35,7 @@
 
                     <div id="kt_content_wrapper">
                         <form method="POST"
-                              action="{{ route('admin.content.update', $content->id) }}"
+                              action="{{ route('admin.content.save', $content->id) }}"
                               id="kt_content_form">
 
                             @csrf

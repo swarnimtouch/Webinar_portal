@@ -3,12 +3,14 @@
 @section('title', 'Login | ')
 
 @section('content')
-    <div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed" style="background-image: url(assets/media/illustrations/sketchy-1/14.png">
+    <div
+        class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed"
+        style="background-image: url(assets/media/illustrations/sketchy-1/14.png">
         <!--begin::Content-->
         <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">
             <!--begin::Logo-->
             <a href="#" class="mb-12">
-                <img alt="Logo" src="{{asset('assets/media/logos/logo-1.svg')}}" class="h-40px" />
+                <img alt="Logo" src="{{site_logo}}" class="h-40px"/>
             </a>
             <!--end::Logo-->
             <!--begin::Wrapper-->
@@ -34,7 +36,8 @@
                         <label class="form-label fs-6 fw-bolder text-dark">Email</label>
                         <!--end::Label-->
                         <!--begin::Input-->
-                        <input class="form-control form-control-lg form-control-solid" type="text" name="email" autocomplete="off" placeholder="Email"/>
+                        <input class="form-control form-control-lg form-control-solid" type="text" name="email"
+                               autocomplete="off" placeholder="Email"/>
                         <!--end::Input-->
                     </div>
                     <!--end::Input group-->
@@ -46,12 +49,13 @@
                             <label class="form-label fw-bolder text-dark fs-6 mb-0">Password</label>
                             <!--end::Label-->
                             <!--begin::Link-->
-{{--                            <a href="#" class="link-primary fs-6 fw-bolder">Forgot Password ?</a>--}}
+                            {{--                            <a href="#" class="link-primary fs-6 fw-bolder">Forgot Password ?</a>--}}
                             <!--end::Link-->
                         </div>
                         <!--end::Wrapper-->
                         <!--begin::Input-->
-                        <input class="form-control form-control-lg form-control-solid" type="password" name="password" autocomplete="off" placeholder="Password"/>
+                        <input class="form-control form-control-lg form-control-solid" type="password" name="password"
+                               autocomplete="off" placeholder="Password"/>
                         <!--end::Input-->
                     </div>
                     <!--end::Input group-->

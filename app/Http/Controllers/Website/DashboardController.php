@@ -28,7 +28,12 @@ class DashboardController
             ->get();
         $activeCertificate = Certificate::where('status', 'active')->first();
 
-        return view('website.dashboard', compact('home_setting', 'polls', 'activeCertificate'));
+        return view('website.dashboard', [
+            'home_setting' => $home_setting,
+            'polls' => $polls,
+            'activeCertificate' => $activeCertificate,
+            'title' => __('Dashboard'),
+        ]);
 
     }
 
@@ -38,7 +43,6 @@ class DashboardController
             $userId = Auth::id();
             $now = Carbon::now();
 
-            // Check if attendance tracking is enabled
             $home_setting = HomeSetting::first();
             if (!$home_setting || !$home_setting->user_attendance) {
                 return response()->json([

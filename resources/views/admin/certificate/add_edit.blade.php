@@ -2,7 +2,9 @@
 
 @push('style')
     <style>
-        .ql-container { min-height: 100px; }
+        .ql-container {
+            min-height: 100px;
+        }
     </style>
 @endpush
 
@@ -34,7 +36,7 @@
                     </div>
                     <div class="card-body border-top p-9">
                         <form method="POST"
-                              action="{{ route('admin.certificate.store', $certificate->id ?? null) }}"
+                              action="{{ route('admin.certificate.save', $certificate->id ?? null) }}"
                               id="kt_certificate_form"
                               enctype="multipart/form-data">
 
@@ -56,7 +58,8 @@
 
                             <!-- Background Image -->
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label {{ $certificate->exists ? '' : 'required' }} fw-bold fs-6">
+                                <label
+                                    class="col-lg-4 col-form-label {{ $certificate->exists ? '' : 'required' }} fw-bold fs-6">
                                     Background Image
                                 </label>
                                 <div class="col-lg-8">
@@ -93,7 +96,9 @@
                                     <input type="file" name="font_file" id="font_file"
                                            class="form-control form-control-lg form-control-solid"
                                            accept=".ttf,.otf,.woff,.woff2"/>
-                                    <div class="form-text">Accepted: TTF, OTF, WOFF, WOFF2. Leave empty to keep current.</div>
+                                    <div class="form-text">Accepted: TTF, OTF, WOFF, WOFF2. Leave empty to keep
+                                        current.
+                                    </div>
                                 </div>
                             </div>
 
@@ -203,16 +208,16 @@
             let form, submitBtn, validator;
 
             const init = () => {
-                form      = document.getElementById('kt_certificate_form');
+                form = document.getElementById('kt_certificate_form');
                 submitBtn = document.getElementById('kt_certificate_submit');
 
                 if (!form) return;
 
-                $('#status').select2({ minimumResultsForSearch: Infinity });
+                $('#status').select2({minimumResultsForSearch: Infinity});
 
                 /* ===== COLOR PICKER SYNC ===== */
                 const colorPicker = document.getElementById('font_color_picker');
-                const colorText   = document.getElementById('font_color');
+                const colorText = document.getElementById('font_color');
 
                 colorPicker.addEventListener('input', () => {
                     colorText.value = colorPicker.value;
@@ -230,50 +235,50 @@
                     fields: {
                         name: {
                             validators: {
-                                notEmpty:     { message: 'Certificate name is required' },
-                                stringLength: { min: 2, max: 255, message: 'Name must be between 2 and 255 characters' }
+                                notEmpty: {message: 'Certificate name is required'},
+                                stringLength: {min: 2, max: 255, message: 'Name must be between 2 and 255 characters'}
                             }
                         },
                         font_size: {
                             validators: {
-                                notEmpty: { message: 'Font size is required' },
-                                numeric:  { message: 'Font size must be a number' },
-                                between:  { min: 1, max: 300, message: 'Font size must be between 1 and 300' }
+                                notEmpty: {message: 'Font size is required'},
+                                numeric: {message: 'Font size must be a number'},
+                                between: {min: 1, max: 300, message: 'Font size must be between 1 and 300'}
                             }
                         },
                         font_color: {
                             validators: {
-                                notEmpty: { message: 'Font color is required' },
-                                regexp:   { regexp: /^#[0-9A-Fa-f]{6}$/, message: 'Enter a valid hex color (e.g. #FF0000)' }
+                                notEmpty: {message: 'Font color is required'},
+                                regexp: {regexp: /^#[0-9A-Fa-f]{6}$/, message: 'Enter a valid hex color (e.g. #FF0000)'}
                             }
                         },
                         start_x: {
                             validators: {
-                                notEmpty: { message: 'Start X is required' },
-                                numeric:  { message: 'Must be a number' }
+                                notEmpty: {message: 'Start X is required'},
+                                numeric: {message: 'Must be a number'}
                             }
                         },
                         end_x: {
                             validators: {
-                                notEmpty: { message: 'End X is required' },
-                                numeric:  { message: 'Must be a number' }
+                                notEmpty: {message: 'End X is required'},
+                                numeric: {message: 'Must be a number'}
                             }
                         },
                         y: {
                             validators: {
-                                notEmpty: { message: 'Y position is required' },
-                                numeric:  { message: 'Must be a number' }
+                                notEmpty: {message: 'Y position is required'},
+                                numeric: {message: 'Must be a number'}
                             }
                         },
                         status: {
                             validators: {
-                                notEmpty: { message: 'Status is required' }
+                                notEmpty: {message: 'Status is required'}
                             }
                         }
                     },
                     plugins: {
-                        trigger:    new FormValidation.plugins.Trigger(),
-                        bootstrap5: new FormValidation.plugins.Bootstrap5({ rowSelector: '.row' })
+                        trigger: new FormValidation.plugins.Trigger(),
+                        bootstrap5: new FormValidation.plugins.Bootstrap5({rowSelector: '.row'})
                     }
                 });
 
@@ -291,7 +296,7 @@
                 });
             };
 
-            return { init };
+            return {init};
 
         })();
 

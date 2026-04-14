@@ -36,6 +36,19 @@ class Banner extends Model
         );
     }
 
+    public function getSliderDataAttribute()
+    {
+        $data = [
+            'type' => $this->type ?? 'image',
+            'src' => asset('storage/banners/' . $this->filename),
+        ];
+
+        if ($this->type === 'video' && !empty($this->poster)) {
+            $data['poster'] = asset('storage/banners/' . $this->poster);
+        }
+
+        return $data;
+    }
 
     /**
      * SET Attribute (Mutator)
@@ -49,7 +62,7 @@ class Banner extends Model
         }
 
         if ($file instanceof \Illuminate\Http\UploadedFile) {
-            $name = time().'_'.$file->getClientOriginalName();
+            $name = time() . '_' . $file->getClientOriginalName();
             $file->storeAs('public/banners', $name);
             $this->attributes['filename'] = $name;
         }
