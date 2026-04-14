@@ -36,7 +36,8 @@
 												</span>
                                 <!--end::Svg Icon-->
                                 <input type="text" data-kt-user-table-filter="search"
-                                       class="form-control form-control-solid w-250px ps-14" placeholder="Search speaker"/>
+                                       class="form-control form-control-solid w-250px ps-14"
+                                       placeholder="Search speaker"/>
                             </div>
                             <!--end::Search-->
                         </div>
@@ -68,7 +69,8 @@
                                 <div class="fw-bolder me-5">
                                     <span class="me-2" data-kt-user-table-select="selected_count"></span>Selected
                                 </div>
-                                <button type="button" class="btn btn-danger" data-kt-user-table-select="delete_selected">
+                                <button type="button" class="btn btn-danger"
+                                        data-kt-user-table-select="delete_selected">
                                     Delete Selected
                                 </button>
                             </div>
@@ -88,16 +90,16 @@
                                         <input class="form-check-input" type="checkbox"
                                                data-kt-check="true"
                                                data-kt-check-target="#kt_table_users .form-check-input"
-                                               value="1" />
+                                               value="1"/>
                                     </div>
                                 </th>
-                                <th >Photo</th>
-                                <th >Name</th>
-                                <th >Line 1</th>
-                                <th >Line 2</th>
-                                <th >Line 3</th>
-                                <th >Created At</th>
-                                <th >Actions</th>
+                                <th>Photo</th>
+                                <th>Name</th>
+                                <th>Line 1</th>
+                                <th>Line 2</th>
+                                <th>Line 3</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
                             </tr>
                             </thead>
 
@@ -135,7 +137,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
     <script>
         "use strict";
 
@@ -180,11 +181,11 @@
                             <img src="${data}" style="width:100%;height:100%;object-fit:cover">
                         </div>`
                         },
-                        { data: 'name' },
-                        { data: 'line1' },
-                        { data: 'line2' },
-                        { data: 'line3' },
-                        { data: 'created_at' },
+                        {data: 'name'},
+                        {data: 'line1'},
+                        {data: 'line2'},
+                        {data: 'line3'},
+                        {data: 'created_at'},
                         {
                             data: 'id',
                             orderable: false,
@@ -244,7 +245,7 @@
                     $.ajax({
                         url: '{{ route("admin.speaker.delete", ":id") }}'.replace(':id', id),
                         method: 'DELETE',
-                        data: { _token: '{{ csrf_token() }}' },
+                        data: {_token: '{{ csrf_token() }}'},
                         success: function () {
                             toastr.success('Speaker has been deleted!');
                             datatable.draw(false);
@@ -260,7 +261,8 @@
                 });
             }
 
-            var handleDeleteRows = () => {};
+            var handleDeleteRows = () => {
+            };
 
             var toggleToolbars = function () {
                 toolbarBase = document.querySelector('[data-kt-user-table-toolbar="base"]');
@@ -324,7 +326,7 @@
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
-                            body: JSON.stringify({ ids })
+                            body: JSON.stringify({ids})
                         })
                             .then(res => res.json())
                             .then(() => {
@@ -351,7 +353,7 @@
         function showBannerPreview(fileUrl) {
             const modal = new bootstrap.Modal(document.getElementById('bannerPreviewModal'));
             const modalTitle = document.getElementById('bannerPreviewTitle');
-            const modalBody  = document.getElementById('bannerPreviewBody');
+            const modalBody = document.getElementById('bannerPreviewBody');
 
             modalTitle.textContent = 'Speakers';
             modalBody.innerHTML = '';
@@ -365,6 +367,5 @@
             modal.show();
         }
     </script>
-
 
 @endpush

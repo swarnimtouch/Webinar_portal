@@ -32,7 +32,8 @@
                                     </svg>
                                 </span>
                                 <input type="text" data-kt-feedback-table-filter="search"
-                                       class="form-control form-control-solid w-250px ps-14" placeholder="Search feedback"/>
+                                       class="form-control form-control-solid w-250px ps-14"
+                                       placeholder="Search feedback"/>
                             </div>
                             <!--end::Search-->
                         </div>
@@ -118,7 +119,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
 
     <script>
         "use strict";
@@ -239,7 +239,7 @@
                         const url = window.URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.setAttribute('href', url);
-                        link.setAttribute('download', 'feedbacks_export_' + new Date().toISOString().slice(0,10) + '.csv');
+                        link.setAttribute('download', 'feedbacks_export_' + new Date().toISOString().slice(0, 10) + '.csv');
                         link.style.visibility = 'hidden';
                         document.body.appendChild(link);
                         link.click();

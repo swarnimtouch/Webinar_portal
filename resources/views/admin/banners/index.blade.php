@@ -162,15 +162,15 @@
                                                type="checkbox"
                                                data-kt-check="true"
                                                data-kt-check-target="#kt_table_banners .row-checkbox"
-                                               value="1" />
+                                               value="1"/>
 
                                     </div>
                                 </th>
-                                <th >Banner</th>
-                                <th >Title</th>
-                                <th >Created At</th>
-                                <th >Status</th>
-                                <th >Actions</th>
+                                <th>Banner</th>
+                                <th>Title</th>
+                                <th>Created At</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                             </thead>
                             <tbody class="fw-semibold text-gray-600">
@@ -207,7 +207,6 @@
         @endsection
 
         @push('scripts')
-            <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
             <script>
                 "use strict";
                 const qs = (s, p = document) => p.querySelector(s);
@@ -414,6 +413,7 @@
                         });
                     });
                 });
+
                 function updateToggleState() {
                     const selected = document.querySelectorAll('.row-checkbox:checked').length;
                     const toggles = document.querySelectorAll('.banner-status-toggle');

@@ -101,23 +101,16 @@ class BannerController extends Controller
     {
         try {
             $ids = $request->input('ids', []);
-
             if (empty($ids)) {
                 return response()->json(['success' => false, 'message' => 'No banners selected'], 400);
             }
-
             $banners = Banner::whereIn('id', $ids)->get();
-
             foreach ($banners as $banner) {
-                // Delete the file from storage
                 if (Storage::exists('public/banners/' . $banner->filename)) {
                     Storage::delete('public/banners/' . $banner->filename);
                 }
-
-                // Delete the database record
                 $banner->delete();
             }
-
             return response()->json(['success' => true, 'message' => 'Banners deleted successfully']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error deleting banners'], 500);
@@ -128,10 +121,8 @@ class BannerController extends Controller
     {
         try {
             $banner = Banner::findOrFail($id);
-
             $banner->status = $request->input('status');
             $banner->save();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Status updated successfully',
@@ -148,7 +139,6 @@ class BannerController extends Controller
     public function datatable(Request $request)
     {
         $query = Banner::query();
-
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -160,37 +150,30 @@ class BannerController extends Controller
             $type = $request->type;
             $query->where('type', $type);
         }
-
         if ($request->has('status') && !empty($request->status)) {
             $status = $request->status;
             $query->where('status', $status);
         }
-
         $total = $query->count();
-
         if ($request->has('order')) {
             $columns = $request->columns;
             foreach ($request->order as $order) {
                 $columnIndex = $order['column'];
                 $columnName = $columns[$columnIndex]['data'];
                 $direction = $order['dir'];
-
                 $dbColumn = match ($columnName) {
                     'title' => 'title',
                     'type' => 'type',
                     default => 'id'
                 };
-
                 $query->orderBy($dbColumn, $direction);
             }
         } else {
             $query->orderBy('id', 'desc');
         }
-
         $length = $request->input('length', 10);
         $start = $request->input('start', 0);
         $banners = $query->skip($start)->take($length)->get();
-
         $data = $banners->map(function ($banner) {
             return [
                 'id' => $banner->id,
@@ -202,7 +185,6 @@ class BannerController extends Controller
                 'actions' => '',
             ];
         });
-
         return response()->json([
             'draw' => $request->input('draw', 1),
             'recordsTotal' => $total,

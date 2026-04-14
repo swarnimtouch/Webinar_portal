@@ -21,6 +21,7 @@ class Brands extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
     public function getMediaUrlAttribute()
     {
         return $this->filename
@@ -28,4 +29,12 @@ class Brands extends Model
             : null;
     }
 
+    public function getImageUrlAttribute()
+    {
+        return asset(
+            $this->filename
+                ? 'storage/brands/' . $this->filename
+                : 'assets/images/default-brand.png'
+        );
+    }
 }

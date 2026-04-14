@@ -1,10 +1,4 @@
 @extends('layouts.website')
-
-@section('title', 'TechNova IT Summit 2025')
-
-@push('styles')
-@endpush
-
 @section('body')
     <main>
         <div class="container">
@@ -130,8 +124,7 @@
                     @forelse($speakers as $speaker)
                         <div class="speaker-profile-card">
                             <div class="sp-img-container">
-                                <img src="{{ asset('storage/speakers/' . $speaker->filename) }}"
-                                     alt="{{ $speaker->name }}"/>
+                                <img src="{{ $speaker->image_url }}" alt="{{ $speaker->name }}">
                             </div>
                             <h4>{{ $speaker->name }}</h4>
                             <p>{{ $speaker->line1 }}</p>
@@ -149,8 +142,7 @@
                 <div class="sponsors-grid">
                     @forelse($brands as $brand)
                         <div class="sponsor-card">
-                            <img src="{{ asset('storage/brands/' . $brand->filename) }}"
-                                 alt="{{ $brand->name ?? 'Brand Logo' }}"/>
+                            <img src="{{ $brand->image_url }}" alt="{{ $brand->name }}">
                         </div>
                     @empty
                         <p>No brands available.</p>
@@ -195,18 +187,15 @@
                 @foreach($registerFields as $field)
 
                     @php
-                        // Options fetch karne ka existing logic
                         $options = is_array(json_decode($field->input_value, true))
                           ? json_decode($field->input_value, true)
                           : [];
 
-                        // NAYA ADD KIYA: Dynamic Icon set karne ka logic
-                        $iconClass = $field->icon; // Pehle check karenge DB me icon hai ya nahi
-                        
+                        $iconClass = $field->icon;
+
                         if (empty($iconClass)) {
                             $fieldName = strtolower($field->field_name);
-                            
-                            // Field name ke according icon set kar rahe hain
+
                             if (str_contains($fieldName, 'name')) {
                                 $iconClass = 'fa-solid fa-user';
                             } elseif (str_contains($fieldName, 'email')) {
@@ -221,18 +210,17 @@
                                 $iconClass = 'fa-solid fa-map-location-dot';
                             } elseif ($fieldName === 'city') {
                                 $iconClass = 'fa-solid fa-city';
-                            } elseif ($field->attribute_id == 5) { // Date field ke liye
+                            } elseif ($field->attribute_id == 5) {
                                 $iconClass = 'fa-solid fa-calendar-days';
-                            } elseif ($field->attribute_id == 6) { // File upload ke liye
+                            } elseif ($field->attribute_id == 6) {
                                 $iconClass = 'fa-solid fa-file-arrow-up';
                             } else {
-                                $iconClass = 'fa-solid fa-pen'; // Default icon agar koi match na ho
+                                $iconClass = 'fa-solid fa-pen';
                             }
                         }
                     @endphp
 
                     <div class="email-input-group mb-3">
-                        {{-- UPDATE KIYA: Ab dynamic $iconClass print hoga --}}
                         <div class="icon-box">
                             <i class="{{ $iconClass }}"></i>
                         </div>
@@ -362,295 +350,14 @@
 
     @push('scripts')
         @if(session('toast_error'))
-            <script>
-                toastr.error("{{ session('toast_error') }}");
-            </script>
-        @endif
-
-        @if(session('toast_success'))
-            <script>
-                toastr.success("{{ session('toast_success') }}");
-            </script>
-        @endif
-        @if(session('open_login_modal'))
-            <script>
-                $(document).ready(function () {
-                    $('#loginModal').css('display', 'flex');
-                    $('body').css('overflow', 'hidden');
-                });
-            </script>
-        @endif
-        @if(session('open_register_modal'))
-            <script>
-                $(document).ready(function () {
-                    $('#registerModal').css('display', 'flex');
-                    $('body').css('overflow', 'hidden');
-                });
-            </script>
+            <script>toastr.error("{{ session('toast_error') }}");</script>
         @endif
 
         <script>
-            window.sliderData = [
-                    @foreach($banners as $banner)
-                {
-                    type: "{{ $banner->type }}",
-                    src: "{{ asset('storage/banners/' . $banner->filename) }}"
-                }@if(!$loop->last),@endif
-                @endforeach
-            ];
-
+            window.sliderData = @json($sliderData);
+            window._openLoginModal = {{ session('open_login_modal')    ? 'true' : 'false' }};
+            window._openRegisterModal = {{ session('open_register_modal') ? 'true' : 'false' }};
         </script>
-
-        <script>
-            $(document).ready(function () {
-
-
-                const loginValidator = $("#loginForm").validate({
-                    errorElement: "div",
-                    errorClass: "error-text",
-
-                    errorPlacement: function (error, element) {
-                        error.insertAfter(element.closest(".email-input-group"));
-                    },
-
-                    highlight: function (element) {
-                        $(element).addClass("is-invalid");
-                    },
-
-                    unhighlight: function (element) {
-                        $(element).removeClass("is-invalid");
-                    }
-                });
-
-
-                $("#loginForm input").each(function () {
-
-                    const $input = $(this);
-                    const label = $input.data("label") || "This field";
-                    const type = $input.attr("type");
-                    const name = $input.attr("name");
-
-                    if ($input.data("is-required") == 1) {
-                        $input.rules("add", {
-                            required: true,
-                            messages: {
-                                required: label + " is required"
-                            }
-                        });
-                    }
-
-                    if (type === "email" || name === "email") {
-                        $input.rules("add", {
-                            email: true,
-                            messages: {
-                                email: "Please enter a valid email address"
-                            }
-                        });
-                    }
-
-                    if (type === "tel" || name === "mobile_number" || name === "phone") {
-                        $input.rules("add", {
-                            digits: true,
-                            minlength: 10,
-                            maxlength: 10,
-                            messages: {
-                                digits: "Only numbers are allowed",
-                                minlength: "Mobile number must be 10 digits",
-                                maxlength: "Mobile number must be 10 digits"
-                            }
-                        });
-                    }
-
-                });
-
-                const registerValidator = $("#registerForm").validate({
-                    errorElement: "div",
-                    errorClass: "error-text",
-
-                    errorPlacement: function (error, element) {
-
-                        error.insertAfter(element.closest(".email-input-group"));
-                    },
-
-                    highlight: function (element) {
-                        $(element).addClass("is-invalid");
-                    },
-
-                    unhighlight: function (element) {
-                        $(element).removeClass("is-invalid");
-                    }
-                });
-
-
-                $("#registerForm").find("input, select, textarea").each(function () {
-
-                    const $input = $(this);
-                    const label = $input.data("label") || "This field";
-                    const type = $input.attr("type");
-                    const name = $input.attr("name");
-
-                    let rules = {};
-                    let messages = {};
-
-                    if ($input.data("is-required") == 1) {
-                        rules.required = true;
-                        messages.required = label + " is required";
-                    }
-
-                    if (name === "email") {
-                        rules.email = true;
-                        messages.email = "Please enter a valid email address";
-                    }
-
-                    if (name === "tel" || name === "mobile_number") {
-                        rules.digits = true;
-                        rules.minlength = 10;
-                        rules.maxlength = 10;
-
-                        messages.digits = "Only numbers are allowed";
-                        messages.minlength = "Mobile number must be 10 digits";
-                        messages.maxlength = "Mobile number must be 10 digits";
-                    }
-
-                    if (name === "password") {
-                        rules.minlength = 6;
-                        messages.minlength = label + " must be at least 6 characters";
-                    }
-
-                    if (Object.keys(rules).length > 0) {
-                        $input.rules("add", {
-                            ...rules,
-                            messages: messages
-                        });
-                    }
-
-                });
-
-
-            });
-        </script>
-
-        <script>
-            $(document).ready(function () {
-
-                $('.select2').select2({
-                    width: '100%',
-                    allowClear: true
-                });
-
-
-                $.get('/get-countries', function (countries) {
-
-                    $('#country').append(
-                        countries.map(c =>
-                            `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`
-                        )
-                    );
-
-                    let india = countries.find(c => c.name.toLowerCase() === 'india');
-
-                    if (india) {
-
-                        if ($('#country').is(':visible')) {
-                            $('#country').val(india.name).trigger('change');
-                        } else {
-                            loadStates(india.id);
-                        }
-                    }
-
-                });
-
-                function loadStates(countryId) {
-
-                    $('#state').empty().append('<option value="">Select State</option>').trigger('change');
-                    $('#city').empty().append('<option value="">Select City</option>').trigger('change');
-
-                    $.get(`/get-states/${countryId}`, function (states) {
-
-                        $('#state').append(
-                            states.map(s =>
-                                `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`
-                            )
-                        );
-
-                        let gujarat = states.find(s => s.name.toLowerCase() === 'gujarat');
-
-                        if (gujarat) {
-
-                            if ($('#state').is(':visible')) {
-                                $('#state').val(gujarat.name).trigger('change');
-                            } else {
-                                loadCities(gujarat.id);
-                            }
-                        }
-
-                    });
-                }
-
-                function loadCities(stateId) {
-
-                    $('#city').empty().append('<option value="">Select City</option>').trigger('change');
-
-                    $.get(`/get-cities/${stateId}`, function (cities) {
-
-                        $('#city').append(
-                            cities.map(c =>
-                                `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`
-                            )
-                        );
-
-                    });
-                }
-
-                $('#country').on('change', function () {
-
-                    let countryId = $('#country option:selected').data('id');
-
-                    $('#state').empty().append('<option value="">Select State</option>').trigger('change');
-                    $('#city').empty().append('<option value="">Select City</option>').trigger('change');
-
-                    if (!countryId) return;
-
-                    $.get(`/get-states/${countryId}`, function (states) {
-
-                        $('#state').append(
-                            states.map(s =>
-                                `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`
-                            )
-                        );
-
-                        if (window.oldState) {
-                            $('#state').val(window.oldState).trigger('change');
-                        }
-                    });
-                });
-
-
-                $('#state').on('change', function () {
-
-                    let stateId = $('#state option:selected').data('id');
-
-                    $('#city').empty().append('<option value="">Select City</option>').trigger('change');
-
-                    if (!stateId) return;
-
-                    $.get(`/get-cities/${stateId}`, function (cities) {
-
-                        $('#city').append(
-                            cities.map(c =>
-                                `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`
-                            )
-                        );
-
-                        if (window.oldCity) {
-                            $('#city').val(window.oldCity).trigger('change');
-                        }
-                    });
-                });
-
-            });
-        </script>
-
     @endpush
 
 @endsection

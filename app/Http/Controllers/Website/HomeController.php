@@ -141,7 +141,7 @@ class HomeController
 
             return back()
                 ->with('toast_error', $firstError)
-                ->withErrors($e->errors()) // optional (for old())
+                ->withErrors($e->errors())
                 ->withInput()
                 ->with('open_register_modal', true);
         }

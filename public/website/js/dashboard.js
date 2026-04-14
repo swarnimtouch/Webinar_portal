@@ -3,7 +3,71 @@ let pollLoaded = false;
 let pollInterval = null;
 let lastPollHash = null;
 let chatInterval = null;
+let attendanceInterval = null;
+let lastPing = Date.now();
 
+function startAttendanceTracking() {
+    if (!window.trackingEnabled) return;
+    if (attendanceInterval) return;
+
+    console.log('Attendance tracking started');
+    updateSessionTime();
+    attendanceInterval = setInterval(updateSessionTime, 30000);
+}
+
+function stopAttendanceTracking() {
+    if (attendanceInterval) {
+        clearInterval(attendanceInterval);
+        attendanceInterval = null;
+        console.log('Attendance tracking stopped');
+    }
+}
+
+function updateSessionTime() {
+    const now = Date.now();
+    const diff = Math.floor((now - lastPing) / 1000);
+    lastPing = now;
+
+    fetch(window.attendanceUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': window.csrfToken
+        },
+        body: JSON.stringify({time_diff: diff})
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Session updated:', data.session_time, 'sec | diff:', diff);
+            } else {
+                console.warn('Attendance conditions not met — stopping tracker:', data.message);
+                stopAttendanceTracking();
+            }
+        })
+        .catch(err => console.error('Fetch error:', err));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    startAttendanceTracking();
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopAttendanceTracking();
+    } else {
+        lastPing = Date.now();
+        startAttendanceTracking();
+    }
+});
+
+window.addEventListener('beforeunload', () => {
+    stopAttendanceTracking();
+    navigator.sendBeacon(
+        window.attendanceUrl,
+        JSON.stringify({time_diff: Math.floor((Date.now() - lastPing) / 1000)})
+    );
+});
 document.addEventListener("DOMContentLoaded", () => {
     const tabLinks = document.querySelectorAll(".tab-link");
     const tabContents = document.querySelectorAll(".tab-content");
@@ -446,8 +510,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         internalLinks.forEach((link) => {
             link.addEventListener("click", (e) => {
-                e.preventDefault();
                 const targetId = link.getAttribute("href");
+
+                if (!targetId || targetId === "#") return;
+
+                e.preventDefault();
                 const targetElement = document.querySelector(targetId);
 
                 if (targetElement) {

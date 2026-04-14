@@ -72,7 +72,6 @@ class UserController extends Controller
                 if ($fieldName === 'email') {
                     $rules[$dbFieldName] = 'required|email|unique:users,email' . ($id ? ",$id" : '');
                 } elseif ($fieldName === 'password') {
-                    // Required only on create; optional on update
                     $rules['password'] = $id ? 'nullable|min:6' : 'required|min:6';
                 } elseif ($fieldName === 'avatar') {
                     if ($id && $request->avatar_removed == '1' && !$request->hasFile('avatar')) {
@@ -167,7 +166,6 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Delete avatar if exists
         if ($user->avatar) {
             Storage::disk('public')->delete($user->avatar);
         }
@@ -181,7 +179,6 @@ class UserController extends Controller
     {
         $users = User::whereIn('id', $request->ids)->get();
 
-        // Delete avatars
         foreach ($users as $user) {
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
@@ -209,7 +206,6 @@ class UserController extends Controller
         }
 
         $query = User::select($select)->where('type', 'doctor');
-        /*** GLOBAL SEARCH ***/
         if ($request->search) {
             $search = $request->search;
 
@@ -220,7 +216,6 @@ class UserController extends Controller
             });
         }
 
-        /*** PAGINATION ***/
         $recordsTotal = $query->count();
 
         $data = $query

@@ -19,11 +19,21 @@ class Speakers extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
     public function getMediaUrlAttribute()
     {
         return $this->filename
             ? asset('storage/speakers/' . $this->filename)
             : null;
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return asset(
+            $this->filename
+                ? 'storage/speakers/' . $this->filename
+                : 'assets/images/default-user.png'
+        );
     }
 
     public function getStatusBadgeAttribute()

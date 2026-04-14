@@ -17,7 +17,6 @@ class LoginController extends Controller
 
     public function authenticate(Request $request)
     {
-        // Validate request
         $validator = Validator::make($request->all(), [
             'email' => ['required', 'email'],
             'password' => ['required'],
