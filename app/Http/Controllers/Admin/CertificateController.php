@@ -44,22 +44,22 @@ class CertificateController
     /**
      * Store or update certificate
      */
-    public function store(Request $request, $id = null)
+    public function save(Request $request, $id = null)
     {
         $certificate = $id ? Certificate::findOrFail($id) : new Certificate();
 
         $validator = Validator::make($request->all(), [
-            'name'             => 'required|string|min:2|max:255',
+            'name' => 'required|string|min:2|max:255',
             'background_image' => $certificate->exists
                 ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
                 : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'font_file'        => 'nullable|file', // TEXT se FILE
-            'font_size'        => 'required|integer|min:1|max:300',
-            'font_color'       => 'required|string|max:20',
-            'is_bold'          => 'nullable|boolean',
-            'start_x'          => 'required|integer|min:0',
-            'end_x'            => 'required|integer|min:0',
-            'y'                => 'required|integer|min:0',
+            'font_file' => 'nullable|file', // TEXT se FILE
+            'font_size' => 'required|integer|min:1|max:300',
+            'font_color' => 'required|string|max:20',
+            'is_bold' => 'nullable|boolean',
+            'start_x' => 'required|integer|min:0',
+            'end_x' => 'required|integer|min:0',
+            'y' => 'required|integer|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -86,14 +86,14 @@ class CertificateController
             $certificate->font_file = $fontFile->storeAs('certificates/fonts', $originalName, 'public');
         }
 
-        $certificate->name       = $request->name;
-        $certificate->font_size  = $request->font_size;
+        $certificate->name = $request->name;
+        $certificate->font_size = $request->font_size;
         $certificate->font_color = $request->font_color;
-        $certificate->is_bold    = $request->has('is_bold') ? 1 : 0;
-        $certificate->start_x    = $request->start_x;
-        $certificate->end_x      = $request->end_x;
-        $certificate->y          = $request->y;
-        $certificate->status     = 'active'; // default active, index se toggle hoga
+        $certificate->is_bold = $request->has('is_bold') ? 1 : 0;
+        $certificate->start_x = $request->start_x;
+        $certificate->end_x = $request->end_x;
+        $certificate->y = $request->y;
+        $certificate->status = 'active'; // default active, index se toggle hoga
         $certificate->save();
 
         $message = $certificate->wasRecentlyCreated
@@ -179,7 +179,7 @@ class CertificateController
             return response()->json([
                 'success' => true,
                 'message' => __('Certificate status updated successfully'),
-                'status'  => $certificate->status
+                'status' => $certificate->status
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -211,7 +211,7 @@ class CertificateController
             $query->where('status', $request->status);
         }
 
-        $recordsTotal    = Certificate::count();
+        $recordsTotal = Certificate::count();
         $recordsFiltered = $query->count();
 
         /* ===== ORDER ===== */
@@ -219,7 +219,7 @@ class CertificateController
             $columns = $request->columns;
             foreach ($request->order as $order) {
                 $columnName = $columns[$order['column']]['data'];
-                $direction  = $order['dir'];
+                $direction = $order['dir'];
 
                 if (in_array($columnName, ['name', 'font_size', 'status', 'created_at'])) {
                     $query->orderBy($columnName, $direction);
@@ -238,19 +238,19 @@ class CertificateController
         /* ===== RESPONSE DATA ===== */
         $data = $certificates->map(function ($certificate) {
             return [
-                'id'               => $certificate->id,
-                'name'             => $certificate->name,
+                'id' => $certificate->id,
+                'name' => $certificate->name,
                 'background_image' => $certificate->background_image
                     ? asset('storage/' . $certificate->background_image)
                     : null,
-                'font_file'        => $certificate->font_file,
-                'font_size'        => $certificate->font_size,
-                'font_color'       => $certificate->font_color,
-                'is_bold'          => $certificate->is_bold,
-                'start_x'          => $certificate->start_x,
-                'end_x'            => $certificate->end_x,
-                'y'                => $certificate->y,
-                'status'           => $certificate->status,
+                'font_file' => $certificate->font_file,
+                'font_size' => $certificate->font_size,
+                'font_color' => $certificate->font_color,
+                'is_bold' => $certificate->is_bold,
+                'start_x' => $certificate->start_x,
+                'end_x' => $certificate->end_x,
+                'y' => $certificate->y,
+                'status' => $certificate->status,
                 'created_at' => $certificate->created_at
                     ? $certificate->created_at->format('d M, Y')
                     : '-',
@@ -259,10 +259,10 @@ class CertificateController
         });
 
         return response()->json([
-            'draw'            => intval($request->draw),
-            'recordsTotal'    => $recordsTotal,
+            'draw' => intval($request->draw),
+            'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data'            => $data,
+            'data' => $data,
         ]);
     }
 }

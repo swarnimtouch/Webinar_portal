@@ -5,6 +5,7 @@
         .answer-item {
             position: relative;
         }
+
         .remove-answer {
             position: absolute;
             right: -35px;
@@ -36,14 +37,13 @@
                     </div>
                 @endif
 
-                <!-- Create/Edit Poll Card -->
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title fs-3 fw-bolder">{{ $title }}</div>
                     </div>
                     <div class="card-body border-top p-9">
                         <form method="POST"
-                              action="{{ route('admin.poll.store', $poll->id ?? null) }}"
+                              action="{{ route('admin.poll.save', $poll->id ?? null) }}"
                               id="kt_poll_form">
 
                             @csrf
@@ -51,7 +51,6 @@
                                 @method('PUT')
                             @endif
 
-                            <!-- Question -->
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Question</label>
                                 <div class="col-lg-8">
@@ -84,7 +83,8 @@
                                                        value="{{ $answer }}"
                                                        placeholder="Enter answer option {{ $index + 1 }}"/>
                                                 @if($index >= 2)
-                                                    <button type="button" class="btn btn-sm btn-icon btn-light-danger remove-answer">
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-icon btn-light-danger remove-answer">
                                                         <i class="bi bi-x-lg"></i>
                                                     </button>
                                                 @endif
@@ -95,7 +95,8 @@
                                     <button type="button" class="btn btn-sm btn-light-primary mt-2" id="add-answer">
                                         <i class="bi bi-plus-lg"></i> Add Another Answer
                                     </button>
-                                    <div class="form-text">Minimum 2 answers required. You can add up to 10 answers.</div>
+                                    <div class="form-text">Minimum 2 answers required. You can add up to 10 answers.
+                                    </div>
                                 </div>
                             </div>
 
@@ -107,10 +108,12 @@
                                             class="form-select form-select-solid form-select-lg"
                                             data-control="select2" data-placeholder="Select status"
                                             data-hide-search="true">
-                                        <option value="active" {{ old('status', $poll->status ?? 'active') === 'active' ? 'selected' : '' }}>
+                                        <option
+                                            value="active" {{ old('status', $poll->status ?? 'active') === 'active' ? 'selected' : '' }}>
                                             Active
                                         </option>
-                                        <option value="inactive" {{ old('status', $poll->status ?? '') === 'inactive' ? 'selected' : '' }}>
+                                        <option
+                                            value="inactive" {{ old('status', $poll->status ?? '') === 'inactive' ? 'selected' : '' }}>
                                             Inactive
                                         </option>
                                     </select>

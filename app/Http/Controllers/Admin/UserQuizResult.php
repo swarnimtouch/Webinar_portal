@@ -7,8 +7,8 @@ use App\Models\UserQuizAnswer;
 
 class UserQuizResult
 {
-    public function index(){
-        // dd('hii'); // hatao production mein
+    public function index()
+    {
         return view('admin.user_quiz_result.index', [
             'title' => __('User Quiz Result'),
             'breadcrumb' => breadcrumb([
@@ -38,7 +38,6 @@ class UserQuizResult
                 return response()->json(['success' => false, 'message' => 'No UserQuizAnswer selected'], 400);
             }
 
-            // Bulk delete — loop ki zarurat nahi
             UserQuizAnswer::whereIn('id', $ids)->delete();
 
             return response()->json(['success' => true, 'message' => 'UserQuizAnswer deleted successfully']);
@@ -49,7 +48,6 @@ class UserQuizResult
 
     public function datatable(Request $request)
     {
-        // 'poll' eager load add kiya — question aane ke liye
         $query = UserQuizAnswer::with('user', 'poll');
 
         if ($request->filled('search')) {
@@ -57,12 +55,12 @@ class UserQuizResult
             $query->where(function ($q) use ($search) {
                 $q->whereHas('user', function ($userQuery) use ($search) {
                     $userQuery->where('name', 'like', "%{$search}%")
-                              ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%");
                 })
-                ->orWhereHas('poll', function ($pollQuery) use ($search) {
-                    $pollQuery->where('question', 'like', "%{$search}%"); // poll mein search
-                })
-                ->orWhere('answer', 'like', "%{$search}%"); // answer mein search
+                    ->orWhereHas('poll', function ($pollQuery) use ($search) {
+                        $pollQuery->where('question', 'like', "%{$search}%");
+                    })
+                    ->orWhere('answer', 'like', "%{$search}%");
             });
         }
 
@@ -76,9 +74,9 @@ class UserQuizResult
                 $direction = $order['dir'];
 
                 $dbColumn = match ($columnName) {
-                    'answer'     => 'answer',
+                    'answer' => 'answer',
                     'created_at' => 'created_at',
-                    default      => 'id',
+                    default => 'id',
                 };
 
                 $query->orderBy($dbColumn, $direction);
@@ -88,27 +86,27 @@ class UserQuizResult
         }
 
         $length = $request->input('length', 10);
-        $start  = $request->input('start', 0);
+        $start = $request->input('start', 0);
 
         $userQuizAnswers = $query->skip($start)->take($length)->get();
 
         $data = $userQuizAnswers->map(function ($userQuizAnswer) {
             return [
-                'id'            => $userQuizAnswer->id,
-                'user_name'     => optional($userQuizAnswer->user)->name ?? 'N/A',
-                'user_email'    => optional($userQuizAnswer->user)->email ?? 'N/A',
-                'question'      => optional($userQuizAnswer->poll)->question ?? 'N/A', // Question from Poll
-                'answer'        => $userQuizAnswer->answer ?? '-',                      // User ka diya hua answer
-                'created_at'    => $userQuizAnswer->created_at->format('d M Y'),
-                'actions'       => '',
+                'id' => $userQuizAnswer->id,
+                'user_name' => optional($userQuizAnswer->user)->name ?? 'N/A',
+                'user_email' => optional($userQuizAnswer->user)->email ?? 'N/A',
+                'question' => optional($userQuizAnswer->poll)->question ?? 'N/A',
+                'answer' => $userQuizAnswer->answer ?? 'N/A',
+                'created_at' => $userQuizAnswer->created_at->format('d M Y'),
+                'actions' => '',
             ];
         });
 
         return response()->json([
-            'draw'            => (int) $request->input('draw'),
-            'recordsTotal'    => $total,
+            'draw' => (int)$request->input('draw'),
+            'recordsTotal' => $total,
             'recordsFiltered' => $total,
-            'data'            => $data,
+            'data' => $data,
         ]);
     }
 }

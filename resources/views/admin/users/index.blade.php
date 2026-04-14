@@ -2,9 +2,7 @@
 
 @section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
-        <!--begin::Post-->
         <div class="post d-flex flex-column-fluid" id="kt_post">
-            <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -13,13 +11,9 @@
                     </div>
                 @endif
 
-                <!--begin::Card-->
                 <div class="card">
-                    <!--begin::Card header-->
                     <div class="card-header border-0 pt-6">
-                        <!--begin::Card title-->
                         <div class="card-title">
-                            <!--begin::Search-->
                             <div class="d-flex align-items-center position-relative my-1">
                                 <span class="svg-icon svg-icon-1 position-absolute ms-6">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -31,30 +25,15 @@
                                             fill="black"/>
                                     </svg>
                                 </span>
-                                <input type="text" data-kt-user-table-filter="search"
-                                       class="form-control form-control-solid w-250px ps-14" placeholder="Search user"/>
+                                <input type="text"
+                                       data-kt-user-table-filter="search"
+                                       class="form-control form-control-solid w-250px ps-14"
+                                       placeholder="Search user"/>
                             </div>
-                            <!--end::Search-->
                         </div>
-                        <!--begin::Card title-->
 
-                        <!--begin::Card toolbar-->
                         <div class="card-toolbar">
-                            <!--begin::Toolbar-->
                             <div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
-                                <!--begin::Filter-->
-
-                                <!--begin::Menu-->
-                                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true"
-                                     id="filter-menu">
-
-                                    <div id="dynamic-filters"></div>
-
-                                </div>
-                                <!--end::Menu-->
-                                <!--end::Filter-->
-
-                                <!--begin::Export-->
                                 <button type="button" class="btn btn-light-primary me-3" id="export-btn">
                                     <span class="svg-icon svg-icon-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -71,10 +50,9 @@
                                     </span>
                                     Export
                                 </button>
-                                <!--end::Export-->
 
-                                <!--begin::Add user-->
-                                <a href="{{ route('admin.user.create') }}" class="btn btn-primary">
+                                {{-- ✅ Updated: create → add_edit_form (no id = create mode) --}}
+                                <a href="{{ route('admin.user.add_edit_form') }}" class="btn btn-primary">
                                     <span class="svg-icon svg-icon-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                              viewBox="0 0 24 24" fill="none">
@@ -85,11 +63,8 @@
                                     </span>
                                     Add User
                                 </a>
-                                <!--end::Add user-->
                             </div>
-                            <!--end::Toolbar-->
 
-                            <!--begin::Group actions-->
                             <div class="d-flex justify-content-end align-items-center d-none"
                                  data-kt-user-table-toolbar="selected">
                                 <div class="fw-bolder me-5">
@@ -100,15 +75,10 @@
                                     Delete Selected
                                 </button>
                             </div>
-                            <!--end::Group actions-->
                         </div>
-                        <!--end::Card toolbar-->
                     </div>
-                    <!--end::Card header-->
 
-                    <!--begin::Card body-->
                     <div class="card-body pt-0">
-                        <!--begin::Table-->
                         <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
@@ -120,30 +90,23 @@
                                                data-kt-check="true"
                                                data-kt-check-target="#kt_table_users .row-checkbox"
                                                value="1"/>
-
                                     </div>
                                 </th>
                                 @foreach($valid_dynamic_fields as $field)
                                     <th>{{ $field->label }}</th>
                                 @endforeach
-
                                 <th>Actions</th>
                             </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
-                        <!--end::Table-->
                     </div>
-                    <!--end::Card body-->
                 </div>
-                <!--end::Card-->
             </div>
-            <!--end::Container-->
         </div>
-        <!--end::Post-->
     </div>
 
-    <!--begin::View User Modal-->
+    {{-- View User Modal --}}
     <div class="modal fade" id="kt_modal_view_user" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered mw-650px">
             <div class="modal-content">
@@ -155,8 +118,8 @@
                                  fill="none">
                                 <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
                                       transform="rotate(-45 6 17.3137)" fill="black"/>
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)"
-                                      fill="black"/>
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
+                                      transform="rotate(45 7.41422 6)" fill="black"/>
                             </svg>
                         </span>
                     </div>
@@ -171,13 +134,10 @@
             </div>
         </div>
     </div>
-    <!--end::View User Modal-->
-
 @endsection
 
-
 @push('scripts')
-    <script src="{{asset('assets/plugins/custom/datatables/datatables.bundle.js')}}"></script>
+    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 
     <script>
         "use strict";
@@ -188,14 +148,19 @@
             let userTable;
 
             const dynamicFields = @json(
-                        $valid_dynamic_fields
-                            ->map(fn($field) => [
-                                'field_name' => $field->field_name,
-                                'label' => $field->label
-                            ])
-                            ->values()
-                            ->toArray()
-                    );
+                $valid_dynamic_fields
+                    ->map(fn($field) => [
+                        'field_name' => $field->field_name,
+                        'label'      => $field->label,
+                    ])
+                    ->values()
+                    ->toArray()
+            );
+
+            // ✅ Updated: edit route → add_edit_form with id
+            const editUrl = '{{ route("admin.user.add_edit_form", ":id") }}';
+            const showUrl = '{{ route("admin.user.show", ":id") }}';
+            const deleteUrl = '{{ route("admin.user.destroy", ":id") }}';
 
             function initUserTable() {
                 userTable = $('#kt_table_users').DataTable({
@@ -215,23 +180,30 @@
                             data: 'id',
                             orderable: false,
                             searchable: false,
-                            render: id => `<div class="form-check form-check-sm form-check-custom form-check-solid"> <input class="form-check-input row-checkbox" type="checkbox" value="${id}" /> </div>`
+                            render: id => `
+                                <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                    <input class="form-check-input row-checkbox" type="checkbox" value="${id}"/>
+                                </div>`
                         },
-
                         ...dynamicFields.map(f => ({
                             data: f.field_name,
-                            render: (data, type, row) => data ? data : 'N/A'
+                            render: (data) => data ?? 'N/A'
                         })),
-
                         {
                             data: 'id',
                             orderable: false,
                             render: id => `
-                    <div>
-                        <a href="/admin/user/${id}" class="btn btn-sm" title="View"><i class="bi bi-eye"></i></a>
-                        <a href="/admin/user/${id}/edit" class="btn btn-sm" title="Edit"><i class="bi bi-pencil-fill"></i></a>
-                        <button class="btn btn-sm delete-user" data-id="${id}" title="Delete"><i class="bi bi-trash"></i></button>
-                    </div>`
+                                <div>
+                                    <a href="${showUrl.replace(':id', id)}" class="btn btn-sm" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="${editUrl.replace(':id', id)}" class="btn btn-sm" title="Edit">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                    <button class="btn btn-sm delete-user" data-id="${id}" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>`
                         }
                     ]
                 });
@@ -245,90 +217,69 @@
                 deleteUser($(this).data('id'));
             });
 
-            // Handle export
-            var handleExport = function () {
+            function handleExport() {
                 const exportBtn = document.getElementById('export-btn');
+                if (!exportBtn) return;
 
-                if (exportBtn) {
-                    exportBtn.addEventListener('click', function () {
-                        const originalHTML = exportBtn.innerHTML;
-                        exportBtn.disabled = true;
-                        exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
+                exportBtn.addEventListener('click', function () {
+                    const originalHTML = exportBtn.innerHTML;
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
 
-                        let csv = '';
+                    let csv = dynamicFields.map(f => f.label).join(',') + '\n';
 
-                        // Add headers (excluding city, state, country)
-                        const headers = dynamicFields.map(f => f.label);
-                        csv += headers.join(',') + '\n';
-
-                        // Add rows
-                        const rows = document.querySelectorAll('#kt_table_users tbody tr');
-                        rows.forEach(row => {
-                            const cells = row.querySelectorAll('td');
-                            if (cells.length > 1) {
-                                let rowData = [];
-                                for (let i = 2; i < cells.length - 1; i++) {
-                                    const text = cells[i].innerText.trim().replace(/\n/g, ' ');
-                                    rowData.push(`"${text}"`);
-                                }
-                                csv += rowData.join(',') + '\n';
+                    document.querySelectorAll('#kt_table_users tbody tr').forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length > 1) {
+                            let rowData = [];
+                            for (let i = 2; i < cells.length - 1; i++) {
+                                rowData.push(`"${cells[i].innerText.trim().replace(/\n/g, ' ')}"`);
                             }
-                        });
-
-                        // Download
-                        const blob = new Blob([csv], {type: 'text/csv'});
-                        const url = window.URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.setAttribute('href', url);
-                        link.setAttribute('download', 'users_export.csv');
-                        link.style.visibility = 'hidden';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-
-                        setTimeout(() => {
-                            exportBtn.disabled = false;
-                            exportBtn.innerHTML = originalHTML;
-
-                            Swal.fire({
-                                text: "Users exported successfully!",
-                                icon: "success",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn fw-bold btn-primary",
-                                }
-                            });
-                        }, 500);
+                            csv += rowData.join(',') + '\n';
+                        }
                     });
-                }
-            }
 
+                    const blob = new Blob([csv], {type: 'text/csv'});
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'users_export.csv';
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    setTimeout(() => {
+                        exportBtn.disabled = false;
+                        exportBtn.innerHTML = originalHTML;
+                        Swal.fire({
+                            text: "Users exported successfully!",
+                            icon: "success",
+                            buttonsStyling: false,
+                            confirmButtonText: "Ok, got it!",
+                            customClass: {confirmButton: "btn fw-bold btn-primary"}
+                        });
+                    }, 500);
+                });
+            }
 
             document
                 .querySelector('[data-kt-user-table-select="delete_selected"]')
                 ?.addEventListener('click', () => {
-
-                    const ids = qsa('.row-checkbox:checked')
-                        .map(cb => cb.value);
+                    const ids = qsa('.row-checkbox:checked').map(cb => cb.value);
 
                     if (!ids.length) {
-                        Swal.fire({
-                            text: "Please select at least one banner.",
-                            icon: "info",
-                            confirmButtonText: "OK"
-                        });
+                        Swal.fire({text: "Please select at least one user.", icon: "info", confirmButtonText: "OK"});
                         return;
                     }
 
                     Swal.fire({
-                        text: `Delete ${ids.length} selected banner(s)?`,
+                        text: `Delete ${ids.length} selected user(s)?`,
                         icon: "warning",
                         showCancelButton: true,
                         confirmButtonText: "Yes, delete",
                         cancelButtonText: "Cancel"
                     }).then(result => {
-
                         if (!result.isConfirmed) return;
 
                         fetch('{{ route("admin.user.deleteMultiple") }}', {
@@ -342,43 +293,36 @@
                             .then(res => {
                                 if (!res.ok) throw new Error();
                                 Swal.fire({
-                                    text: "Selected Users deleted successfully.",
+                                    text: "Selected users deleted successfully.",
                                     icon: "success",
                                     confirmButtonText: "OK"
                                 });
                                 userTable.draw(false);
                             })
                             .catch(() => {
-                                Swal.fire({
-                                    text: "Failed to delete banners.",
-                                    icon: "error",
-                                    confirmButtonText: "OK"
-                                });
+                                Swal.fire({text: "Failed to delete users.", icon: "error", confirmButtonText: "OK"});
                             });
                     });
                 });
-            document.addEventListener('change', e => {
 
+            document.addEventListener('change', e => {
                 if (!e.target.classList.contains('row-checkbox') &&
                     !e.target.matches('[data-kt-check="true"]')) return;
 
-
                 const selectedCount = document.querySelectorAll('.row-checkbox:checked').length;
-
                 const toolbarBase = document.querySelector('[data-kt-user-table-toolbar="base"]');
-                const toolbarSelected = document.querySelector('[data-kt-user-table-toolbar="selected"]');
+                const toolbarSel = document.querySelector('[data-kt-user-table-toolbar="selected"]');
                 const selectedCountEl = document.querySelector('[data-kt-user-table-select="selected_count"]');
 
                 if (selectedCount > 0) {
                     toolbarBase.classList.add('d-none');
-                    toolbarSelected.classList.remove('d-none');
+                    toolbarSel.classList.remove('d-none');
                     selectedCountEl.textContent = selectedCount;
                 } else {
                     toolbarBase.classList.remove('d-none');
-                    toolbarSelected.classList.add('d-none');
+                    toolbarSel.classList.add('d-none');
                     selectedCountEl.textContent = '';
                 }
-
             });
 
             function deleteUser(id) {
@@ -393,52 +337,44 @@
                         confirmButton: "btn fw-bold btn-danger",
                         cancelButton: "btn fw-bold btn-active-light-primary"
                     }
-                }).then(function (result) {
-                    if (result.value) {
-                        $.ajax({
-                            url: '{{ route("admin.user.destroy", ":id") }}'.replace(':id', id),
-                            method: 'DELETE',
-                            data: {
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function (response) {
-                                Swal.fire({
-                                    text: "User has been deleted!",
-                                    icon: "success",
-                                    buttonsStyling: false,
-                                    confirmButtonText: "Ok, got it!",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-primary",
-                                    }
-                                }).then(function () {
-                                    userTable.draw(false);
-                                });
-                            },
-                            error: function (xhr) {
-                                Swal.fire({
-                                    text: "Error deleting user. Please try again.",
-                                    icon: "error",
-                                    buttonsStyling: false,
-                                    confirmButtonText: "Ok, got it!",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-primary",
-                                    }
-                                });
-                            }
-                        });
-                    }
+                }).then(result => {
+                    if (!result.value) return;
+
+                    $.ajax({
+                        url: deleteUrl.replace(':id', id),
+                        method: 'DELETE',
+                        data: {_token: '{{ csrf_token() }}'},
+                        success: function () {
+                            Swal.fire({
+                                text: "User has been deleted!",
+                                icon: "success",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok, got it!",
+                                customClass: {confirmButton: "btn fw-bold btn-primary"}
+                            }).then(() => userTable.draw(false));
+                        },
+                        error: function () {
+                            Swal.fire({
+                                text: "Error deleting user. Please try again.",
+                                icon: "error",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok, got it!",
+                                customClass: {confirmButton: "btn fw-bold btn-primary"}
+                            });
+                        }
+                    });
                 });
             }
 
             return {
                 init: function () {
                     if (!table) return;
-
                     initUserTable();
                     handleExport();
                 }
-            }
+            };
         }();
+
         KTUtil.onDOMContentLoaded(function () {
             KTUsersList.init();
         });

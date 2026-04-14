@@ -23,7 +23,7 @@
 
 
                     <div id="kt_account_profile_details" class="collapse show">
-                        <form method="POST" action="{{ route('admin.settings.update') }}"
+                        <form method="POST" action="{{ route('admin.settings.save') }}"
                               id="kt_settings_form" enctype="multipart/form-data">
                             @csrf
 
@@ -126,7 +126,8 @@
                                                                         style="max-height:60px">
 
                                                                 @elseif($extension == 'pdf')
-                                                                    <a href="{{ $fileUrl }}" target="_blank" class="btn btn-sm btn-primary">
+                                                                    <a href="{{ $fileUrl }}" target="_blank"
+                                                                       class="btn btn-sm btn-primary">
                                                                         View PDF
                                                                     </a>
                                                                 @else

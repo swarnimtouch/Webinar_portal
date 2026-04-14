@@ -43,10 +43,8 @@ class UserAttendenceController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search, $activeFields) {
-                // Search in dynamic fields - use actual database column names
                 foreach ($activeFields as $field) {
                     $dbColumn = $this->mapFieldNameToColumn($field->field_name);
-
                     if ($dbColumn && \Schema::hasColumn('users', $dbColumn)) {
                         $q->orWhere('users.' . $dbColumn, 'like', "%{$search}%");
                     }
@@ -56,7 +54,6 @@ class UserAttendenceController extends Controller
         }
 
         $total = $query->count();
-
         if ($request->has('order')) {
             $columns = $request->columns;
             foreach ($request->order as $order) {
@@ -84,7 +81,6 @@ class UserAttendenceController extends Controller
         $start = $request->input('start', 0);
         $records = $query->skip($start)->take($length)->get();
 
-        // Format data
         $data = $records->map(function ($record) use ($activeFields) {
             $row = [
                 'attendance_id' => $record->attendance_id,

@@ -5,135 +5,152 @@
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
 
-    <div class="post d-flex flex-column-fluid" id="kt_post">
-        <div id="kt_content_container" class="container-xxl">
+        <div class="post d-flex flex-column-fluid" id="kt_post">
+            <div id="kt_content_container" class="container-xxl">
 
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
 
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-            <!-- Create/Edit Speaker Card -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title fs-3 fw-bolder">{{$title}}</div>
-                </div>
-                <div id="kt_speaker_wrapper" class="collapse show">
-                    <form method="POST"
-                          action="{{ route('admin.speakers.store', isset($speaker) ? $speaker->id : null) }}"
-                          id="kt_speaker_form"
-                          enctype="multipart/form-data">
-                        @csrf
+                <!-- Create/Edit Speaker Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title fs-3 fw-bolder">{{$title}}</div>
+                    </div>
+                    <div id="kt_speaker_wrapper" class="collapse show">
+                        <form method="POST"
+                              action="{{ route('admin.speakers.save', isset($speaker) ? $speaker->id : null) }}"
+                              id="kt_speaker_form"
+                              enctype="multipart/form-data">
+                            @csrf
 
-                        <input type="hidden" name="type" id="type" value="">
-                        <input type="hidden" name="status" value="{{ isset($speaker) ? $speaker->status : 'active' }}">
-                        <input type="hidden" name="image_removed" id="image_removed" value="0">
-                        <input type="hidden" name="has_existing_image" id="has_existing_image" value="{{ isset($speaker) && $speaker->filename ? '1' : '0' }}">
+                            <input type="hidden" name="type" id="type" value="">
+                            <input type="hidden" name="status"
+                                   value="{{ isset($speaker) ? $speaker->status : 'active' }}">
+                            <input type="hidden" name="image_removed" id="image_removed" value="0">
+                            <input type="hidden" name="has_existing_image" id="has_existing_image"
+                                   value="{{ isset($speaker) && $speaker->filename ? '1' : '0' }}">
 
-                        <div class="card-body border-top p-9">
-                            <div class="row mb-6" id="imageUploadSection">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Image</label>
-                                <div class="col-lg-8">
-                                    <!--begin::Image input-->
-                                    <div class="image-input image-input-outline" data-kt-image-input="true"
-                                         style="background-image: url('{{ asset('assets/media/avatars/blank.png') }}')">
+                            <div class="card-body border-top p-9">
+                                <div class="row mb-6" id="imageUploadSection">
+                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Image</label>
+                                    <div class="col-lg-8">
+                                        <!--begin::Image input-->
+                                        <div class="image-input image-input-outline" data-kt-image-input="true"
+                                             style="background-image: url('{{ asset('assets/media/avatars/blank.png') }}')">
 
-                                        <!--begin::Preview existing image-->
-                                        <div class="image-input-wrapper w-125px h-125px" id="imagePreview"
-                                             style="background-image: url('{{ isset($speaker) && $speaker->filename ? asset('storage/speakers/' . $speaker->filename) : asset('assets/media/avatars/blank.png') }}')">
+                                            <!--begin::Preview existing image-->
+                                            <div class="image-input-wrapper w-125px h-125px" id="imagePreview"
+                                                 style="background-image: url('{{ isset($speaker) && $speaker->filename ? asset('storage/speakers/' . $speaker->filename) : asset('assets/media/avatars/blank.png') }}')">
+                                            </div>
+                                            <!--end::Preview existing image-->
+
+                                            <!--begin::Label-->
+                                            <label
+                                                class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                                data-kt-image-input-action="change" data-bs-toggle="tooltip"
+                                                title="Change image">
+                                                <i class="bi bi-pencil-fill fs-7"></i>
+                                                <!--begin::Inputs-->
+                                                <input type="file" name="filename" id="filename" accept="image/*"/>
+                                                <input type="hidden" name="image_remove"/>
+                                                <!--end::Inputs-->
+                                            </label>
+                                            <!--end::Label-->
+
+                                            <!--begin::Cancel-->
+                                            <span
+                                                class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                                data-kt-image-input-action="cancel" data-bs-toggle="tooltip"
+                                                title="Cancel">
+                                            <i class="bi bi-x fs-2"></i>
+                                        </span>
+                                            <!--end::Cancel-->
+
+                                            <!--begin::Remove-->
+                                            <span
+                                                class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                                data-kt-image-input-action="remove" data-bs-toggle="tooltip"
+                                                title="Remove">
+                                            <i class="bi bi-x fs-2"></i>
+                                        </span>
+                                            <!--end::Remove-->
                                         </div>
-                                        <!--end::Preview existing image-->
+                                        <!--end::Image input-->
 
-                                        <!--begin::Label-->
-                                        <label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                               data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change image">
-                                            <i class="bi bi-pencil-fill fs-7"></i>
-                                            <!--begin::Inputs-->
-                                            <input type="file" name="filename" id="filename" accept="image/*" />
-                                            <input type="hidden" name="image_remove" />
-                                            <!--end::Inputs-->
-                                        </label>
-                                        <!--end::Label-->
-
-                                        <!--begin::Cancel-->
-                                        <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                              data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel">
-                                            <i class="bi bi-x fs-2"></i>
-                                        </span>
-                                        <!--end::Cancel-->
-
-                                        <!--begin::Remove-->
-                                        <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                              data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove">
-                                            <i class="bi bi-x fs-2"></i>
-                                        </span>
-                                        <!--end::Remove-->
+                                        <!--begin::Hint-->
+                                        <div class="form-text">Allowed file types: jpg, jpeg, png, gif. Max size: 5MB
+                                        </div>
+                                        <!--end::Hint-->
                                     </div>
-                                    <!--end::Image input-->
+                                </div>
+                                <!-- File Upload -->
 
-                                    <!--begin::Hint-->
-                                    <div class="form-text">Allowed file types: jpg, jpeg, png, gif. Max size: 5MB</div>
-                                    <!--end::Hint-->
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Name</label>
+                                    <div class="col-lg-8">
+                                        <input type="text" name="name" value="{{ old('name', $speaker->name ?? '') }}"
+                                               class="form-control form-control-lg form-control-solid"/>
+                                    </div>
+                                </div>
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Line 1</label>
+                                    <div class="col-lg-8">
+                                        <input type="text" name="line1"
+                                               value="{{ old('line1', $speaker->line1 ?? '') }}"
+                                               class="form-control form-control-lg form-control-solid"/>
+                                    </div>
+                                </div>
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label  fw-bold fs-6">Line 2</label>
+                                    <div class="col-lg-8">
+                                        <input type="text" name="line2"
+                                               value="{{ old('line2', $speaker->line2 ?? '') }}"
+                                               class="form-control form-control-lg form-control-solid"/>
+                                    </div>
+                                </div>
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label  fw-bold fs-6">Line 3</label>
+                                    <div class="col-lg-8">
+                                        <input type="text" name="line3"
+                                               value="{{ old('line3', $speaker->line3 ?? '') }}"
+                                               class="form-control form-control-lg form-control-solid"/>
+                                    </div>
                                 </div>
                             </div>
-                            <!-- File Upload -->
 
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Name</label>
-                                <div class="col-lg-8">
-                                    <input type="text" name="name" value="{{ old('name', $speaker->name ?? '') }}" class="form-control form-control-lg form-control-solid" />
-                                </div>
-                            </div>
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Line 1</label>
-                                <div class="col-lg-8">
-                                    <input type="text" name="line1" value="{{ old('line1', $speaker->line1 ?? '') }}" class="form-control form-control-lg form-control-solid" />
-                                </div>
-                            </div>
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label  fw-bold fs-6">Line 2</label>
-                                <div class="col-lg-8">
-                                    <input type="text" name="line2" value="{{ old('line2', $speaker->line2 ?? '') }}" class="form-control form-control-lg form-control-solid" />
-                                </div>
-                            </div>
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label  fw-bold fs-6">Line 3</label>
-                                <div class="col-lg-8">
-                                    <input type="text" name="line3" value="{{ old('line3', $speaker->line3 ?? '') }}" class="form-control form-control-lg form-control-solid" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card-footer d-flex justify-content-end py-6 px-9">
-                            <a type="reset" href="{{route('admin.speakers')}}" class="btn btn-light btn-active-light-primary me-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary" id="kt_speaker_submit">
-                                <span class="indicator-label">Save</span>
-                                <span class="indicator-progress">Please wait...
+                            <div class="card-footer d-flex justify-content-end py-6 px-9">
+                                <a type="reset" href="{{route('admin.speakers')}}"
+                                   class="btn btn-light btn-active-light-primary me-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary" id="kt_speaker_submit">
+                                    <span class="indicator-label">Save</span>
+                                    <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                                 </span>
-                            </button>
-                        </div>
-                    </form>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-@endsection
+        @endsection
 
-@push('scripts')
+        @push('scripts')
             <script>
                 "use strict";
 
@@ -159,12 +176,12 @@
                             fields: {
                                 name: {
                                     validators: {
-                                        notEmpty: { message: 'Name is required' }
+                                        notEmpty: {message: 'Name is required'}
                                     }
                                 },
                                 line1: {
                                     validators: {
-                                        notEmpty: { message: 'Line 1 is required' }
+                                        notEmpty: {message: 'Line 1 is required'}
                                     }
                                 },
                                 filename: {
@@ -225,7 +242,7 @@
                         });
                     };
 
-                    return { init };
+                    return {init};
 
                 })();
 
@@ -235,4 +252,4 @@
             </script>
 
 
-@endpush
+    @endpush

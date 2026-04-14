@@ -141,51 +141,51 @@ function getModules($user_type = 'admin'): array
             [
                 'route' => route('admin.user_attendance'),
                 'name' => 'User Attendance',
-                'icon' => 'bi bi-people fs-3',
+                'icon' => 'bi-calendar-check',
                 'child' => [],
                 'all_routes' => ['admin.user_attendance']
             ],
             [
                 'route' => route('admin.feedback.index'),
                 'name' => 'Feedback',
-                'icon' => 'bi bi-people fs-3',
+                'icon' => 'bi-star',
                 'child' => [],
                 'all_routes' => ['admin.feedback.index']
             ],
             [
                 'route' => route('admin.poll'),
                 'name' => 'Polls',
-                'icon' => 'bi bi-tags',
+                'icon' => 'bi-bar-chart',
                 'child' => [],
                 'all_routes' => ['admin.poll', 'admin.poll.add_edit_form']
             ],
             [
                 'route' => route('admin.user_quiz_result'),
                 'name' => 'User Quiz Answers',
-                'icon' => 'bi bi-tags',
+                'icon' => 'bi-patch-question',
                 'child' => [],
                 'all_routes' => ['admin.user_quiz_result']
             ],
             [
-                'route' => route('admin.chatmessage'),
-                'name' => 'Chat Message',
-                'icon' => 'bi bi-tags',
+                'route' => route('admin.chatlog'),
+                'name' => 'Chat Log',
+                'icon' => 'bi-chat-dots',
                 'child' => [],
-                'all_routes' => ['admin.chatmessage']
+                'all_routes' => ['admin.chatlog']
             ],
             [
                 'route' => route('admin.certificate'),
                 'name' => 'Certificate',
-                'icon' => 'bi bi-tags',
+                'icon' => 'bi-award',
                 'child' => [],
                 'all_routes' => ['admin.certificate', 'admin.certificate.add_edit_form']
             ],
             [
-                'route' => route('admin.certificate-download'),
-                'name' => 'Certificate Download',
-                'icon' => 'bi bi-tags',
+                'route' => route('admin.certificate-log'),
+                'name' => 'Certificate Log',
+                'icon' => 'bi-journal-text',
                 'child' => [],
-                'all_routes' => ['admin.certificate-download']
+                'all_routes' => ['admin.certificate-log']
             ],
         ];
     }

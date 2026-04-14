@@ -49,21 +49,12 @@ class HomeController
             ->get();
 
 
-        $sliderData = $banners->map(function ($banner) {
-            $data = [
-                'type' => $banner->type ?? 'image',
-                'src' => asset('storage/banners/' . $banner->filename),
-            ];
+        $sliderData = $banners->pluck('slider_data');
 
-            // If video, add poster image
-            if ($data['type'] === 'video' && !empty($banner->poster)) {
-                $data['poster'] = asset('storage/banners/' . $banner->poster);
-            }
-
-            return $data;
-        });
-
-        return view('website.home', compact('homesetting', 'banners', 'registerFields', 'contents', 'speakers', 'brands', 'loginFields', 'sliderData'));
+        return view('website.home', array_merge(
+            compact('homesetting', 'banners', 'registerFields', 'contents', 'speakers', 'brands', 'loginFields', 'sliderData'),
+            ['title' => __('Home')]
+        ));
     }
 
     public function login(Request $request)
@@ -107,10 +98,8 @@ class HomeController
                 ->with('open_login_modal', true);
         }
 
-        /* =========================
-           ✅ DOCTOR CHECK
-        ========================= */
-        if ($user->type !== 'doctor') {   // change column/value if needed
+
+        if ($user->type !== 'doctor') {
             return back()
                 ->with('toast_error', 'Only doctors are allowed to login.')
                 ->withInput()
@@ -127,7 +116,6 @@ class HomeController
 
     public function register(Request $request)
     {
-//        dd($request->all());
         $fields = DynamicFields::where('status', 'active')->get();
         $rules = [];
 
@@ -169,8 +157,6 @@ class HomeController
             );
 
         }
-
-//        dd($data);
         $user = new User();
         $user->fill($data);
 

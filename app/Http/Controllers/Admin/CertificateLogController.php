@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\CertificateDownload;
+use App\Models\CertificateLogs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class CertificateDownloadController
+class CertificateLogController
 {
     public function index()
     {
-        return view('admin.certificate_download.index', [
-            'title'      => __('Certificate Downloads'),
+        return view('admin.certificate_log.index', [
+            'title' => __('Certificate Log'),
             'breadcrumb' => breadcrumb([
-                __('Certificate Downloads') => route('admin.certificate-download')
+                __('Certificate Log') => route('admin.certificate-log')
             ])
         ]);
     }
@@ -22,7 +22,7 @@ class CertificateDownloadController
     {
         try {
 
-            $download = CertificateDownload::findOrFail($id);
+            $download = CertificateLogs::findOrFail($id);
 
             // 🔥 Delete stored file
             if ($download->file_path &&
@@ -61,7 +61,7 @@ class CertificateDownloadController
                 ], 400);
             }
 
-            $downloads = CertificateDownload::whereIn('id', $ids)->get();
+            $downloads = CertificateLogs::whereIn('id', $ids)->get();
 
             foreach ($downloads as $download) {
 
@@ -72,7 +72,7 @@ class CertificateDownloadController
                 }
             }
 
-            CertificateDownload::whereIn('id', $ids)->delete();
+            CertificateLogs::whereIn('id', $ids)->delete();
 
             return response()->json([
                 'success' => true,
@@ -90,7 +90,7 @@ class CertificateDownloadController
 
     public function datatable(Request $request)
     {
-        $query = CertificateDownload::with(['certificate', 'user']);
+        $query = CertificateLogs::with(['certificate', 'user']);
 
         /* ===== SEARCH ===== */
         if ($request->filled('search')) {
@@ -101,7 +101,7 @@ class CertificateDownloadController
             });
         }
 
-        $recordsTotal    = CertificateDownload::count();
+        $recordsTotal = CertificateLogs::count();
         $recordsFiltered = $query->count();
 
         /* ===== ORDER ===== */
@@ -109,7 +109,7 @@ class CertificateDownloadController
             $columns = $request->columns;
             foreach ($request->order as $order) {
                 $columnName = $columns[$order['column']]['data'];
-                $direction  = $order['dir'];
+                $direction = $order['dir'];
 
                 if (in_array($columnName, ['id', 'created_at'])) {
                     $query->orderBy($columnName, $direction);
@@ -128,24 +128,24 @@ class CertificateDownloadController
         /* ===== RESPONSE DATA ===== */
         $data = $downloads->map(function ($download) {
             return [
-                'id'               => $download->id,
-                'certificate_id'   => $download->certificate_id,
+                'id' => $download->id,
+                'certificate_id' => $download->certificate_id,
                 'certificate_name' => $download->certificate?->name ?? '-',
-                'user_id'          => $download->user_id,
-                'user_name'        => $download->user?->name ?? '-',
-                'user_email'       => $download->user?->email ?? '-',
-                'file_path'               => $download->file_path,
-                'downloaded_at'    => $download->created_at
+                'user_id' => $download->user_id,
+                'user_name' => $download->user?->name ?? '-',
+                'user_email' => $download->user?->email ?? '-',
+                'file_path' => $download->file_path,
+                'downloaded_at' => $download->created_at
                     ? $download->created_at->format('d M, Y H:i')
                     : '-',
             ];
         });
 
         return response()->json([
-            'draw'            => intval($request->draw),
-            'recordsTotal'    => $recordsTotal,
+            'draw' => intval($request->draw),
+            'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data'            => $data,
+            'data' => $data,
         ]);
     }
 }

@@ -17,7 +17,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
@@ -25,10 +24,13 @@ class DatabaseSeeder extends Seeder
             'type' => 'admin',
             'username' => 'admin',
         ]);
+
         $this->call(General_Setting_Seeder::class);
         $this->call(ContentSeeder::class);
-        $this->call(AddDropdownInputSeeder::class);
-        $this->call(AttributeInputIconsSeeder::class);
+        $this->call(AttributeInputSeeder::class);
+        $this->call(ChatGroupSeeder::class);
+        $this->call(ChatMessageSeeder::class);
+
         $this->call([
             DaynamicFieldsSeeder::class,
         ]);

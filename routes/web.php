@@ -12,32 +12,43 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
 Route::post('/website/login', [HomeController::class, 'login'])
     ->name('website.login.submit');
+
 Route::post('/website/register', [HomeController::class, 'register'])
     ->name('website.register.submit');
 Route::get('/website/logout', [HomeController::class, 'logout'])->name('website.logout');
+
+Route::get('/get-countries', [HomeController::class, 'countries']);
+
+Route::get('/get-states/{country}', [HomeController::class, 'states']);
+
+Route::get('/get-cities/{state}', [HomeController::class, 'cities']);
+
+Route::get('/admin', function () {
+    return redirect(route('admin.dashboard'));
+});
 Route::middleware(['auth'])->prefix('website')->group(function () {
-    Route::get('/dashboard',[DashboardController::class, 'dashboard'])->name('website.dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('website.dashboard');
+
     Route::post('/dashboard/attendance/update', [DashboardController::class, 'updateSessionTime'])->name('dashboard.attendance.update');
+
     Route::post('/feedback/store', [DashboardController::class, 'store'])
         ->name('feedback.store');
-        Route::get('/poll', [DashboardController::class, 'getPoll']);
+
+    Route::get('/poll', [DashboardController::class, 'getPoll']);
+
     Route::post('/poll/vote', [DashboardController::class, 'submitPoll']);
 
-    Route::get('/chat/messages', [ChatController::class,'fetchMessages']);
+    Route::get('/chat/messages', [ChatController::class, 'fetchMessages']);
 
-    Route::post('/chat/send', [ChatController::class,'sendMessage']);
+    Route::post('/chat/send', [ChatController::class, 'sendMessage']);
     Route::get('certificate/generate/{certificateId}/{userId}',
         [CertificateController::class, 'generate']
     )->name('admin.certificate.generate');
 });
-Route::get('/get-countries', [HomeController::class, 'countries']);
-Route::get('/get-states/{country}', [HomeController::class, 'states']);
-Route::get('/get-cities/{state}', [HomeController::class, 'cities']);
-Route::get('/admin', function (){
-  return redirect(route('admin.dashboard'));
-});
+
 Route::get('/{slug}', [ContentController::class, 'show']);
 
 
