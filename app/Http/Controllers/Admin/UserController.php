@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\City;
+use App\Models\Country;
 use App\Models\DynamicFields;
+use App\Models\State;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -136,18 +139,16 @@ class UserController extends Controller
                 }
             }
         }
-
+        $userData['name'] = $request->first_name . $request->last_name;
         $userData['type'] = 'doctor';
 
         if ($user) {
             $user->update($userData);
-            $message = 'User updated successfully';
         } else {
             User::create($userData);
-            $message = 'User created successfully';
         }
 
-        return redirect()->route('admin.user.index')->with('success', $message);
+        return redirect()->route('admin.user.index')->with('success', 'User Saved Successfully.');
     }
 
     public function show($id)
@@ -230,4 +231,30 @@ class UserController extends Controller
             "data" => $data
         ]);
     }
+
+    public function countries()
+    {
+        return Country::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+    }
+
+    public function states($countryId)
+    {
+        return State::select('id', 'name')
+            ->where('country_id', $countryId)
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function cities($stateId)
+    {
+        return City::select('id', 'name')
+            ->where('state_id', $stateId)
+            ->orderBy('name')
+            ->get();
+
+    }
+    
 }

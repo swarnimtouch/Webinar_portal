@@ -11,7 +11,7 @@ use App\Http\Controllers\Admin\SpeakersController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\HomeSettingController;
-use App\Http\Controllers\Admin\UserAttendenceController;
+use App\Http\Controllers\Admin\UserAttendanceController;
 use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\PollController;
 use App\Http\Controllers\Admin\UserQuizResult;
@@ -83,10 +83,10 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('home-setting', [HomeSettingController::class, 'index'])->name('home_setting');
     Route::post('/home-setting/save', [HomeSettingController::class, 'save'])->name('home_setting.save');
 
-    Route::get('attendance', [UserAttendenceController::class, 'index'])->name('user_attendance');
-    Route::delete('attendance/delete/{id}', [UserAttendenceController::class, 'delete'])->name('user_attendance.delete');
-    Route::post('attendance/delete-multiple', [UserAttendenceController::class, 'deleteMultiple'])->name('user_attendance.deleteMultiple');
-    Route::get('attendance/datatable', [UserAttendenceController::class, 'datatable'])->name('user_attendance.datatable');
+    Route::get('attendance', [UserAttendanceController::class, 'index'])->name('user_attendance');
+    Route::delete('attendance/delete/{id}', [UserAttendanceController::class, 'delete'])->name('user_attendance.delete');
+    Route::post('attendance/delete-multiple', [UserAttendanceController::class, 'deleteMultiple'])->name('user_attendance.deleteMultiple');
+    Route::get('attendance/datatable', [UserAttendanceController::class, 'datatable'])->name('user_attendance.datatable');
 
     Route::get('feedback', [FeedbackController::class, 'index'])->name('feedback.index');
     Route::delete('feedback/delete/{id}', [FeedbackController::class, 'delete'])->name('feedback.delete');
@@ -123,4 +123,11 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::delete('certificate-log/delete/{id}', [CertificateLogController::class, 'delete'])->name('certificate-log.delete');
     Route::post('certificate-log/delete-multiple', [CertificateLogController::class, 'deleteMultiple'])->name('certificate-log.deleteMultiple');
     Route::get('certificate-log/datatable', [CertificateLogController::class, 'datatable'])->name('certificate-log.datatable');
+
+    Route::get('/get-countries', [UserController::class, 'countries'])->name('users.countries');
+
+    Route::get('/get-states/{country}', [UserController::class, 'states'])->name('users.states');
+
+    Route::get('/get-cities/{state}', [UserController::class, 'cities'])->name('users.cities');
+    
 });

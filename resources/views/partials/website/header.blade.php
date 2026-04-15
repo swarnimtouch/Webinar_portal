@@ -72,30 +72,29 @@
                 <i class="fa-solid fa-bell"></i>
             </a>
 
-            <a href="#" class="me-3">
-                <i class="fa-solid fa-gear"></i>
-            </a>
-
             <div class="profile-info position-relative d-flex align-items-center cursor-pointer">
                 <img src="{{ asset('website/images/user.png') }}"
                      class="rounded-circle me-2"
                      width="38"
                      height="38"
                      alt="User">
-                
+
                 <i class="fa-solid fa-chevron-down small profile-chevron ms-1"></i>
 
                 <div class="profile-dropdown shadow-lg rounded-3">
                     <ul class="list-unstyled mb-0 py-2">
                         <li>
                             <div class="d-flex align-items-center px-3 py-2">
-                                <i class="fa-regular fa-user me-3"></i> 
+                                <i class="fa-regular fa-user me-3"></i>
                                 {{ auth()->user()->first_name }}
                             </div>
                         </li>
-                        <li><hr class="dropdown-divider my-1"></li>
                         <li>
-                            <a class="dropdown-item d-flex align-items-center text-danger px-3 py-2" href="{{ route('website.logout') }}">
+                            <hr class="dropdown-divider my-1">
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center text-danger px-3 py-2"
+                               href="{{ route('website.logout') }}">
                                 <i class="fa-solid fa-right-from-bracket me-3"></i> Logout
                             </a>
                         </li>

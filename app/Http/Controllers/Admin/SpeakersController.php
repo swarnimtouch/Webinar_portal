@@ -39,19 +39,13 @@ class SpeakersController extends Controller
      */
     public function save(Request $request, $id = null)
     {
-        $speaker = $id ? Speakers::findOrFail($id) : null;
-        $imageRule = 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120';
-        if (!$speaker) {
-            $imageRule = 'required|image|mimes:jpeg,png,jpg,gif|max:5120';
-        } elseif ($request->input('image_removed') == '1' && !$request->hasFile('filename')) {
-            $imageRule = 'required|image|mimes:jpeg,png,jpg,gif|max:5120';
-        } elseif ($speaker && !$speaker->filename && !$request->hasFile('filename')) {
-            $imageRule = 'required|image|mimes:jpeg,png,jpg,gif|max:5120';
-        }
+        $speaker = $id ? Speakers::findOrFail($id) : new Speakers();
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'line1' => 'required|string|max:255',
-            'filename' => $imageRule,
+            'filename' => $id
+                ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
+                : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
             'status' => 'required|in:active,inactive'
         ]);
         if (!$speaker) {

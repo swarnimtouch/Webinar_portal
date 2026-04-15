@@ -79,7 +79,7 @@ function getModules($user_type = 'admin'): array
                 'name' => 'Users',
                 'icon' => 'bi bi-people fs-3',
                 'child' => [],
-                'all_routes' => ['admin.user.index', 'admin.user.create']
+                'all_routes' => ['admin.user.index', 'admin.user.add_edit_form']
             ],
             [
                 'route' => '#',
