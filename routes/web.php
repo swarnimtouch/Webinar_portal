@@ -34,8 +34,8 @@ Route::middleware(['auth'])->prefix('website')->group(function () {
 
     Route::post('/dashboard/attendance/update', [DashboardController::class, 'updateSessionTime'])->name('dashboard.attendance.update');
 
-    Route::post('/feedback/store', [DashboardController::class, 'store'])
-        ->name('feedback.store');
+    Route::post('/feedback/save', [DashboardController::class, 'feedbackSave'])
+        ->name('feedback.save');
 
     Route::get('/poll', [DashboardController::class, 'getPoll'])->name('poll');
 

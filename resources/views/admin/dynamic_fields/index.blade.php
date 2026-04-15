@@ -173,10 +173,7 @@
                     <!--begin::Card footer-->
                     <div class="card-footer d-flex justify-content-end py-6">
                         <button type="button" id="save-fields-btn" class="btn btn-primary">
-                            <span class="svg-icon svg-icon-2">
-
-                            </span>
-                            Save Changes
+                            Save
                         </button>
                     </div>
                     <!--end::Card footer-->
@@ -299,7 +296,7 @@
                         success: function (response) {
                             // Reset button
                             saveBtn.disabled = false;
-                            saveBtn.innerHTML = '<span class="svg-icon svg-icon-2"></span>Save Changes';
+                            saveBtn.innerHTML = '<span class="svg-icon svg-icon-2"></span>Save';
 
                             Swal.fire({
                                 text: response.message || "Changes saved successfully!",

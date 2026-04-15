@@ -11,17 +11,19 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('status', ['active', 'inactive'])
-                ->default('active')
-                ->after('avatar');
+            $table->unsignedBigInteger('event_id')->after('id')->nullable();
+            $table->foreign('event_id')->references('id')->on('events')->onDelete('cascade');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('status');
+            $table->dropForeign('users_event_id_foreign');
+            $table->dropColumn('event_id');
         });
     }
-
 };

@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->enum('type',['admin','doctor','user'])->default('user');
+            $table->enum('type', ['admin', 'doctor', 'user'])->default('user');
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
             $table->string('name');
@@ -22,15 +21,10 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->string('mobile')->nullable();
-            $table->string('alternative_mobile')->nullable();
             $table->string('address')->nullable();
             $table->string('city')->nullable();
             $table->string('state')->nullable();
             $table->string('country')->nullable();
-            $table->string('speciality')->nullable();
-            $table->string('super_speciality')->nullable();
-            $table->string('hospital')->nullable();
-            $table->string('therapy')->nullable();
             $table->string('avatar')->nullable();
             $table->rememberToken();
             $table->timestamps();

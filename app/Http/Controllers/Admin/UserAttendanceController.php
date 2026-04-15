@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
-class UserAttendenceController extends Controller
+class UserAttendanceController extends Controller
 {
     public function index()
     {
@@ -161,7 +161,7 @@ class UserAttendenceController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Selected attendance records deleted successfully'
+                'message' => 'attendance records deleted successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json([
