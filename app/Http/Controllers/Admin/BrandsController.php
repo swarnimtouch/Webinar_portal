@@ -71,7 +71,7 @@ class BrandsController extends Controller
         }
         $brand->save();
         return redirect()->route('admin.brand')
-            ->with('success', $isUpdate ? 'Brand updated successfully' : 'Brand created successfully');
+            ->with('success', 'Brand Saved successfully');
     }
 
     public function delete($id)
@@ -82,9 +82,9 @@ class BrandsController extends Controller
                 Storage::delete('public/brands/' . $brands->filename);
             }
             $brands->delete();
-            return response()->json(['success' => true, 'message' => 'Brands deleted successfully']);
+            return response()->json(['success' => true, 'message' => 'Brand deleted successfully']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error deleting Brands'], 500);
+            return response()->json(['success' => false, 'message' => 'Error deleting Brand'], 500);
         }
     }
 
@@ -107,7 +107,7 @@ class BrandsController extends Controller
             }
             return response()->json(['success' => true, 'message' => 'Brands deleted successfully']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error deleting Bramds'], 500);
+            return response()->json(['success' => false, 'message' => 'Error deleting Brands'], 500);
         }
     }
 

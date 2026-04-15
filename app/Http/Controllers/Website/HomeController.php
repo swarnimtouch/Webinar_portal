@@ -21,47 +21,43 @@ class HomeController
 {
     public function index()
     {
-        $banners = Banner::where('status', 'active')
-            ->orderBy('id')
-            ->get();
+
+        $banners = Banner::active()->ordered()->get();
 
         $contents = Content::get()
             ->keyBy('slug');
 
-        $speakers = Speakers::where('status', 'active')
-            ->orderBy('id')
-            ->get();
 
-        $brands = Brands::where('status', 'active')
-            ->orderBy('id')
-            ->get();
+        $speakers = Speakers::active()->ordered()->get();
 
-        $homesetting = HomeSetting::first();
+        $brands = Brands::active()->ordered()->get();
 
-        $loginFields = DynamicFields::where('status', 'active')
-            ->where('login_with', 1)
-            ->orderBy('index_no')
+        $homeSetting = HomeSetting::first();
+
+        $loginFields = DynamicFields::active()
+            ->loginFields()
+            ->ordered()
             ->get();
 
         $registerFields = DynamicFields::with('attributeInput')
-            ->where('status', 'active')
-            ->orderBy('index_no')
+            ->active()
+            ->ordered()
             ->get();
 
 
         $sliderData = $banners->pluck('slider_data');
 
         return view('website.home', array_merge(
-            compact('homesetting', 'banners', 'registerFields', 'contents', 'speakers', 'brands', 'loginFields', 'sliderData'),
+            compact('homeSetting', 'banners', 'registerFields', 'contents', 'speakers', 'brands', 'loginFields', 'sliderData'),
             ['title' => __('Home')]
         ));
     }
 
     public function login(Request $request)
     {
-        $loginFields = DynamicFields::where('status', 'active')
-            ->where('login_with', 1)
-            ->orderBy('index_no')
+        $loginFields = DynamicFields::active()
+            ->loginFields()
+            ->ordered()
             ->get();
 
         $rules = [];

@@ -34,14 +34,14 @@ class CertificateLogController
 
             return response()->json([
                 'success' => true,
-                'message' => __('Record deleted successfully')
+                'message' => __('Certificate Log deleted successfully')
             ]);
 
         } catch (\Exception $e) {
 
             return response()->json([
                 'success' => false,
-                'message' => __('Failed to delete record')
+                'message' => __('Error deleting Certificate Log')
             ], 500);
         }
     }
@@ -55,7 +55,7 @@ class CertificateLogController
             if (empty($ids)) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('No records selected')
+                    'message' => __('No Certificate Log selected')
                 ], 400);
             }
 
@@ -74,14 +74,14 @@ class CertificateLogController
 
             return response()->json([
                 'success' => true,
-                'message' => __('Records deleted successfully')
+                'message' => __('Certificate Log deleted successfully')
             ]);
 
         } catch (\Exception $e) {
 
             return response()->json([
                 'success' => false,
-                'message' => __('Failed to delete records')
+                'message' => __('Error deleting Certificate Log')
             ], 500);
         }
     }

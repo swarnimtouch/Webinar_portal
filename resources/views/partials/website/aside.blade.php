@@ -87,11 +87,6 @@
 
                     <button id="submitFeedbackBtn" class="btn-primary-full">Submit Feedback</button>
                 </div>
-                <div class="feedback-success">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <h3>Thank You!</h3>
-                    <p>Your feedback has been recorded.</p>
-                </div>
             </div>
 
             <div class="chat-input-area">

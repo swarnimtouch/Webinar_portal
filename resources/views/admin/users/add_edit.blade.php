@@ -182,19 +182,40 @@
                                                     {{ $label }}
                                                 </label>
                                                 <div class="col-lg-8">
-                                                    <select name="country"
+                                                    <select name="country" id="country"
                                                             class="form-select form-select-lg form-select-solid">
                                                         <option value="">Select Country</option>
-                                                        @foreach(['India', 'USA', 'UK', 'Canada', 'Australia'] as $country)
-                                                            <option
-                                                                value="{{ $country }}" {{ $value == $country ? 'selected' : '' }}>
-                                                                {{ $country }}
-                                                            </option>
-                                                        @endforeach
                                                     </select>
                                                 </div>
                                             </div>
 
+                                        @elseif($fieldName == 'state')
+                                            {{-- State Dropdown --}}
+                                            <div class="row mb-6">
+                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
+                                                    {{ $label }}
+                                                </label>
+                                                <div class="col-lg-8">
+                                                    <select name="state" id="state"
+                                                            class="form-select form-select-lg form-select-solid">
+                                                        <option value="">Select State</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                        @elseif($fieldName == 'city')
+                                            {{-- City Dropdown --}}
+                                            <div class="row mb-6">
+                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
+                                                    {{ $label }}
+                                                </label>
+                                                <div class="col-lg-8">
+                                                    <select name="city" id="city"
+                                                            class="form-select form-select-lg form-select-solid">
+                                                        <option value="">Select City</option>
+                                                    </select>
+                                                </div>
+                                            </div>
                                         @else
                                             {{-- Default Text Input --}}
                                             <div class="row mb-6">
@@ -217,7 +238,7 @@
                                     <a href="{{ route('admin.user.index') }}"
                                        class="btn btn-light btn-active-light-primary me-2">Cancel</a>
                                     <button type="submit" class="btn btn-primary" id="kt_user_submit">
-                                        <span class="indicator-label">{{ isset($user) ? 'Update' : 'Save' }}</span>
+                                        <span class="indicator-label">Save</span>
                                         <span class="indicator-progress">
                                             Please wait...
                                             <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
@@ -238,7 +259,9 @@
     <script>
         "use strict";
 
+
         KTUtil.onDOMContentLoaded(function () {
+
             const form = document.querySelector('#kt_user_form');
             const submitBtn = document.querySelector('#kt_user_submit');
             const avatarInput = document.querySelector('#avatar');
@@ -250,7 +273,7 @@
             let newAvatarSelected = false;
 
             if (avatarRemovedInput) {
-                // Remove button
+
                 document.querySelectorAll('[data-kt-image-input-action="remove"]').forEach(btn => {
                     btn.addEventListener('click', function () {
                         avatarWasRemoved = true;
@@ -262,7 +285,6 @@
                     });
                 });
 
-                // Cancel button
                 document.querySelectorAll('[data-kt-image-input-action="cancel"]').forEach(btn => {
                     btn.addEventListener('click', function () {
                         avatarWasRemoved = false;
@@ -274,7 +296,6 @@
                     });
                 });
 
-                // New file selected
                 if (avatarInput) {
                     avatarInput.addEventListener('change', function () {
                         if (this.files && this.files.length > 0) {
@@ -290,7 +311,7 @@
 
             @foreach($activeFields as $field)
                 @php
-                    $fieldName    = $field->field_name;
+                    $fieldName   = $field->field_name;
                     $fieldMapping = [
                         'mobile_number'             => 'mobile',
                         'alternative_mobile_number' => 'alternative_mobile',
@@ -338,18 +359,13 @@
                     callback: {
                         callback: function (input) {
                             const value = input.value;
-
-                            // Edit mode mein blank = keep current, koi error nahi
                             if (isEditMode && value === '') return true;
-
                             @if($field->is_required && !isset($user))
                             if (value === '') return {valid: false, message: 'Password is required'};
                             @endif
-
                             if (value.length > 0 && value.length < 6) {
                                 return {valid: false, message: 'Password must be at least 6 characters'};
                             }
-
                             return true;
                         }
                     }
@@ -375,6 +391,7 @@
                     notEmpty: {message: '{{ $field->label }} is required'}
                 }
             };
+
             @endif
             @endforeach
 
@@ -382,16 +399,16 @@
                 fields: validationFields,
                 plugins: {
                     trigger: new FormValidation.plugins.Trigger(),
-                    bootstrap: new FormValidation.plugins.Bootstrap5({
-                        rowSelector: '.row'
-                    })
+                    bootstrap: new FormValidation.plugins.Bootstrap5({rowSelector: '.row'})
                 }
             });
+
             document.querySelectorAll('.mobile-number-input').forEach(function (input) {
                 input.addEventListener('keydown', function (e) {
-                    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
-                        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-                        'Home', 'End'];
+                    const allowedKeys = [
+                        'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+                        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
+                    ];
                     if (allowedKeys.includes(e.key)) return;
                     if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) return;
                     if (!/^[0-9]$/.test(e.key)) e.preventDefault();
@@ -412,6 +429,88 @@
                     }
                 });
             });
+
         });
+        window.oldCountry = "{{ old('country', $user->country ?? '') }}";
+        window.oldState = "{{ old('state',   $user->state   ?? '') }}";
+        window.oldCity = "{{ old('city',    $user->city    ?? '') }}";
+
+        const countryFieldActive = {{ $activeFields->contains('field_name', 'country') ? 'true' : 'false' }};
+        const stateFieldActive = {{ $activeFields->contains('field_name', 'state')   ? 'true' : 'false' }};
+        const cityFieldActive = {{ $activeFields->contains('field_name', 'city')    ? 'true' : 'false' }};
+
+        $.get("{{ route('admin.users.countries') }}", function (countries) {
+
+            if (countryFieldActive) {
+                $('#country').append(
+                    countries.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
+                );
+                if (window.oldCountry) {
+                    $('#country').val(window.oldCountry);
+                }
+            }
+
+            const countryName = countryFieldActive ? (window.oldCountry || '') : 'India';
+            const matchedCountry = countries.find(c => c.name === countryName);
+
+            if (matchedCountry) {
+                loadStates(matchedCountry.id);
+            }
+        });
+
+        function loadStates(countryId) {
+            $.get(`/get-states/${countryId}`, function (states) {
+
+                if (stateFieldActive) {
+                    $('#state').html('<option value="">Select State</option>').append(
+                        states.map(s => `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`)
+                    );
+                    if (window.oldState) {
+                        $('#state').val(window.oldState);
+                    }
+                }
+
+                const stateName = stateFieldActive ? (window.oldState || '') : 'Gujarat';
+                const matchedState = states.find(s => s.name === stateName);
+
+                if (matchedState) {
+                    loadCities(matchedState.id);
+                }
+            });
+        }
+
+        function loadCities(stateId) {
+            if (!cityFieldActive) return;
+
+            $.get(`/get-cities/${stateId}`, function (cities) {
+                $('#city').html('<option value="">Select City</option>').append(
+                    cities.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
+                );
+                if (window.oldCity) {
+                    $('#city').val(window.oldCity);
+                    window.oldCity = null;
+                }
+            });
+        }
+
+        if (countryFieldActive) {
+            $('#country').on('change', function () {
+                const countryId = $(this).find('option:selected').data('id');
+                if (stateFieldActive) $('#state').html('<option value="">Select State</option>');
+                if (cityFieldActive) $('#city').html('<option value="">Select City</option>');
+                if (!countryId) return;
+                loadStates(countryId);
+            });
+        }
+
+        if (stateFieldActive) {
+            $('#state').on('change', function () {
+                const stateId = $(this).find('option:selected').data('id');
+                if (cityFieldActive) $('#city').html('<option value="">Select City</option>');
+                if (!stateId) return;
+                loadCities(stateId);
+            });
+        }
+
     </script>
 @endpush

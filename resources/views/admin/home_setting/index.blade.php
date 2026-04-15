@@ -47,9 +47,18 @@
                                             data-control="select2" data-placeholder="Select player type"
                                             data-hide-search="true">
                                         <option value="">Select player type</option>
-                                        <option value="youtube" {{ old('player_type', $homeSetting->player_type ?? '') === 'youtube' ? 'selected' : '' }}>YouTube</option>
-                                        <option value="vimeo" {{ old('player_type', $homeSetting->player_type ?? '') === 'vimeo' ? 'selected' : '' }}>Vimeo</option>
-                                        <option value="other" {{ old('player_type', $homeSetting->player_type ?? '') === 'other' ? 'selected' : '' }}>Other</option>
+                                        <option
+                                            value="youtube" {{ old('player_type', $homeSetting->player_type ?? '') === 'youtube' ? 'selected' : '' }}>
+                                            YouTube
+                                        </option>
+                                        <option
+                                            value="vimeo" {{ old('player_type', $homeSetting->player_type ?? '') === 'vimeo' ? 'selected' : '' }}>
+                                            Vimeo
+                                        </option>
+                                        <option
+                                            value="other" {{ old('player_type', $homeSetting->player_type ?? '') === 'other' ? 'selected' : '' }}>
+                                            Other
+                                        </option>
                                     </select>
                                 </div>
                             </div>
@@ -80,7 +89,8 @@
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label fw-bold fs-6">Video Preview</label>
                                 <div class="col-lg-8">
-                                    <div id="video-preview" class="border rounded p-5 bg-light-primary" style="min-height: 200px;">
+                                    <div id="video-preview" class="border rounded p-5 bg-light-primary"
+                                         style="min-height: 200px;">
                                         <div class="text-center text-muted" id="preview-placeholder">
                                             <i class="bi bi-play-circle fs-3x mb-3"></i>
                                             <p class="mb-0">Video preview will appear here</p>
@@ -116,7 +126,8 @@
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">User Attendance</label>
                                 <div class="col-lg-8">
                                     <div class="form-check form-switch form-check-custom form-check-solid">
-                                        <input class="form-check-input" type="checkbox" name="user_attendance" id="user_attendance"
+                                        <input class="form-check-input" type="checkbox" name="user_attendance"
+                                               id="user_attendance"
                                                value="1" {{ old('user_attendance', $homeSetting->user_attendance ?? false) ? 'checked' : '' }}/>
                                         <label class="form-check-label" for="user_attendance">
                                             Enable user attendance tracking
@@ -179,7 +190,7 @@
                     </div>
                     <div class="card-footer d-flex justify-content-end py-6 px-9">
                         <button type="submit" class="btn btn-primary" id="kt_home_setting_submit">
-                            <span class="indicator-label">Save Changes</span>
+                            <span class="indicator-label">Save</span>
                             <span class="indicator-progress">Please wait...
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                             </span>
@@ -256,7 +267,7 @@
                 if (!input) return null;
                 input = input.trim();
                 if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
-                    return { videoId: input, si: null };
+                    return {videoId: input, si: null};
                 }
                 let videoId = null;
                 let si = null;
@@ -267,7 +278,8 @@
                         videoId = vParam;
                     }
                     si = url.searchParams.get('si');
-                } catch (e) {}
+                } catch (e) {
+                }
                 if (!videoId) {
                     const patterns = [
                         /(?:youtube\.com\/watch\?.*v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
@@ -286,7 +298,7 @@
                         si = siMatch[1];
                     }
                 }
-                return videoId ? { videoId, si } : null;
+                return videoId ? {videoId, si} : null;
             };
 
             const extractVimeoID = (input) => {
@@ -362,8 +374,7 @@
                         ? `https://www.youtube.com/embed/${videoId}?si=${siParam}`
                         : `https://www.youtube.com/embed/${videoId}`;
                     iframeCode = `<iframe width="560" height="315" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
-                }
-                else if (playerType === 'vimeo') {
+                } else if (playerType === 'vimeo') {
                     videoId = extractVimeoID(playerInput);
                     if (!videoId) {
                         if (!isManualEdit) {
@@ -373,8 +384,7 @@
                         return;
                     }
                     iframeCode = `<iframe src="https://player.vimeo.com/video/${videoId}?badge=0&autopause=0&player_id=0&app_id=58479" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write" title="Vimeo video player" allowfullscreen></iframe>`;
-                }
-                else if (playerType === 'other') {
+                } else if (playerType === 'other') {
                     iframeCode = `<iframe width="560" height="315" src="${playerInput}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
                 }
 
@@ -382,17 +392,17 @@
                 updateVideoPreview(iframeCode);
             };
 
-            $('#player_id').on('input', function() {
+            $('#player_id').on('input', function () {
                 isManualEdit = false;
                 generateEmbedContent();
             });
 
-            $('#player_type').on('change', function() {
+            $('#player_type').on('change', function () {
                 isManualEdit = false;
                 generateEmbedContent();
             });
 
-            $('#url').on('input', function() {
+            $('#url').on('input', function () {
                 const currentVal = $(this).val();
                 if (currentVal && currentVal.length > 0) {
                     isManualEdit = true;
@@ -400,7 +410,7 @@
                 }
             });
 
-            $('#url').on('blur', function() {
+            $('#url').on('blur', function () {
                 if (!$(this).val()) {
                     isManualEdit = false;
                 }

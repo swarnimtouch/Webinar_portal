@@ -85,13 +85,10 @@ class PollController
         $poll->is_hidden = $request->has('is_hidden') ? 1 : 0;
         $poll->save();
 
-        $message = $poll->wasRecentlyCreated
-            ? __('Poll created successfully')
-            : __('Poll updated successfully');
 
         return redirect()
             ->route('admin.poll')
-            ->with('success', $message);
+            ->with('success', 'Poll Saved Successfully');
     }
 
     /**
@@ -110,7 +107,7 @@ class PollController
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Failed to delete poll')
+                'message' => __('Error deleting poll')
             ], 500);
         }
     }
@@ -139,7 +136,7 @@ class PollController
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Failed to delete polls')
+                'message' => __('Error deleting polls')
             ], 500);
         }
     }

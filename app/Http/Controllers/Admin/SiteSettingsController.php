@@ -43,7 +43,7 @@ class SiteSettingsController extends Controller
 
                 if ($setting->type === 'file') {
                     if ($isRequired && empty($setting->value)) {
-                        $rules[$setting->unique_name] = 'required|file|max:5120'; // 5MB
+                        $rules[$setting->unique_name] = 'required|file|max:5120';
                     } else {
                         $rules[$setting->unique_name] = 'nullable|file|max:5120';
                     }
@@ -79,7 +79,6 @@ class SiteSettingsController extends Controller
                                 Storage::disk('public')->delete('site_settings/' . $setting->value);
                             }
 
-                            // Upload new file
                             $file = $request->file($uniqueName);
                             $filename = time() . '_' . $uniqueName . '.' . $file->getClientOriginalExtension();
                             $file->storeAs('site_settings', $filename, 'public');
