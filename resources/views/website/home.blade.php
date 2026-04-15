@@ -154,9 +154,11 @@
 
   <div id="loginModal" class="modal-overlay">
     <div class="modal-content">
-      <span class="close-modal-btn">×</span>
-      <h2>Welcome</h2>
-      <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
+  <div class="modal-title-row">
+    <h2>Welcome</h2>
+    <span class="close-modal-btn">×</span>
+  </div>
+  <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
         @csrf
         @foreach($loginFields as $field)
           <div class="email-input-group">
@@ -178,9 +180,11 @@
 
   <div id="registerModal" class="modal-overlay">
     <div class="modal-content">
-      <span class="close-modal-btn close-register-btn">×</span>
-      <h2>Doctor Registration</h2>
-      <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm" autocomplete="off">
+  <div class="modal-title-row">
+    <h2>Doctor Registration</h2>
+    <span class="close-modal-btn close-register-btn">×</span>
+  </div>
+  <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm" autocomplete="off">
         @csrf
         <div class="row">
         @foreach($registerFields as $field)
