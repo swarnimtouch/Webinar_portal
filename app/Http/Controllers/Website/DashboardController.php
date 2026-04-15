@@ -17,21 +17,18 @@ class DashboardController
 {
     public function dashboard()
     {
-        $home_setting = HomeSetting::first();
+        $homeSetting = HomeSetting::first();
 
-        if ($home_setting && $home_setting->user_attendance) {
-            $this->trackUserAttendance($home_setting);
+        if ($homeSetting && $homeSetting->user_attendance) {
+            $this->trackUserAttendance($homeSetting);
         }
 
-        $polls = Poll::where('status', 'active')
-            ->where('is_hidden', 0)
-            ->orderBy('id', 'desc')
-            ->get();
+        $polls = Poll::activeVisibleLatest()->get();
 
         $activeCertificate = Certificate::where('status', 'active')->first();
 
         return view('website.dashboard', [
-            'home_setting' => $home_setting,
+            'home_setting' => $homeSetting,
             'polls' => $polls,
             'activeCertificate' => $activeCertificate,
             'title' => __('Dashboard'),
@@ -44,16 +41,16 @@ class DashboardController
             $userId = Auth::id();
             $now = Carbon::now();
 
-            $home_setting = HomeSetting::first();
+            $homeSetting = HomeSetting::first();
 
-            if (!$home_setting || !$home_setting->user_attendance) {
+            if (!$homeSetting || !$homeSetting->user_attendance) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Attendance tracking is not enabled',
                 ], 400);
             }
 
-            if (!$this->checkAttendanceConditions($home_setting)) {
+            if (!$this->checkAttendanceConditions($homeSetting)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Attendance conditions not met',
@@ -105,16 +102,16 @@ class DashboardController
         }
     }
 
-    private function checkAttendanceConditions($home_setting)
+    private function checkAttendanceConditions($homeSetting)
     {
         $now = Carbon::now('Asia/Kolkata');
 
-        $activeFromDate = $home_setting->active_from_date
-            ? Carbon::parse($home_setting->active_from_date, 'Asia/Kolkata')
+        $activeFromDate = $homeSetting->active_from_date
+            ? Carbon::parse($homeSetting->active_from_date, 'Asia/Kolkata')
             : null;
 
-        $activeToDate = $home_setting->active_to_date
-            ? Carbon::parse($home_setting->active_to_date, 'Asia/Kolkata')
+        $activeToDate = $homeSetting->active_to_date
+            ? Carbon::parse($homeSetting->active_to_date, 'Asia/Kolkata')
             : null;
 
         if ($activeFromDate && $activeToDate) {
@@ -128,12 +125,12 @@ class DashboardController
             }
         }
 
-        $eventStartTime = $home_setting->event_start_time
-            ? Carbon::parse($home_setting->event_start_time, 'Asia/Kolkata')
+        $eventStartTime = $homeSetting->event_start_time
+            ? Carbon::parse($homeSetting->event_start_time, 'Asia/Kolkata')
             : null;
 
-        $eventEndTime = $home_setting->event_end_time
-            ? Carbon::parse($home_setting->event_end_time, 'Asia/Kolkata')
+        $eventEndTime = $homeSetting->event_end_time
+            ? Carbon::parse($homeSetting->event_end_time, 'Asia/Kolkata')
             : null;
 
         if ($eventStartTime && $eventEndTime) {
@@ -160,9 +157,9 @@ class DashboardController
         return true;
     }
 
-    private function trackUserAttendance($home_setting)
+    private function trackUserAttendance($homeSetting)
     {
-        if (!$this->checkAttendanceConditions($home_setting)) {
+        if (!$this->checkAttendanceConditions($homeSetting)) {
             return;
         }
 
@@ -189,7 +186,7 @@ class DashboardController
         }
     }
 
-    public function store(Request $request)
+    public function feedbackSave(Request $request)
     {
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',

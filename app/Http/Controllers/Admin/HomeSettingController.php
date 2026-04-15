@@ -91,17 +91,14 @@ class HomeSettingController extends Controller
 
             $homeSetting->save();
 
-            $message = $homeSetting->wasRecentlyCreated
-                ? __('Home setting created successfully!')
-                : __('Home setting updated successfully!');
 
             return redirect()->route('admin.home_setting')
-                ->with('success', $message);
+                ->with('success', 'Home setting Saved Successfully');
 
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => __('An error occurred: ') . $e->getMessage()]);
+                ->withErrors(['error' => __('Error : ') . $e->getMessage()]);
         }
     }
 

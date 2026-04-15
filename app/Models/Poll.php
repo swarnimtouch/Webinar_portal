@@ -35,27 +35,14 @@ class Poll extends Model
     /**
      * Scope for active polls
      */
-    public function scopeActive($query)
+    public function scopeActiveVisibleLatest($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('status', 'active')
+            ->where('is_hidden', 0)
+            ->orderBy('id', 'desc');
     }
 
-    /**
-     * Scope for visible polls (not hidden)
-     */
-    public function scopeVisible($query)
-    {
-        return $query->where('is_hidden', false);
-    }
-
-    /**
-     * Scope for hidden polls
-     */
-    public function scopeHidden($query)
-    {
-        return $query->where('is_hidden', true);
-    }
-        public function votes()
+    public function votes()
     {
         return $this->hasMany(UserQuizAnswer::class);
     }

@@ -94,11 +94,8 @@ class CertificateController
         $certificate->status = 'active';
         $certificate->save();
 
-        $message = $certificate->wasRecentlyCreated
-            ? __('Certificate created successfully')
-            : __('Certificate updated successfully');
 
-        return redirect()->route('admin.certificate')->with('success', $message);
+        return redirect()->route('admin.certificate')->with('success', 'Certificate Saved Successfully');
     }
 
     /**
@@ -122,7 +119,7 @@ class CertificateController
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Failed to delete Certificate')
+                'message' => __('Error deleting Certificate')
             ], 500);
         }
     }
@@ -157,7 +154,7 @@ class CertificateController
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Failed to delete Certificates')
+                'message' => __('Error deleting Certificates')
             ], 500);
         }
     }
@@ -174,7 +171,7 @@ class CertificateController
 
             return response()->json([
                 'success' => true,
-                'message' => __('Certificate status updated successfully'),
+                'message' => __('status updated successfully'),
                 'status' => $certificate->status
             ]);
         } catch (\Exception $e) {

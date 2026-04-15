@@ -208,11 +208,11 @@
         <script>window._toastSuccess = "{{ session('toast_success') }}";</script>
     @endif
     <script>
-        window.feedbackStoreUrl = "{{ route('feedback.store') }}";
-        window.chatMessagesUrl = "{{ url('website/chat/messages') }}";
-        window.chatSendUrl = "{{ url('website/chat/send') }}";
-        window.pollUrl = "{{ url('website/poll') }}";
-        window.pollVoteUrl = "{{ url('website/poll/vote') }}";
+        window.feedbackStoreUrl = "{{ route('feedback.save') }}";
+        window.chatMessagesUrl = "{{ route('chat.messages') }}";
+        window.chatSendUrl = "{{ route('chat.send') }}";
+        window.pollUrl = "{{ route('poll') }}";
+        window.pollVoteUrl = "{{ route('poll.vote') }}";
         window.attendanceUrl = "{{ route('dashboard.attendance.update') }}";
         window.csrfToken = "{{ csrf_token() }}";
         window.trackingEnabled = {{ (isset($home_setting) && $home_setting->user_attendance) ? 'true' : 'false' }};
