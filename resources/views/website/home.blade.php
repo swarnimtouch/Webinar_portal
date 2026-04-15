@@ -152,38 +152,42 @@
         </div>
     </main>
 
-    <div id="loginModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal-btn">×</span>
-            <h2>Welcome</h2>
-            <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
-                @csrf
-                @foreach($loginFields as $field)
-                    <div class="email-input-group">
-                        <div class="icon-box">
-                            <i class="{{ $field->icon ?? 'fa-solid fa-user' }}"></i>
-                        </div>
-                        <input type="{{ $field->field_type }}"
-                               name="{{ $field->field_name }}"
-                               placeholder="{{ $field->label }}"
-                               data-field="{{ $field->field_name }}"
-                               data-label="{{ $field->label }}"
-                               data-is-required="1"/>
-                    </div>
-                @endforeach
-                <button type="submit" class="btn btn-gold full-width">Login</button>
-            </form>
-        </div>
+  <div id="loginModal" class="modal-overlay">
+    <div class="modal-content">
+  <div class="modal-title-row">
+    <h2>Welcome</h2>
+    <span class="close-modal-btn">×</span>
+  </div>
+  <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
+        @csrf
+        @foreach($loginFields as $field)
+          <div class="email-input-group">
+            <div class="icon-box">
+              <i class="{{ $field->icon ?? 'fa-solid fa-user' }}"></i>
+            </div>
+            <input type="{{ $field->field_type }}"
+               name="{{ $field->field_name }}"
+               placeholder="{{ $field->label }}"
+               data-field="{{ $field->field_name }}"
+               data-label="{{ $field->label }}"
+               data-is-required="1" />
+          </div>
+        @endforeach
+        <button type="submit" class="btn btn-gold full-width">Login</button>
+      </form>
     </div>
+  </div>
 
-    <div id="registerModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal-btn close-register-btn">×</span>
-            <h2>Doctor Registration</h2>
-            <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm" autocomplete="off">
-                @csrf
-                <div class="row">
-                    @foreach($registerFields as $field)
+  <div id="registerModal" class="modal-overlay">
+    <div class="modal-content">
+  <div class="modal-title-row">
+    <h2>Doctor Registration</h2>
+    <span class="close-modal-btn close-register-btn">×</span>
+  </div>
+  <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm" autocomplete="off">
+        @csrf
+        <div class="row">
+        @foreach($registerFields as $field)
 
                         @php
                             $totalFields = count($registerFields);
