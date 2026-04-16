@@ -30,7 +30,7 @@ class DashboardController
         return view('website.dashboard', [
             'home_setting' => $homeSetting,
             'polls' => $polls,
-            'activeCertificate' => $activeCertificate,
+            'active_certificate' => $activeCertificate,
             'title' => __('Dashboard'),
         ]);
     }

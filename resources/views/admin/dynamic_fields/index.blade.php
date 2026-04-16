@@ -8,12 +8,7 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
+
                 <!--begin::Card-->
                 <div class="card">
                     <!--begin::Card header-->
@@ -197,7 +192,6 @@
             var table = document.getElementById('kt_table_Dynamic_fields');
             var datatable;
 
-            // Initialize datatable
             var initUserTable = function () {
                 datatable = $(table).DataTable({
                     searchDelay: 500,
@@ -294,25 +288,16 @@
                         processData: false,
                         contentType: false,
                         success: function (response) {
-                            // Reset button
                             saveBtn.disabled = false;
                             saveBtn.innerHTML = '<span class="svg-icon svg-icon-2"></span>Save';
 
-                            Swal.fire({
-                                text: response.message || "Changes saved successfully!",
-                                icon: "success",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn fw-bold btn-primary",
-                                }
-                            });
+                            toastr.success(response.message || "Changes saved successfully!");
+
                         },
                         error: function (xhr) {
                             saveBtn.disabled = false;
                             saveBtn.innerHTML = '<span class="svg-icon svg-icon-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M17.5 11H6.5C4 11 2 9 2 6.5C2 4 4 2 6.5 2H17.5C20 2 22 4 22 6.5C22 9 20 11 17.5 11ZM15 6.5C15 7.9 16.1 9 17.5 9C18.9 9 20 7.9 20 6.5C20 5.1 18.9 4 17.5 4C16.1 4 15 5.1 15 6.5Z" fill="black"/><path opacity="0.3" d="M17.5 22H6.5C4 22 2 20 2 17.5C2 15 4 13 6.5 13H17.5C20 13 22 15 22 17.5C22 20 20 22 17.5 22ZM4 17.5C4 18.9 5.1 20 6.5 20C7.9 20 9 18.9 9 17.5C9 16.1 7.9 15 6.5 15C5.1 15 4 16.1 4 17.5Z" fill="black"/></svg></span>Save Changes';
 
-                            // Show error message
                             Swal.fire({
                                 text: xhr.responseJSON?.message || "Error saving changes. Please try again.",
                                 icon: "error",

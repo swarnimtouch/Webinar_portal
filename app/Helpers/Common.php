@@ -167,11 +167,11 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.user_quiz_result']
             ],
             [
-                'route' => route('admin.chatlog'),
+                'route' => route('admin.chat_log'),
                 'name' => 'Chat Log',
                 'icon' => 'bi-chat-dots',
                 'child' => [],
-                'all_routes' => ['admin.chatlog']
+                'all_routes' => ['admin.chat_log']
             ],
             [
                 'route' => route('admin.certificate'),

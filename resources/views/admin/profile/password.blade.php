@@ -2,7 +2,6 @@
 
 @section('content')
 
-
     <div class="post d-flex flex-column-fluid" id="kt_post">
 
         <!--begin::Container-->
@@ -25,7 +24,9 @@
             <!--begin::Post-->
             <div class="card mb-5 mb-xl-10">
                 <!--begin::Card header-->
-                <div class="card-header border-0 cursor-pointer" role="button" data-bs-toggle="collapse" data-bs-target="#kt_account_profile_details" aria-expanded="true" aria-controls="kt_account_profile_details">
+                <div class="card-header border-0 cursor-pointer" role="button" data-bs-toggle="collapse"
+                     data-bs-target="#kt_account_profile_details" aria-expanded="true"
+                     aria-controls="kt_account_profile_details">
                     <!--begin::Card title-->
                     <div class="card-title m-0">
                         <h3 class="fw-bolder m-0">Change Password</h3>
@@ -34,11 +35,11 @@
                 </div>
                 <!--begin::Card header-->
                 <!--begin::Content-->
-                <div id="kt_account_profile_details" class="collapse show" >
+                <div id="kt_account_profile_details" class="collapse show">
 
                     <!--begin::Form-->
-                    <form method="POST" action="{{ route('admin.password.update') }}" id="kt_account_profile_details_form">
-                    {{-- 👈 avatar ke liye --}}
+                    <form method="POST" action="{{ route('admin.password.update') }}"
+                          id="kt_account_profile_details_form">
 
                         @csrf
 
@@ -55,7 +56,9 @@
                                     <div class="row">
                                         <!--begin::Col-->
                                         <div class="col-lg-12 fv-row">
-                                            <input type="password" name="current_password" id="password" class="form-control form-control-lg form-control-solid mb-3 mb-lg-0" placeholder="Old Password" />
+                                            <input type="password" name="current_password" id="password"
+                                                   class="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
+                                                   placeholder="Old Password"/>
                                             <small id="passwordRequiredError" class="text-danger d-none">
                                                 New password is required
                                             </small>
@@ -82,7 +85,9 @@
                                     <div class="row">
                                         <!--begin::Col-->
                                         <div class="col-lg-12 fv-row">
-                                            <input type="password" name="password" id="password" class="form-control form-control-lg form-control-solid mb-3 mb-lg-0" placeholder="New Password" />
+                                            <input type="password" name="password" id="password"
+                                                   class="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
+                                                   placeholder="New Password"/>
                                             <small id="passwordRequiredError" class="text-danger d-none">
                                                 New password is required
                                             </small>
@@ -101,11 +106,14 @@
                             <!--begin::Input group-->
                             <div class="row mb-6">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Confirm New Password</label>
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Confirm New
+                                    Password</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 fv-row">
-                                    <input type="password" name="password_confirmation"  id="password_confirmation" class="form-control form-control-lg form-control-solid" placeholder="Confirm Password"  />
+                                    <input type="password" name="password_confirmation" id="password_confirmation"
+                                           class="form-control form-control-lg form-control-solid"
+                                           placeholder="Confirm Password"/>
                                     <small id="passwordError" class="text-danger d-none">
                                         Passwords do not match
                                     </small>
@@ -127,7 +135,8 @@
                         <!--end::Card body-->
                         <!--begin::Actions-->
                         <div class="card-footer d-flex justify-content-end py-6 px-9">
-                            <a href="{{ route('admin.dashboard') }}" type="reset" class="btn btn-light btn-active-light-primary me-2">Discard</a>
+                            <a href="{{ route('admin.dashboard') }}" type="reset"
+                               class="btn btn-light btn-active-light-primary me-2">Discard</a>
                             <button type="submit" class="btn btn-primary" id="kt_password_update_submit">Save</button>
                         </div>
                         <!--end::Actions-->
@@ -159,7 +168,6 @@
 
                     if (!form) return;
 
-                    // 🔥 FormValidation init (same as login)
                     validator = FormValidation.formValidation(form, {
                         fields: {
                             current_password: {
@@ -204,7 +212,6 @@
                         }
                     });
 
-                    // 🔐 Submit handler
                     submitButton.addEventListener("click", function (e) {
                         e.preventDefault();
 
@@ -214,7 +221,7 @@
                                 submitButton.setAttribute("data-kt-indicator", "on");
                                 submitButton.disabled = true;
 
-                                form.submit(); // 🔥 normal Laravel submit
+                                form.submit();
                             }
                         });
                     });
@@ -227,7 +234,5 @@
         });
 
     </script>
-
-
 
 @endpush

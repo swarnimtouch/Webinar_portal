@@ -4,13 +4,6 @@
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-
                 <div class="card">
                     <div class="card-header border-0 pt-6">
                         <div class="card-title">
@@ -51,7 +44,6 @@
                                     Export
                                 </button>
 
-                                {{-- ✅ Updated: create → add_edit_form (no id = create mode) --}}
                                 <a href="{{ route('admin.user.add_edit_form') }}" class="btn btn-primary">
                                     <span class="svg-icon svg-icon-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -141,7 +133,9 @@
     <script>
         "use strict";
         const qsa = (s, p = document) => [...p.querySelectorAll(s)];
-
+        @if(session('success'))
+        toastr.success("{{ session('success') }}");
+        @endif
         var KTUsersList = function () {
             var table = document.getElementById('kt_table_users');
             let userTable;
@@ -156,7 +150,6 @@
                     ->toArray()
             );
 
-            // ✅ Updated: edit route → add_edit_form with id
             const editUrl = '{{ route("admin.user.add_edit_form", ":id") }}';
             const showUrl = '{{ route("admin.user.show", ":id") }}';
             const deleteUrl = '{{ route("admin.user.destroy", ":id") }}';
@@ -193,16 +186,24 @@
                             orderable: false,
                             render: id => `
                                 <div>
-                                    <a href="${showUrl.replace(':id', id)}" class="btn btn-sm" title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="${editUrl.replace(':id', id)}" class="btn btn-sm" title="Edit">
-                                        <i class="bi bi-pencil-fill"></i>
-                                    </a>
-                                    <button class="btn btn-sm delete-user" data-id="${id}" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>`
+                                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
+                                                        <span class="svg-icon svg-icon-5 m-0">
+                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/> </svg>
+                                                            </span>
+                                                    </a>
+                                                    <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                                                        <div class="menu-item px-3">
+                                                            <a href="#" class="menu-link px-3 delete-user" data-id="${id}"> Delete </a>
+                                                        </div>
+                                                        <div class="menu-item px-3">
+                                                            <a href="${showUrl.replace(':id', id)}" class="menu-link px-3 "> Show </a>
+                                                        </div>
+                                                        <div class="menu-item px-3">
+                                                            <a href="${editUrl.replace(':id', id)}" class="menu-link px-3 "> Edit </a>
+                                                        </div>
+                                                    </div>
+                                            </div>`
                         }
                     ]
                 });
@@ -285,21 +286,29 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
                             },
                             body: JSON.stringify({ids})
                         })
-                            .then(res => {
-                                if (!res.ok) throw new Error();
-                                Swal.fire({
-                                    text: "Selected users deleted successfully.",
-                                    icon: "success",
-                                    confirmButtonText: "OK"
-                                });
+                            .then(res => res.json().then(data => ({ok: res.ok, data})).catch(() => ({
+                                ok: res.ok,
+                                data: {}
+                            })))
+                            .then(({ok, data}) => {
+
+                                if (ok) {
+                                    toastr.success(data.message ?? "User Deleted successfully.");
+                                } else {
+                                    toastr.warning(data.message ?? "Some deletions failed.");
+                                }
+
                                 userTable.draw(false);
                             })
                             .catch(() => {
-                                Swal.fire({text: "Failed to delete users.", icon: "error", confirmButtonText: "OK"});
+
+                                toastr.error("Failed to delete users.");
+
                             });
                     });
                 });
@@ -337,31 +346,29 @@
                         cancelButton: "btn fw-bold btn-active-light-primary"
                     }
                 }).then(result => {
-                    if (!result.value) return;
 
-                    $.ajax({
-                        url: deleteUrl.replace(':id', id),
+                    if (!result.isConfirmed) return;
+
+                    fetch(deleteUrl.replace(':id', id), {
                         method: 'DELETE',
-                        data: {_token: '{{ csrf_token() }}'},
-                        success: function () {
-                            Swal.fire({
-                                text: "User has been deleted!",
-                                icon: "success",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {confirmButton: "btn fw-bold btn-primary"}
-                            }).then(() => userTable.draw(false));
-                        },
-                        error: function () {
-                            Swal.fire({
-                                text: "Error deleting user. Please try again.",
-                                icon: "error",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {confirmButton: "btn fw-bold btn-primary"}
-                            });
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
                         }
-                    });
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+
+                            userTable.draw(); // reload table
+
+                            // ✅ Toast message
+                            toastr.success(data.message ?? 'User deleted successfully!');
+                        })
+                        .catch(() => {
+                            toastr.error('Something went wrong!');
+                        });
+
                 });
             }
 
@@ -372,7 +379,9 @@
                     handleExport();
                 }
             };
-        }();
+        }
+
+        ();
 
         KTUtil.onDOMContentLoaded(function () {
             KTUsersList.init();

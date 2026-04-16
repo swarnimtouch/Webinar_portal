@@ -80,7 +80,6 @@
                             </div>
 
                             <!-- Font File -->
-                            {{-- Font File - TEXT ki jagah FILE UPLOAD --}}
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label fw-bold fs-6">Font File</label>
                                 <div class="col-lg-8">
@@ -215,7 +214,6 @@
 
                 $('#status').select2({minimumResultsForSearch: Infinity});
 
-                /* ===== COLOR PICKER SYNC ===== */
                 const colorPicker = document.getElementById('font_color_picker');
                 const colorText = document.getElementById('font_color');
 

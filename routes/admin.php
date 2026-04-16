@@ -106,10 +106,10 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('user_quiz_result/delete-multiple', [UserQuizResult::class, 'deleteMultiple'])->name('user_quiz_result.deleteMultiple');
     Route::get('user_quiz_result/datatable', [UserQuizResult::class, 'datatable'])->name('user_quiz_result.datatable');
 
-    Route::get('chatlog', [ChatLogController::class, 'index'])->name('chatlog');
-    Route::delete('chatlog/delete/{id}', [ChatLogController::class, 'delete'])->name('chatlog.delete');
-    Route::post('chatlog/delete-multiple', [ChatLogController::class, 'deleteMultiple'])->name('chatlog.deleteMultiple');
-    Route::get('chatlog/datatable', [ChatLogController::class, 'datatable'])->name('chatlog.datatable');
+    Route::get('chat_log', [ChatLogController::class, 'index'])->name('chat_log');
+    Route::delete('chat_log/delete/{id}', [ChatLogController::class, 'delete'])->name('chat_log.delete');
+    Route::post('chat_log/delete-multiple', [ChatLogController::class, 'deleteMultiple'])->name('chat_log.deleteMultiple');
+    Route::get('chat_log/datatable', [ChatLogController::class, 'datatable'])->name('chat_log.datatable');
 
     Route::get('certificate', [CertificateController::class, 'index'])->name('certificate');
     Route::get('certificate/add-edit/{id?}', [CertificateController::class, 'addEditForm'])->name('certificate.add_edit_form');
@@ -129,5 +129,5 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/get-states/{country}', [UserController::class, 'states'])->name('users.states');
 
     Route::get('/get-cities/{state}', [UserController::class, 'cities'])->name('users.cities');
-    
+
 });

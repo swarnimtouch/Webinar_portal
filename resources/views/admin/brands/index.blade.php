@@ -11,12 +11,6 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
                 <!--begin::Card-->
                 <div class="card">
                     <!--begin::Card header-->
@@ -198,7 +192,9 @@
                 const qs = (s, p = document) => p.querySelector(s);
                 const qsa = (s, p = document) => [...p.querySelectorAll(s)];
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-
+                @if(session('success'))
+                toastr.success("{{ session('success') }}");
+                @endif
                 function openBrandPreview(url) {
                     const modalEl = qs('#bannerPreviewModal');
                     const modal = new bootstrap.Modal(modalEl);
@@ -233,30 +229,30 @@
                                 orderable: false,
                                 searchable: false,
                                 render: id => `
-                    <div class="form-check form-check-sm form-check-custom form-check-solid">
-                        <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
-                    </div>`
+                                <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                    <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
+                                </div>`
                             },
                             {
                                 data: 'media_url',
                                 render: (data, type, row) => `
-                    <div class="brand-preview"
-                         data-url="${row.media_url}"
-                         style="width:80px;height:80px;cursor:pointer;">
-                        <img src="${row.media_url}" style="width:100%;height:100%;object-fit:cover">
-                    </div>`
+                                <div class="brand-preview"
+                                     data-url="${row.media_url}"
+                                     style="width:80px;height:80px;cursor:pointer;">
+                                    <img src="${row.media_url}" style="width:100%;height:100%;object-fit:cover">
+                                </div>`
                             },
                             {data: 'title'},
                             {data: 'created_at'},
                             {
                                 data: 'status',
                                 render: (data, type, row) => `
-                    <div class="form-check form-switch">
-                        <input class="form-check-input brand-status-toggle"
-                               type="checkbox"
-                               data-id="${row.id}"
-                               ${row.status === 'active' ? 'checked' : ''}>
-                    </div>`
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input brand-status-toggle"
+                                           type="checkbox"
+                                           data-id="${row.id}"
+                                           ${row.status === 'active' ? 'checked' : ''}>
+                                </div>`
                             },
                             {
                                 data: 'id',
@@ -404,11 +400,14 @@
                             },
                             body: JSON.stringify({ids})
                         })
-                            .then(() => {
-                                Swal.fire({text: "Selected brands deleted successfully.", icon: "success"});
+                            .then(res => {
+                                if (!res.ok) throw new Error();
+
+                                toastr.success("Selected brands deleted successfully.");
+
                                 brandTable.draw(false);
                                 location.reload();
-                            });
+                            })
                     });
                 });
 

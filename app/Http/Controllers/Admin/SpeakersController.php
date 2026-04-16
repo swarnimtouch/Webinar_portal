@@ -48,9 +48,6 @@ class SpeakersController extends Controller
                 : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
             'status' => 'required|in:active,inactive'
         ]);
-        if (!$speaker) {
-            $speaker = new Speakers();
-        }
         $speaker->name = $request->name;
         $speaker->line1 = $request->line1;
         $speaker->line2 = $request->line2;
@@ -71,8 +68,8 @@ class SpeakersController extends Controller
             $speaker->filename = null;
         }
         $speaker->save();
-        $message = $id ? 'Speaker updated successfully!' : 'Speaker created successfully!';
-        return redirect()->route('admin.speakers')->with('success', $message);
+
+        return redirect()->route('admin.speakers')->with('success', 'Speaker Saved successfully');
     }
 
     /**
@@ -81,15 +78,15 @@ class SpeakersController extends Controller
     public function delete($id)
     {
         try {
-            $banner = Speakers::findOrFail($id);
-            if (Storage::exists('public/speakers/' . $banner->filename)) {
-                Storage::delete('public/speakers/' . $banner->filename);
+            $speaker = Speakers::findOrFail($id);
+            if (Storage::exists('public/speakers/' . $speaker->filename)) {
+                Storage::delete('public/speakers/' . $speaker->filename);
             }
-            $banner->delete();
+            $speaker->delete();
 
-            return response()->json(['success' => true, 'message' => 'Banner deleted successfully']);
+            return response()->json(['success' => true, 'message' => 'Speaker deleted successfully']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error deleting banner'], 500);
+            return response()->json(['success' => false, 'message' => 'Error deleting speaker'], 500);
         }
     }
 
@@ -175,8 +172,8 @@ class SpeakersController extends Controller
                 'name' => $speaker->name,
                 'media_url' => $speaker->media_url,
                 'line1' => $speaker->line1,
-                'line2' => $speaker->line2,
-                'line3' => $speaker->line3,
+                'line2' => $speaker->line2 ?? '-',
+                'line3' => $speaker->line3 ?? '-',
                 'created_at' => $speaker->created_at->format('d M Y'),
                 'status' => $speaker->status,
                 'actions' => '',

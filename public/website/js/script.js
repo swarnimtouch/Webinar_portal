@@ -231,7 +231,7 @@ $(document).ready(function () {
 
             if ($parentGroup.length) {
             const fullWidth = $parentGroup.outerWidth();
-            
+
             const innerSelectLeft = $select.next('.select2-container').offset().left;
             const outerGroupLeft = $parentGroup.offset().left;
             const offsetDiff = innerSelectLeft - outerGroupLeft;

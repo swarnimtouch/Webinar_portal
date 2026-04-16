@@ -6,12 +6,6 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
                 <!--begin::Card-->
                 <div class="card">
                     <!--begin::Card header-->
@@ -170,7 +164,9 @@
         "use strict";
 
         let pollTable;
-
+        @if(session('success'))
+        toastr.success("{{ session('success') }}");
+        @endif
         function initPollTable() {
             pollTable = $('#kt_table_polls').DataTable({
                 processing: true,
@@ -263,7 +259,6 @@
             });
         }
 
-        /* ===== SELECT ALL CHECKBOX ===== */
         document.addEventListener('change', e => {
             if (!e.target.matches('[data-kt-check="true"]')) return;
 
@@ -275,13 +270,11 @@
             toggleBulkToolbar();
         });
 
-        /* ===== SINGLE ROW CHECK ===== */
         document.addEventListener('change', e => {
             if (!e.target.classList.contains('row-checkbox')) return;
             toggleBulkToolbar();
         });
 
-        /* ===== SHOW / HIDE BULK TOOLBAR ===== */
         function toggleBulkToolbar() {
             const selected = document.querySelectorAll('.row-checkbox:checked').length;
 
@@ -300,7 +293,6 @@
             }
         }
 
-        /* ===== MULTIPLE DELETE ===== */
         document.querySelector('[data-kt-user-table-select="delete_selected"]')
             ?.addEventListener('click', () => {
 
@@ -333,22 +325,25 @@
                         body: JSON.stringify({ids})
                     })
                         .then(res => {
-                            if (!res.ok) throw new Error();
-                            return res.json();
+                            if (!res.ok) throw new Error('Request failed');
+                            return res.json().catch(() => ({}));
                         })
-                        .then(() => {
-                            toastr.success('Selected polls deleted successfully');
+                        .then(data => {
+
+                            toastr.success(data.message ?? 'Selected polls deleted successfully');
+
                             pollTable.draw(false);
                             toggleBulkToolbar();
                         })
-                        .catch(() => {
-                            toastr.error('Failed to delete polls');
+                        .catch(error => {
+
+                            toastr.error(error.message ?? 'Failed to delete polls');
+
                         });
 
                 });
             });
 
-        /* ===== STATUS TOGGLE ===== */
         document.addEventListener('change', e => {
             if (!e.target.classList.contains('poll-status-toggle')) return;
 
@@ -380,7 +375,6 @@
             });
         });
 
-        /* ===== DELETE ===== */
         document.addEventListener('click', e => {
             if (!e.target.classList.contains('poll-delete')) return;
 
@@ -406,11 +400,9 @@
             });
         });
 
-        /* ===== SEARCH ===== */
         document.querySelector('[data-kt-user-table-filter="search"]')
             .addEventListener('keyup', () => pollTable.draw());
 
-        /* ===== FILTER ===== */
         document.querySelector('[data-kt-user-table-filter="filter"]')
             .addEventListener('click', () => pollTable.draw());
 
