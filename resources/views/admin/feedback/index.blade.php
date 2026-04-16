@@ -6,13 +6,6 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-
                 <!--begin::Card-->
                 <div class="card">
                     <!--begin::Card header-->
@@ -187,12 +180,22 @@
                             data: 'id',
                             orderable: false,
                             searchable: false,
-                            render: id => `
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-icon btn-danger delete-feedback" data-id="${id}" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>`
+                            render: id => `<div class="text-end">
+                                <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
+                                    Actions
+                                    <span class="svg-icon svg-icon-5 m-0">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
+                                        </svg>
+                                    </span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3 delete-feedback" data-id="${id}">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                                `
                         }
                     ]
                 });
@@ -222,7 +225,6 @@
                             const cells = row.querySelectorAll('td');
                             if (cells.length > 1) {
                                 let rowData = [];
-                                // Skip checkbox column (0) and actions column (last)
                                 for (let i = 1; i < cells.length - 1; i++) {
                                     let text = cells[i].innerText.trim().replace(/\n/g, ' ');
                                     if (i === 3) {
@@ -305,33 +307,22 @@
                         })
                             .then(res => res.json())
                             .then(data => {
+
                                 if (data.success) {
-                                    Swal.fire({
-                                        text: "Selected feedbacks deleted successfully.",
-                                        icon: "success",
-                                        buttonsStyling: false,
-                                        confirmButtonText: "OK",
-                                        customClass: {
-                                            confirmButton: "btn fw-bold btn-primary"
-                                        }
-                                    });
+
+                                    toastr.success("Selected feedbacks deleted successfully.");
+
                                     feedbackTable.draw(false);
+
                                     document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
                                     document.querySelector('[data-kt-check="true"]').checked = false;
+
                                 } else {
                                     throw new Error(data.message);
                                 }
                             })
                             .catch(error => {
-                                Swal.fire({
-                                    text: "Failed to delete feedbacks. " + (error.message || ''),
-                                    icon: "error",
-                                    buttonsStyling: false,
-                                    confirmButtonText: "OK",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-primary"
-                                    }
-                                });
+                                toastr.error("Failed to delete feedbacks. " + (error.message || ''));
                             });
                     });
                 });

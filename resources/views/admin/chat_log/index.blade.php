@@ -4,14 +4,6 @@
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
-
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-
                 <!--begin::Card-->
                 <div class="card">
                     <!--begin::Card header-->
@@ -169,7 +161,6 @@
                             </tr>
                             </thead>
                             <tbody class="fw-semibold text-gray-600">
-                            <!-- Data will be loaded via AJAX -->
                             </tbody>
                         </table>
                         <!--end::Table-->
@@ -195,7 +186,7 @@
                 serverSide: true,
                 searching: false,
                 ajax: {
-                    url: '{{ route("admin.chatlog.datatable") }}',
+                    url: '{{ route("admin.chat_log.datatable") }}',
                     data: d => {
                         d.search = document.querySelector('[data-kt-chat-message-table-filter="search"]').value;
                         d.group = document.querySelector('[data-kt-chat-message-table-filter="group"]')?.value ?? '';
@@ -203,7 +194,6 @@
                 },
                 order: [[5, 'desc']],
                 columns: [
-                    /* CHECKBOX */
                     {
                         data: 'id',
                         orderable: false,
@@ -213,28 +203,22 @@
                     </div>`
                     },
 
-                    /* GROUP */
                     {
                         data: 'group_name',
                         render: name => `<span class="fw-bold text-gray-800">${name}</span>`
                     },
 
-                    /* SENDER */
                     {data: 'sender_name'},
 
-                    /* MESSAGE */
                     {
                         data: 'message',
                         render: data => data.length > 60 ? data.substr(0, 60) + '...' : data
                     },
 
-                    /* SEEN BY */
                     {data: 'seen_by'},
 
-                    /* DATE */
                     {data: 'created_at'},
 
-                    /* ACTIONS */
                     {
                         data: 'id',
                         orderable: false,
@@ -259,7 +243,6 @@
             });
         }
 
-        /* ===== SELECT ALL CHECKBOX ===== */
         document.addEventListener('change', e => {
             if (!e.target.matches('[data-kt-check="true"]')) return;
 
@@ -271,13 +254,11 @@
             toggleBulkToolbar();
         });
 
-        /* ===== SINGLE ROW CHECK ===== */
         document.addEventListener('change', e => {
             if (!e.target.classList.contains('row-checkbox')) return;
             toggleBulkToolbar();
         });
 
-        /* ===== SHOW / HIDE BULK TOOLBAR ===== */
         function toggleBulkToolbar() {
             const selected = document.querySelectorAll('.row-checkbox:checked').length;
 
@@ -296,7 +277,6 @@
             }
         }
 
-        /* ===== MULTIPLE DELETE ===== */
         document.querySelector('[data-kt-chat-message-table-select="delete_selected"]')
             ?.addEventListener('click', () => {
 
@@ -320,36 +300,34 @@
                 }).then(result => {
                     if (!result.isConfirmed) return;
 
-                    fetch('{{ route("admin.chatlog.deleteMultiple") }}', {
+                    fetch('{{ route("admin.chat_log.deleteMultiple") }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({ids})
                     })
                         .then(res => {
-                            if (!res.ok) throw new Error();
-                            return res.json();
+                            if (!res.ok) throw new Error('Request failed');
+                            return res.json().catch(() => ({}));
                         })
-                        .then(() => {
-                            Swal.fire({
-                                text: "Selected messages deleted successfully",
-                                icon: "success"
-                            });
+                        .then(data => {
+
+                            toastr.success(data.message ?? 'Selected messages deleted successfully');
+
                             chatMessageTable.draw(false);
                             toggleBulkToolbar();
                         })
-                        .catch(() => {
-                            Swal.fire({
-                                text: "Failed to delete messages",
-                                icon: "error"
-                            });
+                        .catch(error => {
+
+                            toastr.error(error.message ?? 'Failed to delete messages');
+
                         });
                 });
             });
 
-        /* ===== SINGLE DELETE ===== */
         document.addEventListener('click', function (e) {
 
             if (!e.target.classList.contains('message-delete')) return;
@@ -367,34 +345,29 @@
                 if (!result.isConfirmed) return;
 
                 $.ajax({
-                    url: '{{ route("admin.chatlog.delete", ":id") }}'.replace(':id', id),
+                    url: '{{ route("admin.chat_log.delete", ":id") }}'.replace(':id', id),
                     type: 'DELETE',
                     data: {
                         _token: '{{ csrf_token() }}'
                     },
-                    success: function () {
+                    success: function (response) {
 
-                        Swal.fire({
-                            text: "Message deleted successfully",
-                            icon: "success"
-                        });
+                        // ✅ Toast success
+                        toastr.success(response.message ?? 'Message deleted successfully');
 
                         chatMessageTable.draw(false);
                         toggleBulkToolbar();
                     },
                     error: function () {
 
-                        Swal.fire({
-                            text: "Failed to delete message",
-                            icon: "error"
-                        });
+                        // ❌ Toast error
+                        toastr.error('Failed to delete message');
                     }
                 });
 
             });
         });
 
-        /* ===== EXPORT ===== */
         var handleExport = function () {
             const exportBtn = document.getElementById('export-btn');
 
@@ -404,7 +377,6 @@
                     exportBtn.disabled = true;
                     exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
 
-                    // CSV headers: Group, Sender, Message, Seen By, Date
                     let csv = 'Group,Sender,Message,Seen By,Date\n';
 
                     const rows = document.querySelectorAll('#kt_table_chat_messages tbody tr');
@@ -412,7 +384,6 @@
                         const cells = row.querySelectorAll('td');
                         if (cells.length > 1) {
                             let rowData = [];
-                            // Skip checkbox column (index 0) and actions column (last)
                             for (let i = 1; i < cells.length - 1; i++) {
                                 let text = cells[i].innerText.trim().replace(/\n/g, ' ');
                                 rowData.push(`"${text}"`);
@@ -452,15 +423,12 @@
         handleExport();
 
 
-        /* ===== SEARCH ===== */
         document.querySelector('[data-kt-chat-message-table-filter="search"]')
             .addEventListener('keyup', () => chatMessageTable.draw());
 
-        /* ===== FILTER (Apply button) ===== */
         document.querySelector('[data-kt-chat-message-table-filter="filter"]')
             ?.addEventListener('click', () => chatMessageTable.draw());
 
-        /* ===== FILTER (Reset button) ===== */
         document.querySelector('[data-kt-chat-message-table-filter="reset"]')
             ?.addEventListener('click', () => {
                 document.querySelector('[data-kt-chat-message-table-filter="group"]').value = '';

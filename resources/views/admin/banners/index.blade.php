@@ -9,12 +9,6 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
                 <!--begin::Card-->
                 <div class="card">
                     <!--begin::Card header-->
@@ -212,6 +206,9 @@
                 const qs = (s, p = document) => p.querySelector(s);
                 const qsa = (s, p = document) => [...p.querySelectorAll(s)];
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+                @if(session('success'))
+                toastr.success("{{ session('success') }}");
+                @endif
 
                 function openBannerPreview(url, type) {
                     const modalEl = qs('#bannerPreviewModal');
@@ -274,19 +271,19 @@
                             {
                                 data: 'media_url',
                                 render: (data, type, row) => `
-                    <div class="banner-preview"
-                         data-url="${row.media_url}"
-                         data-type="${row.type}"
-                         style="width:80px;height:80px;cursor:pointer;">
-                        ${
+                                            <div class="banner-preview"
+                                                 data-url="${row.media_url}"
+                                                 data-type="${row.type}"
+                                                 style="width:80px;height:80px;cursor:pointer;">
+                                                ${
                                     row.type === 'image'
                                         ? `<img src="${row.media_url}" style="width:100%;height:100%;object-fit:cover">`
                                         : `<video muted style="width:100%;height:100%;object-fit:cover">
-                                   <source src="${row.media_url}" type="video/mp4">
-                               </video>`
+                                                           <source src="${row.media_url}" type="video/mp4">
+                                                       </video>`
                                 }
-                    </div>
-                `
+                                            </div>
+                                    `
                             },
 
                             {data: 'title'},
@@ -295,13 +292,13 @@
                             {
                                 data: 'status',
                                 render: (data, type, row) => `
-                    <div class="form-check form-switch">
-                        <input class="form-check-input banner-status-toggle"
-                               type="checkbox"
-                               data-id="${row.id}"
-                               ${row.status === 'active' ? 'checked' : ''}>
-                    </div>
-                `
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input banner-status-toggle"
+                                               type="checkbox"
+                                               data-id="${row.id}"
+                                               ${row.status === 'active' ? 'checked' : ''}>
+                                    </div>
+                                `
                             },
 
                             {
@@ -503,11 +500,9 @@
                             })
                                 .then(res => {
                                     if (!res.ok) throw new Error();
-                                    Swal.fire({
-                                        text: "Selected banners deleted successfully.",
-                                        icon: "success",
-                                        confirmButtonText: "OK"
-                                    });
+
+                                    toastr.success("Selected banners deleted successfully.");
+
                                     bannerTable.draw(false);
                                 })
                                 .catch(() => {

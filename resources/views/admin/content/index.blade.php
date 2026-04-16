@@ -10,12 +10,6 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
                 <!--begin::Card-->
                 <div class="card">
                     <!--begin::Card header-->
@@ -85,7 +79,9 @@
         const qs = (s, p = document) => p.querySelector(s);
 
         let contentTable;
-
+        @if(session('success'))
+        toastr.success("{{ session('success') }}");
+        @endif
         function initContentTable() {
             contentTable = $('#kt_table_Content').DataTable({
                 processing: true,

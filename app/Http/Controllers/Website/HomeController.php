@@ -47,10 +47,21 @@ class HomeController
 
         $sliderData = $banners->pluck('slider_data');
 
-        return view('website.home', array_merge(
-            compact('homeSetting', 'banners', 'registerFields', 'contents', 'speakers', 'brands', 'loginFields', 'sliderData'),
-            ['title' => __('Home')]
-        ));
+        return view('website.home', [
+            'home_setting' => $homeSetting,
+            'banners' => $banners,
+            'register_fields' => $registerFields,
+            'contents' => $contents,
+            'speakers' => $speakers,
+            'brands' => $brands,
+            'login_fields' => $loginFields,
+            'slider_data' => $sliderData,
+            'title' => __('Home'),
+        ]);
+//        return view('website.home', array_merge(
+//            compact('homeSetting', 'banners', 'registerFields', 'contents', 'speakers', 'brands', 'loginFields', 'sliderData'),
+//            ['title' => __('Home')]
+//        ));
     }
 
     public function login(Request $request)

@@ -21,7 +21,7 @@ class UserAttendanceController extends Controller
             'breadcrumb' => breadcrumb([
                 __('User Attendance') => route('admin.user_attendance')
             ]),
-            'activeFields' => $activeFields
+            'active_fields' => $activeFields
         ]);
     }
 

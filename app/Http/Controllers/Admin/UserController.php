@@ -41,15 +41,11 @@ class UserController extends Controller
             ->orderBy('index_no')
             ->get();
 
-        $breadcrumb = $id
-            ? breadcrumb([__('Users') => route('admin.user.index'), 'Edit User' => ''])
-            : breadcrumb([__('Users') => route('admin.user.index'), 'Add User' => '']);
-
         return view('admin.users.add_edit', [
             'user' => $user,
-            'activeFields' => $activeFields,
+            'active_fields' => $activeFields,
             'title' => __('Users'),
-            'breadcrumb' => $breadcrumb,
+            'breadcrumb' => breadcrumb([__('Banners') => route('admin.banners'), ($id ? 'Edit' : 'Add' . ' Banner') => '']),
         ]);
     }
 
@@ -159,7 +155,7 @@ class UserController extends Controller
             ->orderBy('index_no')
             ->get();
 
-        return view('admin.users.show', ['user' => $user, 'activeFields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'), 'User Details' => ''])]);
+        return view('admin.users.show', ['user' => $user, 'active_fields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'), 'User Details' => ''])]);
     }
 
 
@@ -256,5 +252,5 @@ class UserController extends Controller
             ->get();
 
     }
-    
+
 }

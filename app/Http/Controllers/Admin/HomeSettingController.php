@@ -20,7 +20,7 @@ class HomeSettingController extends Controller
         }
 
         $response = [
-            'homeSetting' => $homeSetting,
+            'home_setting' => $homeSetting,
             'title' => __('Home Settings'),
             'breadcrumb' => breadcrumb([
                 __('Home Settings') => ''
@@ -102,8 +102,5 @@ class HomeSettingController extends Controller
         }
     }
 
-    /**
-     * DataTable for home settings listing
-     */
 
 }

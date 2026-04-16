@@ -6,13 +6,6 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-
                 <!--begin::Card-->
                 <div class="card">
                     <!--begin::Card header-->
@@ -182,11 +175,22 @@
                             orderable: false,
                             searchable: false,
                             render: id => `
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-icon btn-danger delete-quiz-result" data-id="${id}" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>`
+                                <div class="text-end">
+                                <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
+                                    Actions
+                                    <span class="svg-icon svg-icon-5 m-0">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
+                                        </svg>
+                                    </span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3 delete-quiz-result" data-id="${id}">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                               `
                         }
                     ]
                 });
@@ -197,7 +201,6 @@
                 quizResultTable.draw();
             });
 
-            // Single delete click
             $(document).on('click', '.delete-quiz-result', function () {
                 deleteQuizResult($(this).data('id'));
             });
@@ -293,44 +296,37 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
                             },
                             body: JSON.stringify({ids})
                         })
-                            .then(res => res.json())
+                            .then(res => {
+                                if (!res.ok) throw new Error('Request failed');
+                                return res.json().catch(() => ({}));
+                            })
                             .then(data => {
+
                                 if (data.success) {
-                                    Swal.fire({
-                                        text: "Selected records deleted successfully.",
-                                        icon: "success",
-                                        buttonsStyling: false,
-                                        confirmButtonText: "OK",
-                                        customClass: {
-                                            confirmButton: "btn fw-bold btn-primary"
-                                        }
-                                    });
+
+                                    toastr.success(data.message ?? 'Selected records deleted successfully.');
+
                                     quizResultTable.draw(false);
+
                                     document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
                                     document.querySelector('[data-kt-check="true"]').checked = false;
+
                                 } else {
-                                    throw new Error(data.message);
+                                    throw new Error(data.message || 'Delete failed');
                                 }
+
                             })
                             .catch(error => {
-                                Swal.fire({
-                                    text: "Failed to delete records. " + (error.message || ''),
-                                    icon: "error",
-                                    buttonsStyling: false,
-                                    confirmButtonText: "OK",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-primary"
-                                    }
-                                });
+                                toastr.error("Failed to delete records. " + (error.message || ''));
                             });
                     });
                 });
 
-            // Checkbox select/deselect toolbar toggle
             document.addEventListener('change', e => {
                 if (!e.target.classList.contains('row-checkbox') &&
                     !e.target.matches('[data-kt-check="true"]')) return;
@@ -365,40 +361,31 @@
                         cancelButton: "btn fw-bold btn-active-light-primary"
                     }
                 }).then(function (result) {
-                    if (result.value) {
+
+                        if (!result.isConfirmed) return;
+
                         $.ajax({
                             url: '{{ route("admin.user_quiz_result.delete", ":id") }}'.replace(':id', id),
                             method: 'DELETE',
                             data: {
                                 _token: '{{ csrf_token() }}'
                             },
-                            success: function (response) {
-                                Swal.fire({
-                                    text: "Record has been deleted!",
-                                    icon: "success",
-                                    buttonsStyling: false,
-                                    confirmButtonText: "Ok, got it!",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-primary",
-                                    }
-                                }).then(function () {
-                                    quizResultTable.draw(false);
-                                });
+
+                            success: function (data) {
+
+                                quizResultTable.draw(false);
+
+                                toastr.success(data.message ?? 'Record deleted successfully!');
                             },
-                            error: function (xhr) {
-                                Swal.fire({
-                                    text: "Error deleting record. Please try again.",
-                                    icon: "error",
-                                    buttonsStyling: false,
-                                    confirmButtonText: "Ok, got it!",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-primary",
-                                    }
-                                });
+
+                            error: function () {
+
+                                toastr.error('Error deleting record');
                             }
                         });
                     }
-                });
+                )
+                ;
             }
 
             return {
@@ -409,7 +396,8 @@
                     handleExport();
                 }
             }
-        }();
+        }
+        ();
 
         KTUtil.onDOMContentLoaded(function () {
             KTUserQuizResultList.init();

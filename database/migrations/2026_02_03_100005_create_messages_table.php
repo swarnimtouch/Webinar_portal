@@ -22,6 +22,10 @@ return new class extends Migration {
             $table->boolean('receiver_status')->default(1);
 
             $table->timestamps();
+
+            
+            $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
+
         });
 
     }

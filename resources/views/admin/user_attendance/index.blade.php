@@ -3,13 +3,6 @@
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-
                 <div class="card">
                     <div class="card-header border-0 pt-6">
 
@@ -97,7 +90,7 @@
                                                value="1"/>
                                     </div>
                                 </th>
-                                @foreach($activeFields as $field)
+                                @foreach($active_fields as $field)
                                     <th class="min-w-150px">{{ $field->label }}</th>
                                 @endforeach
                                 <th class="min-w-150px">Session Time</th>
@@ -127,7 +120,7 @@
             var selectedCount;
 
             var initUserTable = function () {
-                const activeFields = @json($activeFields->pluck('field_name'));
+                const active_fields = @json($active_fields->pluck('field_name'));
 
                 const columns = [
                     {
@@ -141,7 +134,7 @@
                     }
                 ];
 
-                activeFields.forEach(fieldName => {
+                active_fields.forEach(fieldName => {
                     columns.push({
                         data: fieldName,
                         render: data => data || '-'
@@ -199,7 +192,7 @@
                             d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
                         }
                     },
-                    order: [[activeFields.length + 2, 'desc']],
+                    order: [[active_fields.length + 2, 'desc']],
                     pageLength: 10,
                     columns: columns
                 });
@@ -361,17 +354,25 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
                             },
                             body: JSON.stringify({ids})
                         })
-                            .then(res => res.json())
-                            .then(() => {
-                                toastr.success('Selected attendance records deleted successfully!');
+                            .then(res => {
+                                if (!res.ok) throw new Error('Request failed');
+                                return res.json().catch(() => ({}));
+                            })
+                            .then(data => {
+
+                                toastr.success(data.message ?? 'Selected attendance records deleted successfully!');
+
                                 datatable.draw(false);
                             })
-                            .catch(() => {
-                                toastr.error('Failed to delete selected records.');
+                            .catch(error => {
+
+                                toastr.error(error.message ?? 'Failed to delete selected records.');
+
                             });
                     });
                 });

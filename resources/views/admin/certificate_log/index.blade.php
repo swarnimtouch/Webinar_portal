@@ -3,12 +3,6 @@
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
                 <div class="card">
                     <div class="card-header border-0 pt-6">
                         <div class="card-title">
@@ -103,7 +97,6 @@
                             </tr>
                             </thead>
                             <tbody class="fw-semibold text-gray-600">
-                            <!-- Data will be loaded via AJAX -->
                             </tbody>
                         </table>
                     </div>
@@ -133,7 +126,6 @@
                 order: [[3, 'desc']],
                 columns: [
 
-                    /* CHECKBOX */
                     {
                         data: 'id',
                         orderable: false,
@@ -143,7 +135,6 @@
                             </div>`
                     },
 
-                    /* USER */
                     {
                         data: 'user_name',
                         render: (name, type, row) => `
@@ -153,7 +144,6 @@
                             </div>`
                     },
 
-                    /* CERTIFICATE */
                     {
                         data: 'certificate_name',
                         render: name => `<span class="badge badge-light-primary">${name}</span>`
@@ -176,10 +166,8 @@
                             </a>`;
                         }
                     },
-                    /* DOWNLOADED AT */
                     {data: 'downloaded_at'},
 
-                    /* ACTIONS */
                     {
                         data: 'id',
                         orderable: false,
@@ -204,20 +192,17 @@
             });
         }
 
-        /* ===== SELECT ALL CHECKBOX ===== */
         document.addEventListener('change', e => {
             if (!e.target.matches('[data-kt-check="true"]')) return;
             document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
             toggleBulkToolbar();
         });
 
-        /* ===== SINGLE ROW CHECK ===== */
         document.addEventListener('change', e => {
             if (!e.target.classList.contains('row-checkbox')) return;
             toggleBulkToolbar();
         });
 
-        /* ===== SHOW / HIDE BULK TOOLBAR ===== */
         function toggleBulkToolbar() {
             const selected = document.querySelectorAll('.row-checkbox:checked').length;
             const baseToolbar = document.querySelector('[data-kt-user-table-toolbar="base"]');
@@ -235,7 +220,6 @@
             }
         }
 
-        /* ===== MULTIPLE DELETE ===== */
         document.querySelector('[data-kt-user-table-select="delete_selected"]')
             ?.addEventListener('click', () => {
                 const ids = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.value);
@@ -266,12 +250,14 @@
                             return res.json();
                         })
                         .then(() => {
-                            Swal.fire({text: "Selected records deleted successfully", icon: "success"});
+
+                            toastr.success("Selected records deleted successfully");
+
                             downloadTable.draw(false);
                             toggleBulkToolbar();
                         })
                         .catch(() => {
-                            Swal.fire({text: "Failed to delete records", icon: "error"});
+                            toastr.error("Failed to delete records");
                         });
                 });
             });
@@ -293,23 +279,17 @@
                         if (cells.length > 1) {
                             let rowData = [];
 
-                            // col 0 = checkbox (skip)
-                            // col 1 = User (name + email in two lines)
                             const userLines = cells[1].innerText.trim().split('\n');
-                            rowData.push(`"${(userLines[0] || '').replace(/"/g, '""')}"`); // name
-                            rowData.push(`"${(userLines[1] || '').replace(/"/g, '""')}"`); // email
+                            rowData.push(`"${(userLines[0] || '').replace(/"/g, '""')}"`);
+                            rowData.push(`"${(userLines[1] || '').replace(/"/g, '""')}"`);
 
-                            // col 2 = Certificate
                             rowData.push(`"${cells[2].innerText.trim().replace(/"/g, '""')}"`);
 
-                            // col 3 = File — href if link exists, else "No File"
                             const fileLink = cells[3].querySelector('a');
                             rowData.push(`"${fileLink ? fileLink.href : 'No File'}"`);
 
-                            // col 4 = Downloaded At
                             rowData.push(`"${cells[4].innerText.trim().replace(/"/g, '""')}"`);
 
-                            // col 5 = Actions (skip)
 
                             csv += rowData.join(',') + '\n';
                         }
@@ -343,7 +323,6 @@
 
 
         handleExport();
-        /* ===== DELETE ===== */
         document.addEventListener('click', e => {
             if (!e.target.classList.contains('download-delete')) return;
 
@@ -371,7 +350,6 @@
             });
         });
 
-        /* ===== SEARCH ===== */
         document.querySelector('[data-kt-user-table-filter="search"]')
             .addEventListener('keyup', () => downloadTable.draw());
 

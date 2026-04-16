@@ -199,7 +199,6 @@
                     }
                 });
 
-                // Add answer button
                 document.getElementById('add-answer').addEventListener('click', () => {
                     if (answerCount >= 10) {
                         Swal.fire({
@@ -225,7 +224,6 @@
                     container.appendChild(newAnswer);
                 });
 
-                // Remove answer button
                 document.addEventListener('click', (e) => {
                     if (e.target.closest('.remove-answer')) {
                         const answerItems = document.querySelectorAll('.answer-item');
@@ -245,7 +243,6 @@
                 submitBtn.addEventListener('click', e => {
                     e.preventDefault();
 
-                    // Validate answers
                     const answers = Array.from(document.querySelectorAll('input[name="answers[]"]'))
                         .map(input => input.value.trim())
                         .filter(val => val !== '');
