@@ -98,8 +98,11 @@ class EventsController
     {
         try {
             $event = Events::findOrFail($id);
-            if (Storage::exists('public/events/' . $event->filename)) {
-                Storage::delete('public/events/' . $event->filename);
+            if (Storage::exists('public/events/' . $event->favicon)) {
+                Storage::delete('public/events/' . $event->favicon);
+            }
+            if (Storage::exists('public/events/' . $event->logo)) {
+                Storage::delete('public/events/' . $event->logo);
             }
             $event->delete();
 
@@ -119,8 +122,11 @@ class EventsController
             }
             $events = Events::whereIn('id', $ids)->get();
             foreach ($events as $event) {
-                if (Storage::exists('public/events/' . $event->filename)) {
-                    Storage::delete('public/events/' . $event->filename);
+                if (Storage::exists('public/events/' . $event->favicon)) {
+                    Storage::delete('public/events/' . $event->favicon);
+                }
+                if (Storage::exists('public/events/' . $event->logo)) {
+                    Storage::delete('public/events/' . $event->logo);
                 }
                 $event->delete();
             }
