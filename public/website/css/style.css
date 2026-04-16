@@ -811,15 +811,16 @@ main {
 }
 
 .close-modal-btn {
- color: #cbd5e1;
- position: absolute;
- top: 15px;
- right: 20px;
- font-size: 32px;
- font-weight: 400;
- cursor: pointer;
- transition: color 0.3s;
- line-height: 1;
+  color: #cbd5e1;
+  position: absolute;
+  right: 0;          
+  top: 50%;          
+  transform: translateY(-50%); 
+  font-size: 32px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: color 0.3s;
+  line-height: 1;
 }
 
 .close-modal-btn:hover {
@@ -827,10 +828,11 @@ main {
 }
 
 .modal-content h2 {
- margin-bottom: 25px;
- font-size: 26px;
- color: var(--accent-blue);
- font-weight: 800;
+  margin-bottom: 0;   
+  width: 100%;        
+  font-size: 26px;
+  color: var(--accent-blue);
+  font-weight: 800;
 }
 
 .email-input-group {
@@ -951,6 +953,14 @@ main {
 .select2-container--default .select2-dropdown {
     width: var(--dynamic-width, 100%) !important;
     margin-left: var(--dynamic-margin, 0px) !important;
+}
+
+.modal-title-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 25px; 
 }
 
 @media (min-width: 1201px) and (max-width: 1920px) {
@@ -1150,6 +1160,7 @@ main {
  .slider-wrapper {
   width: 85%;
  }
+ 
  .slider-wrapper img {
   width: 100%;
  }
@@ -1532,6 +1543,10 @@ main {
   padding: 20px 15px;
  }
 
+ .modal-content h2 {
+    font-size: 22px; 
+  }
+
  .email-input-group input {
   font-size: 14px;
   padding: 8px;
@@ -1563,11 +1578,19 @@ main {
   max-width: 200px;
  }
 
- .footer-section h3 {
-  font-size: 16px;
-  text-align: center;
-  width: 100%;
- }
+ .modal-content h2 {
+    font-size: 20px; 
+  }
+
+  .footer-section h3 {
+    font-size: 16px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .contact-row {
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 319px) {
