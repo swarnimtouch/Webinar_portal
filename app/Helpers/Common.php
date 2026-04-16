@@ -398,3 +398,87 @@ if (!function_exists('generate_slug')) {
         return $slug;
     }
 }
+
+function get_dynamic_fields()
+{
+    return [
+        [
+            'index_no' => 1,
+            'field_name' => 'first_name',
+            'label' => 'First Name',
+            'attribute_id' => 1,
+            'input_value' => null,
+            'type' => 'default',
+        ],
+        [
+            'index_no' => 2,
+            'field_name' => 'last_name',
+            'label' => 'Last Name',
+            'attribute_id' => 1,
+            'input_value' => null,
+            'type' => 'default',
+        ],
+        [
+            'index_no' => 3,
+            'field_name' => 'email',
+            'label' => 'Email',
+            'attribute_id' => 1,
+            'input_value' => null,
+            'type' => 'default',
+        ],
+        [
+            'index_no' => 4,
+            'field_name' => 'mobile_number',
+            'label' => 'Mobile Number',
+            'attribute_id' => 1,
+            'input_value' => null,
+            'type' => 'default',
+        ],
+        [
+            'index_no' => 5,
+            'field_name' => 'country',
+            'label' => 'Country',
+            'attribute_id' => 3,
+            'input_value' => json_encode([
+                'source' => 'countries',
+                'value' => 'id',
+                'label' => 'name'
+            ]),
+            'type' => 'default',
+        ],
+        [
+            'index_no' => 6,
+            'field_name' => 'state',
+            'label' => 'State',
+            'attribute_id' => 3,
+            'input_value' => json_encode([
+                'source' => 'states',
+                'value' => 'id',
+                'label' => 'name',
+                'depends_on' => 'country'
+            ]),
+            'type' => 'default',
+        ],
+        [
+            'index_no' => 7,
+            'field_name' => 'city',
+            'label' => 'City',
+            'attribute_id' => 3,
+            'input_value' => json_encode([
+                'source' => 'cities',
+                'value' => 'id',
+                'label' => 'name',
+                'depends_on' => 'state'
+            ]),
+            'type' => 'default',
+        ],
+        [
+            'index_no' => 8,
+            'field_name' => 'password',
+            'label' => 'Password',
+            'attribute_id' => 7,
+            'input_value' => null,
+            'type' => 'password',
+        ],
+    ];
+}

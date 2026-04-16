@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\DynamicFields;
 use App\Models\Events;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -88,7 +89,15 @@ class EventsController
         $event->active_user_to = $request->active_user_to ? Carbon::parse($request->active_user_to)->format('Y-m-d H:i:s') : null;
         $event->is_log_attendance = $request->is_log_attendance ?? 0;
         $event->save();
-
+        $isDynamicFieldsExist = DynamicFields::where('event_id', $event->id)->count();
+        if ($isDynamicFieldsExist == 0) {
+            foreach (get_dynamic_fields() as $key => $fields) {
+                $fields['event_id'] = $event->id;
+                $fields['created_at'] = now();
+                $fields['updated_at'] = now();
+                DynamicFields::insert($fields);
+            }
+        }
         return redirect()->route('admin.events')
             ->with('success', 'Event Saved Successfully');
     }
