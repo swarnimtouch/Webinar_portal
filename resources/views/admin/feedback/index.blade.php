@@ -310,7 +310,7 @@
 
                                 if (data.success) {
 
-                                    toastr.success("Selected feedbacks deleted successfully.");
+                                    toastr.success(data.message || "Selected feedbacks deleted successfully");
 
                                     feedbackTable.draw(false);
 
@@ -318,9 +318,11 @@
                                     document.querySelector('[data-kt-check="true"]').checked = false;
 
                                 } else {
-                                    throw new Error(data.message);
+                                    toastr.error(data.message || "Delete failed");
                                 }
+
                             })
+
                             .catch(error => {
                                 toastr.error("Failed to delete feedbacks. " + (error.message || ''));
                             });
@@ -352,47 +354,30 @@
                     text: "Are you sure you want to delete this feedback?",
                     icon: "warning",
                     showCancelButton: true,
-                    buttonsStyling: false,
-                    confirmButtonText: "Yes, delete it!",
-                    cancelButtonText: "No, cancel",
-                    customClass: {
-                        confirmButton: "btn fw-bold btn-danger",
-                        cancelButton: "btn fw-bold btn-active-light-primary"
-                    }
+                    confirmButtonText: "Yes, delete it!"
                 }).then(function (result) {
-                    if (result.value) {
-                        $.ajax({
-                            url: '{{ route("admin.feedback.delete", ":id") }}'.replace(':id', id),
-                            method: 'DELETE',
-                            data: {
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function (response) {
-                                Swal.fire({
-                                    text: "Feedback has been deleted!",
-                                    icon: "success",
-                                    buttonsStyling: false,
-                                    confirmButtonText: "Ok, got it!",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-primary",
-                                    }
-                                }).then(function () {
-                                    feedbackTable.draw(false);
-                                });
-                            },
-                            error: function (xhr) {
-                                Swal.fire({
-                                    text: "Error deleting feedback. Please try again.",
-                                    icon: "error",
-                                    buttonsStyling: false,
-                                    confirmButtonText: "Ok, got it!",
-                                    customClass: {
-                                        confirmButton: "btn fw-bold btn-primary",
-                                    }
-                                });
-                            }
-                        });
-                    }
+
+                    if (!result.isConfirmed) return;
+
+                    $.ajax({
+                        url: '{{ route("admin.feedback.delete", ":id") }}'.replace(':id', id),
+                        method: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: (res) => {
+
+                            toastr.success(res.message || "Feedback deleted successfully");
+
+                            feedbackTable.draw(false);
+
+                        },
+                        error: () => {
+
+                            toastr.error("Failed to delete feedback");
+
+                        }
+                    });
                 });
             }
 
