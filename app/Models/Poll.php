@@ -47,4 +47,9 @@ class Poll extends Model
         return $this->hasMany(UserQuizAnswer::class);
     }
 
+    public function event()
+    {
+        return $this->belongsTo(Events::class);
+    }
+
 }

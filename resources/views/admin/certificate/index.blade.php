@@ -113,6 +113,7 @@
                                 </th>
                                 <th>Background</th>
                                 <th>Name</th>
+                                <th>Event</th>
                                 <th>Font</th>
                                 <th>Created At</th>
                                 <th>Status</th>
@@ -166,7 +167,7 @@
                             ? `<img src="${img}" alt="Certificate" class="rounded" style="height:45px; width:70px; object-fit:cover;">`
                             : `<span class="badge badge-light-warning">No Image</span>`
                     },
-
+                    {data: 'event',},
                     {
                         data: 'name',
                         render: (name, type, row) => `

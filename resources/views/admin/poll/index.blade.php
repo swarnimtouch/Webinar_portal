@@ -136,6 +136,7 @@
                                                value="1"/>
                                     </div>
                                 </th>
+                                <th>Event</th>
                                 <th>Question</th>
                                 <th>Answers</th>
                                 <th>Created At</th>
@@ -189,6 +190,8 @@
                         <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
                     </div>`
                     },
+
+                    {data: 'event'},
 
                     /* QUESTION */
                     {

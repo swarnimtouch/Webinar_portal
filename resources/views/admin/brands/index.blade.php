@@ -147,6 +147,7 @@
                                 </th>
                                 <th>Preview</th>
                                 <th>Title</th>
+                                <th>Event</th>
                                 <th>Created At</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -217,6 +218,7 @@
                                         : '<span class="text-muted">—</span>'
                             },
                             {data: 'title'},
+                            {data: 'event'},
                             {data: 'created_at'},
                             {
                                 data: 'status',

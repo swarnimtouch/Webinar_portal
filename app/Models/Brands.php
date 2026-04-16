@@ -47,4 +47,9 @@ class Brands extends Model
                 : 'assets/images/default-brand.png'
         );
     }
+
+    public function event()
+    {
+        return $this->belongsTo(Events::class);
+    }
 }

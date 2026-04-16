@@ -77,4 +77,9 @@ class Banner extends Model
             $this->attributes['filename'] = $name;
         }
     }
+
+    public function event()
+    {
+        return $this->belongsTo(Events::class);
+    }
 }

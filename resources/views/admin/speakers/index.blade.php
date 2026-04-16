@@ -62,6 +62,7 @@
                                     </div>
                                 </th>
                                 <th>Photo</th>
+                                <th>Event</th>
                                 <th>Name</th>
                                 <th>Line 1</th>
                                 <th>Line 2</th>
@@ -98,7 +99,7 @@
 @push('scripts')
     <script>
         "use strict";
-       
+
 
         var KTSpeakersList = function () {
             var table = document.getElementById('kt_table_speakers');
@@ -140,6 +141,7 @@
                                </a>`
                                     : '<span class="text-muted">—</span>'
                         },
+                        {data: 'event'},
                         {data: 'name'},
                         {data: 'line1'},
                         {data: 'line2'},

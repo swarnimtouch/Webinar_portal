@@ -52,4 +52,9 @@ class Speakers extends Model
             ? '<span class="badge badge-light-success">Active</span>'
             : '<span class="badge badge-light-danger">Inactive</span>';
     }
+
+    public function event()
+    {
+        return $this->belongsTo(Events::class);
+    }
 }
