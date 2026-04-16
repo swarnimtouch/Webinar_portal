@@ -18,9 +18,9 @@
                                 <div class="d-flex flex-center flex-column py-5">
                                     <!--begin::Avatar-->
                                     @php
-                                        $avatarField = $activeFields->firstWhere('field_name', 'avatar');
+                                        $avatar_field = $active_fields->firstWhere('field_name', 'avatar');
                                     @endphp
-                                    @if($avatarField && $user->avatar)
+                                    @if($avatar_field && $user->avatar)
                                         <div class="symbol symbol-100px symbol-circle mb-7">
                                             <img src="{{ asset('storage/' . $user->avatar) }}" alt="User Avatar"/>
                                         </div>
@@ -41,9 +41,9 @@
 
                                     <!--begin::Email-->
                                     @php
-                                        $emailField = $activeFields->firstWhere('field_name', 'email');
+                                        $email_field = $active_fields->firstWhere('field_name', 'email');
                                     @endphp
-                                    @if($emailField && $user->email)
+                                    @if($email_field && $user->email)
                                         <a href="mailto:{{ $user->email }}"
                                            class="fs-5 fw-bold text-gray-600 text-hover-primary mb-6">
                                             {{ $user->email }}
@@ -61,9 +61,9 @@
                                 <div class="separator separator-dashed my-3"></div>
 
                                 @php
-                                    $mobileField = $activeFields->firstWhere('field_name', 'mobile_number');
+                                    $mobile_field = $active_fields->firstWhere('field_name', 'mobile_number');
                                 @endphp
-                                @if($mobileField && $user->mobile)
+                                @if($mobile_field && $user->mobile)
                                     <div class="d-flex flex-stack fs-5 py-3">
                                         <div class="fw-bolder">Mobile:</div>
                                         <div class="text-gray-600">
@@ -74,23 +74,6 @@
                                     </div>
                                     <div class="separator separator-dashed my-3"></div>
                                 @endif
-
-                                @php
-                                    $altMobileField = $activeFields->firstWhere('field_name', 'alternative_mobile_number');
-                                @endphp
-                                @if($altMobileField && $user->alternative_mobile)
-                                    <div class="d-flex flex-stack fs-5 py-3">
-                                        <div class="fw-bolder">Alternative Mobile:</div>
-                                        <div class="text-gray-600">
-                                            <a href="tel:{{ $user->alternative_mobile }}"
-                                               class="text-gray-600 text-hover-primary">
-                                                {{ $user->alternative_mobile }}
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div class="separator separator-dashed my-3"></div>
-                                @endif
-
                                 <div class="d-flex flex-stack fs-5 py-3">
                                     <div class="fw-bolder">Created At:</div>
                                     <div
@@ -143,37 +126,37 @@
                             <div class="card-body p-9">
                                 <div class="row mb-7">
                                     @php
-                                        $nameFieldDisplayed = false;
-                                        $skipFields = ['avatar', 'password', 'email', 'mobile_number', 'alternative_mobile_number'];
-                                        $displayedCount = 0;
+                                        $name_field_displayed = false;
+                                        $skip_fields = ['avatar', 'password', 'email', 'mobile_number', 'alternative_mobile_number'];
+                                        $displayed_count = 0;
                                     @endphp
 
-                                    @foreach($activeFields as $field)
+                                    @foreach($active_fields as $field)
                                         @php
-                                            $fieldName = $field->field_name;
+                                            $field_name = $field->field_name;
 
                                             // Skip fields already shown in sidebar
-                                            if (in_array($fieldName, $skipFields)) {
+                                            if (in_array($field_name, $skip_fields)) {
                                                 continue;
                                             }
 
                                             // Skip last_name if first_name was already shown
-                                            if ($fieldName == 'last_name' && $nameFieldDisplayed) {
+                                            if ($field_name == 'last_name' && $name_field_displayed) {
                                                 continue;
                                             }
 
                                             // Field name mapping
-                                            $fieldMapping = [
+                                            $field_mapping = [
                                                 'mobile_number' => 'mobile',
                                                 'alternative_mobile_number' => 'alternative_mobile',
                                             ];
 
-                                            $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
-                                            $value = $user->$dbFieldName;
+                                            $dbField_name = $field_mapping[$field_name] ?? $field_name;
+                                            $value = $user->$dbField_name;
                                         @endphp
 
-                                        @if(in_array($fieldName, ['first_name', 'last_name']))
-                                            @if(!$nameFieldDisplayed)
+                                        @if(in_array($field_name, ['first_name', 'last_name']))
+                                            @if(!$name_field_displayed)
                                                 <div class="col-lg-6">
                                                     <div class="fw-bold text-gray-600 mb-2">Full Name:</div>
                                                     <div class="fw-bolder fs-6 text-gray-800">
@@ -181,18 +164,18 @@
                                                     </div>
                                                 </div>
                                                 @php
-                                                    $nameFieldDisplayed = true;
-                                                    $displayedCount++;
+                                                    $name_field_displayed = true;
+                                                    $displayed_count++;
                                                 @endphp
                                             @endif
-                                        @elseif($fieldName == 'name')
+                                        @elseif($field_name == 'name')
                                             <div class="col-lg-6">
                                                 <div class="fw-bold text-gray-600 mb-2">{{ $field->label }}:</div>
                                                 <div class="fw-bolder fs-6 text-gray-800">
                                                     {{ trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: '—' }}
                                                 </div>
                                             </div>
-                                            @php $displayedCount++; @endphp
+                                            @php $displayed_count++; @endphp
                                         @else
                                             <div class="col-lg-6">
                                                 <div class="fw-bold text-gray-600 mb-2">{{ $field->label }}:</div>
@@ -204,10 +187,10 @@
                                                     @endif
                                                 </div>
                                             </div>
-                                            @php $displayedCount++; @endphp
+                                            @php $displayed_count++; @endphp
                                         @endif
 
-                                        @if($displayedCount % 2 == 0 && !$loop->last)
+                                        @if($displayed_count % 2 == 0 && !$loop->last)
                                 </div>
                                 <div class="row mb-7">
                                     @endif

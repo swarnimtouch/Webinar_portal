@@ -3,7 +3,7 @@
     <main>
         <div class="container">
             <div class="header-section">
-                <h1>{{$homeSetting->title ?? 'Webinar Portal'}}</h1>
+                <h1>{{$home_setting->title ?? 'Webinar Portal'}}</h1>
                 <button class="btn btn-gold" id="openRegisterModal">Register</button>
             </div>
 
@@ -20,43 +20,46 @@
                     </div>
                 </div>
 
-                <div class="info-bar">
-                    <div class="info-item">
-                        <i class="fa-regular fa-calendar"></i>
-                        <div class="info-text">
-              <span>
-                {{ $homeSetting?->event_start_time
-                  ? \Carbon\Carbon::parse($homeSetting->event_start_time)->format('j F, Y')
-                  : 'TBD' }}
-                -
-                {{ $homeSetting?->event_end_time
-                  ? \Carbon\Carbon::parse($homeSetting->event_end_time)->format('j F, Y')
-                  : 'TBD' }}
-              </span>
+                @if($home_setting && ($home_setting->event_start_time || $home_setting->event_end_time))
+                    <div class="info-bar">
+                        <div class="info-item">
+                            <i class="fa-regular fa-calendar"></i>
+                            <div class="info-text">
+                                <span>
+                                    {{ $home_setting->event_start_time
+                                        ? \Carbon\Carbon::parse($home_setting->event_start_time)->format('j F, Y')
+                                        : '' }}
+                                    @if($home_setting->event_start_time && $home_setting->event_end_time)
+                                        -
+                                    @endif
+                                    {{ $home_setting->event_end_time
+                                        ? \Carbon\Carbon::parse($home_setting->event_end_time)->format('j F, Y')
+                                        : '' }}
+                                </span>
+                                <small>Summit Date</small>
+                            </div>
+                        </div>
 
-                            <small>Summit Date</small>
+                        @if($home_setting->event_start_time)
+                            <div class="info-item">
+                                <i class="fa-regular fa-clock"></i>
+                                <div class="info-text">
+                                <span>
+                                    {{ \Carbon\Carbon::parse($home_setting->event_start_time)->format('H:i') }} Onwards
+                                </span>
+                                    <small>Reporting</small>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="info-item no-border">
+                            <i class="fa-solid fa-hourglass-end"></i>
+                            <div class="info-text">
+                                <span>Registration Open</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="info-item">
-                        <i class="fa-regular fa-clock"></i>
-                        <div class="info-text">
-              <span>
-                {{ $homeSetting?->event_start_time
-                  ? \Carbon\Carbon::parse($homeSetting->event_start_time)->format('H:i') . ' Onwards'
-                  : 'Time TBD' }}
-              </span>
-
-                            <small>Reporting</small>
-                        </div>
-                    </div>
-
-                    <div class="info-item no-border">
-                        <i class="fa-solid fa-hourglass-end"></i>
-                        <div class="info-text">
-                            <span>Registration Open</span>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
 
             <div class="content-grid">
@@ -152,89 +155,89 @@
         </div>
     </main>
 
-  <div id="loginModal" class="modal-overlay">
-    <div class="modal-content">
-  <div class="modal-title-row">
-    <h2>Welcome</h2>
-    <span class="close-modal-btn">×</span>
-  </div>
-  <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
-        @csrf
-        @foreach($loginFields as $field)
-          <div class="email-input-group">
-            <div class="icon-box">
-              <i class="{{ $field->icon ?? 'fa-solid fa-user' }}"></i>
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title-row">
+                <span class="close-modal-btn">×</span>
+                <h2>Welcome</h2>
             </div>
-            <input type="{{ $field->field_type }}"
-               name="{{ $field->field_name }}"
-               placeholder="{{ $field->label }}"
-               data-field="{{ $field->field_name }}"
-               data-label="{{ $field->label }}"
-               data-is-required="1" />
-          </div>
-        @endforeach
-        <button type="submit" class="btn btn-gold full-width">Login</button>
-      </form>
+            <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
+                @csrf
+                @foreach($login_fields as $field)
+                    <div class="email-input-group">
+                        <div class="icon-box">
+                            <i class="{{ $field->icon ?? 'fa-solid fa-user' }}"></i>
+                        </div>
+                        <input type="{{ $field->field_type }}"
+                               name="{{ $field->field_name }}"
+                               placeholder="{{ $field->label }}"
+                               data-field="{{ $field->field_name }}"
+                               data-label="{{ $field->label }}"
+                               data-is-required="1"/>
+                    </div>
+                @endforeach
+                <button type="submit" class="btn btn-gold full-width">Login</button>
+            </form>
+        </div>
     </div>
-  </div>
 
-  <div id="registerModal" class="modal-overlay">
-    <div class="modal-content">
-  <div class="modal-title-row">
-    <h2>Doctor Registration</h2>
-    <span class="close-modal-btn close-register-btn">×</span>
-  </div>
-  <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm" autocomplete="off">
-        @csrf
-        <div class="row">
-        @foreach($registerFields as $field)
+    <div id="registerModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title-row">
+                <h2>Doctor Registration</h2>
+                <span class="close-modal-btn close-register-btn">×</span>
+            </div>
+            <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm" autocomplete="off">
+                @csrf
+                <div class="row">
+                    @foreach($register_fields as $field)
 
                         @php
-                            $totalFields = count($registerFields);
+                            $total_fields = count($register_fields);
                             $rowIndex = floor($loop->index / 2);
-                            $fieldsInThisRow = min(2, $totalFields - ($rowIndex * 2));
-                            $colClass = 'col-md-6';
-                            if ($fieldsInThisRow == 1) {
-                              $colClass = 'col-md-12';
+                            $fields_in_this_row = min(2, $total_fields - ($rowIndex * 2));
+                            $col_class = 'col-md-6';
+                            if ($fields_in_this_row == 1) {
+                              $col_class = 'col-md-12';
                             }
 
                             $options = is_array(json_decode($field->input_value, true))
                              ? json_decode($field->input_value, true)
                              : [];
 
-                            $iconClass = $field->icon;
+                            $icon_class = $field->icon;
 
-                            if (empty($iconClass)) {
-                              $fieldName = strtolower($field->field_name);
+                            if (empty($icon_class)) {
+                              $field_name = strtolower($field->field_name);
 
-                              if (str_contains($fieldName, 'name')) {
-                                $iconClass = 'fa-solid fa-user';
-                              } elseif (str_contains($fieldName, 'email')) {
-                                $iconClass = 'fa-solid fa-envelope';
-                              } elseif (str_contains($fieldName, 'mobile') || str_contains($fieldName, 'phone')) {
-                                $iconClass = 'fa-solid fa-phone';
-                              } elseif (str_contains($fieldName, 'password')) {
-                                $iconClass = 'fa-solid fa-lock';
-                              } elseif ($fieldName === 'country') {
-                                $iconClass = 'fa-solid fa-globe';
-                              } elseif ($fieldName === 'state') {
-                                $iconClass = 'fa-solid fa-map-location-dot';
-                              } elseif ($fieldName === 'city') {
-                                $iconClass = 'fa-solid fa-city';
+                              if (str_contains($field_name, 'name')) {
+                                $icon_class = 'fa-solid fa-user';
+                              } elseif (str_contains($field_name, 'email')) {
+                                $icon_class = 'fa-solid fa-envelope';
+                              } elseif (str_contains($field_name, 'mobile') || str_contains($field_name, 'phone')) {
+                                $icon_class = 'fa-solid fa-phone';
+                              } elseif (str_contains($field_name, 'password')) {
+                                $icon_class = 'fa-solid fa-lock';
+                              } elseif ($field_name === 'country') {
+                                $icon_class = 'fa-solid fa-globe';
+                              } elseif ($field_name === 'state') {
+                                $icon_class = 'fa-solid fa-map-location-dot';
+                              } elseif ($field_name === 'city') {
+                                $icon_class = 'fa-solid fa-city';
                               } elseif ($field->attribute_id == 5) {
-                                $iconClass = 'fa-solid fa-calendar-days';
+                                $icon_class = 'fa-solid fa-calendar-days';
                               } elseif ($field->attribute_id == 6) {
-                                $iconClass = 'fa-solid fa-file-arrow-up';
+                                $icon_class = 'fa-solid fa-file-arrow-up';
                               } else {
-                                $iconClass = 'fa-solid fa-pen';
+                                $icon_class = 'fa-solid fa-pen';
                               }
                             }
                         @endphp
 
-                        <div class="{{ $colClass }} col-12">
+                        <div class="{{ $col_class }} col-12">
                             <div class="email-input-group mb-3">
                                 <div class="icon-box">
-                                    <i class="{{ $iconClass }}"></i>
+                                    <i class="{{ $icon_class }}"></i>
                                 </div>
 
                                 @if($field->attribute_id == 1)
@@ -380,7 +383,7 @@
         @endif
 
         <script>
-            window.sliderData = @json($sliderData);
+            window.sliderData = @json($slider_data);
             window._openLoginModal = {{ session('open_login_modal')    ? 'true' : 'false' }};
             window._openRegisterModal = {{ session('open_register_modal') ? 'true' : 'false' }};
         </script>

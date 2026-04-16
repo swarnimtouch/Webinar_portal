@@ -3,12 +3,6 @@
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
                 <div class="card">
                     <div class="card-header border-0 pt-6">
                         <div class="card-title">
@@ -126,7 +120,6 @@
                             </tr>
                             </thead>
                             <tbody class="fw-semibold text-gray-600">
-                            <!-- Data will be loaded via AJAX -->
                             </tbody>
                         </table>
                     </div>
@@ -141,7 +134,9 @@
         "use strict";
 
         let certificateTable;
-
+        @if(session('success'))
+        toastr.success("{{ session('success') }}");
+        @endif
         function initCertificateTable() {
             certificateTable = $('#kt_table_certificates').DataTable({
                 processing: true,
@@ -157,7 +152,6 @@
                 order: [[4, 'desc']],
                 columns: [
 
-                    /* CHECKBOX */
                     {
                         data: 'id',
                         orderable: false,
@@ -167,7 +161,6 @@
                             </div>`
                     },
 
-                    /* BACKGROUND IMAGE */
                     {
                         data: 'background_image',
                         orderable: false,
@@ -176,7 +169,6 @@
                             : `<span class="badge badge-light-warning">No Image</span>`
                     },
 
-                    /* NAME */
                     {
                         data: 'name',
                         render: (name, type, row) => `
@@ -190,7 +182,6 @@
                             </div>`
                     },
 
-                    /* FONT FILE */
                     {
                         data: 'font_file',
                         orderable: false,
@@ -199,10 +190,8 @@
                             : `<span class="badge badge-light-secondary">Default</span>`
                     },
 
-                    /* CREATED AT */
                     {data: 'created_at'},
 
-                    /* STATUS TOGGLE */
                     {
                         data: 'status',
                         orderable: false,
@@ -214,7 +203,6 @@
                             </div>`
                     },
 
-                    /* ACTIONS */
                     {
                         data: 'id',
                         orderable: false,
@@ -242,20 +230,17 @@
             });
         }
 
-        /* ===== SELECT ALL CHECKBOX ===== */
         document.addEventListener('change', e => {
             if (!e.target.matches('[data-kt-check="true"]')) return;
             document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
             toggleBulkToolbar();
         });
 
-        /* ===== SINGLE ROW CHECK ===== */
         document.addEventListener('change', e => {
             if (!e.target.classList.contains('row-checkbox')) return;
             toggleBulkToolbar();
         });
 
-        /* ===== SHOW / HIDE BULK TOOLBAR ===== */
         function toggleBulkToolbar() {
             const selected = document.querySelectorAll('.row-checkbox:checked').length;
             const baseToolbar = document.querySelector('[data-kt-user-table-toolbar="base"]');
@@ -273,7 +258,6 @@
             }
         }
 
-        /* ===== MULTIPLE DELETE ===== */
         document.querySelector('[data-kt-user-table-select="delete_selected"]')
             ?.addEventListener('click', () => {
                 const ids = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.value);
@@ -304,17 +288,18 @@
                             return res.json();
                         })
                         .then(() => {
-                            Swal.fire({text: "Selected certificates deleted successfully", icon: "success"});
+
+                            toastr.success("Selected certificates deleted successfully");
+
                             certificateTable.draw(false);
                             toggleBulkToolbar();
                         })
                         .catch(() => {
-                            Swal.fire({text: "Failed to delete certificates", icon: "error"});
+                            toastr.error("Failed to delete certificates");
                         });
                 });
             });
 
-        /* ===== STATUS TOGGLE ===== */
         document.addEventListener('change', e => {
             if (!e.target.classList.contains('certificate-status-toggle')) return;
 
@@ -345,7 +330,6 @@
             });
         });
 
-        /* ===== DELETE ===== */
         document.addEventListener('click', e => {
             if (!e.target.classList.contains('certificate-delete')) return;
 
@@ -373,11 +357,9 @@
             });
         });
 
-        /* ===== SEARCH ===== */
         document.querySelector('[data-kt-user-table-filter="search"]')
             .addEventListener('keyup', () => certificateTable.draw());
 
-        /* ===== FILTER ===== */
         document.querySelector('[data-kt-user-table-filter="filter"]')
             .addEventListener('click', () => certificateTable.draw());
 

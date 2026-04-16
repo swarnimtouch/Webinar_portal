@@ -14,10 +14,10 @@ class ChatLogController extends Controller
     public function index()
     {
 
-        return view('admin.chatlog.index', [
+        return view('admin.chat_log.index', [
             'title' => __('Chat Log'),
             'breadcrumb' => breadcrumb([
-                __('Chat Log') => route('admin.chatlog')
+                __('Chat Log') => route('admin.chat_log')
             ])
         ]);
     }

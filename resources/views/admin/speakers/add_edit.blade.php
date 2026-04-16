@@ -103,7 +103,8 @@
                                     <label class="col-lg-4 col-form-label required fw-bold fs-6">Name</label>
                                     <div class="col-lg-8">
                                         <input type="text" name="name" value="{{ old('name', $speaker->name ?? '') }}"
-                                               class="form-control form-control-lg form-control-solid"/>
+                                               class="form-control form-control-lg form-control-solid"
+                                               placeholder="Enter Name"/>
                                     </div>
                                 </div>
                                 <div class="row mb-6">
@@ -111,7 +112,8 @@
                                     <div class="col-lg-8">
                                         <input type="text" name="line1"
                                                value="{{ old('line1', $speaker->line1 ?? '') }}"
-                                               class="form-control form-control-lg form-control-solid"/>
+                                               class="form-control form-control-lg form-control-solid"
+                                               placeholder="Enter Line1"/>
                                     </div>
                                 </div>
                                 <div class="row mb-6">
@@ -119,7 +121,8 @@
                                     <div class="col-lg-8">
                                         <input type="text" name="line2"
                                                value="{{ old('line2', $speaker->line2 ?? '') }}"
-                                               class="form-control form-control-lg form-control-solid"/>
+                                               class="form-control form-control-lg form-control-solid"
+                                               placeholder="Enter Line2"/>
                                     </div>
                                 </div>
                                 <div class="row mb-6">
@@ -127,7 +130,8 @@
                                     <div class="col-lg-8">
                                         <input type="text" name="line3"
                                                value="{{ old('line3', $speaker->line3 ?? '') }}"
-                                               class="form-control form-control-lg form-control-solid"/>
+                                               class="form-control form-control-lg form-control-solid"
+                                               placeholder="Enter Line3"/>
                                     </div>
                                 </div>
                             </div>

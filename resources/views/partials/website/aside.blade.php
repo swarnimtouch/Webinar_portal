@@ -124,8 +124,8 @@
                                 <span>Resources</span>
                             </a>
                         @endif
-                        @if($activeCertificate)
-                            <a href="{{ route('admin.certificate.generate', ['certificateId' => $activeCertificate->id, 'userId' => auth()->id()]) }}"
+                        @if($active_certificate)
+                            <a href="{{ route('admin.certificate.generate', ['certificateId' => $active_certificate->id, 'userId' => auth()->id()]) }}"
                                class="action-box">
                                 <i class="fa-solid fa-certificate"></i>
                                 <span>Certificate</span>

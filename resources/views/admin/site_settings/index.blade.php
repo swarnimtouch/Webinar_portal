@@ -3,21 +3,7 @@
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+
 
                 <div class="card mb-5 mb-xl-10">
 
@@ -40,25 +26,24 @@
                                                 <div class="col-lg-12 fv-row">
                                                     @php
                                                         $type = $field['type'];
-                                                        $extraArray = !empty($field['extra']) ? json_decode($field['extra'], true) : [];
-                                                        $isRequired = isset($extraArray['required']) && $extraArray['required'] === 'required';
+                                                        $extra_array = !empty($field['extra']) ? json_decode($field['extra'], true) : [];
+                                                        $is_required = isset($extra_array['required']) && $extra_array['required'] === 'required';
 
-                                                        $optionsArray = [];
+                                                        $options_array = [];
                                                         if (!empty($field['options'])) {
-                                                            // Check if options is already JSON
                                                             if (is_string($field['options'])) {
                                                                 $decoded = json_decode($field['options'], true);
                                                                 if (json_last_error() === JSON_ERROR_NONE) {
-                                                                    $optionsArray = $decoded;
+                                                                    $options_array = $decoded;
                                                                 } else {
                                                                     $items = explode(',', $field['options']);
                                                                     foreach ($items as $item) {
                                                                         $item = trim($item);
-                                                                        $optionsArray[$item] = ucfirst($item);
+                                                                        $options_array[$item] = ucfirst($item);
                                                                     }
                                                                 }
                                                             } else {
-                                                                $optionsArray = $field['options'];
+                                                                $options_array = $field['options'];
                                                             }
                                                         }
                                                     @endphp
@@ -70,9 +55,9 @@
                                                                class="form-control form-control-lg form-control-solid"
                                                                placeholder="{{ $field['label'] }}"
                                                                value="{{ old($field['unique_name'], $field['value']) }}"
-                                                        {{ $isRequired ? 'required' : '' }}
-                                                        @if(!empty($extraArray))
-                                                            @foreach($extraArray as $k => $v)
+                                                        {{ $is_required ? 'required' : '' }}
+                                                        @if(!empty($extra_array))
+                                                            @foreach($extra_array as $k => $v)
                                                                 @if($k !== 'required')
                                                                     {{ $k }}="{{ $v }}"
                                                                 @endif
@@ -86,9 +71,9 @@
                                                                   class="form-control form-control-lg form-control-solid"
                                                                   placeholder="{{ $field['label'] }}"
                                                                   rows="4"
-                                                        {{ $isRequired ? 'required' : '' }}
-                                                        @if(!empty($extraArray))
-                                                            @foreach($extraArray as $k => $v)
+                                                        {{ $is_required ? 'required' : '' }}
+                                                        @if(!empty($extra_array))
+                                                            @foreach($extra_array as $k => $v)
                                                                 @if($k !== 'required')
                                                                     {{ $k }}="{{ $v }}"
                                                                 @endif
@@ -96,15 +81,14 @@
                                                         @endif
                                                         >{{ old($field['unique_name'], $field['value']) }}</textarea>
 
-                                                        {{-- FILE --}}
                                                     @elseif($type === 'file')
                                                         <input type="file"
                                                                name="{{ $field['unique_name'] }}"
                                                                id="{{ $field['unique_name'] }}"
                                                                class="form-control form-control-lg form-control-solid"
-                                                        {{ $isRequired && empty($field['value']) ? 'required' : '' }}
-                                                        @if(!empty($extraArray))
-                                                            @foreach($extraArray as $k => $v)
+                                                        {{ $is_required && empty($field['value']) ? 'required' : '' }}
+                                                        @if(!empty($extra_array))
+                                                            @foreach($extra_array as $k => $v)
                                                                 @if($k !== 'required')
                                                                     {{ $k }}="{{ $v }}"
                                                                 @endif
@@ -139,24 +123,23 @@
                                                             </div>
                                                         @endif
 
-                                                        {{-- RADIO BUTTON --}}
                                                     @elseif($type === 'radio')
                                                         <div class="radio-group">
-                                                            @if(!empty($optionsArray))
-                                                                @foreach($optionsArray as $optionValue => $optionLabel)
+                                                            @if(!empty($options_array))
+                                                                @foreach($options_array as $option_value => $option_label)
                                                                     <div
                                                                         class="form-check form-check-custom form-check-solid mb-3">
                                                                         <input class="form-check-input"
                                                                                type="radio"
                                                                                name="{{ $field['unique_name'] }}"
-                                                                               id="{{ $field['unique_name'] }}_{{ $optionValue }}"
-                                                                               value="{{ $optionValue }}"
-                                                                            {{ old($field['unique_name'], $field['value']) == $optionValue ? 'checked' : '' }}
-                                                                            {{ $isRequired ? 'required' : '' }}
+                                                                               id="{{ $field['unique_name'] }}_{{ $option_value }}"
+                                                                               value="{{ $option_value }}"
+                                                                            {{ old($field['unique_name'], $field['value']) == $option_value ? 'checked' : '' }}
+                                                                            {{ $is_required ? 'required' : '' }}
                                                                         >
                                                                         <label class="form-check-label"
-                                                                               for="{{ $field['unique_name'] }}_{{ $optionValue }}">
-                                                                            {{ $optionLabel }}
+                                                                               for="{{ $field['unique_name'] }}_{{ $option_value }}">
+                                                                            {{ $option_label }}
                                                                         </label>
                                                                     </div>
                                                                 @endforeach
@@ -167,28 +150,28 @@
 
                                                     @elseif($type === 'checkbox')
                                                         <div class="checkbox-group">
-                                                            @if(!empty($optionsArray))
+                                                            @if(!empty($options_array))
                                                                 @php
-                                                                    $selectedValues = !empty($field['value']) ? json_decode($field['value'], true) : [];
-                                                                    if (!is_array($selectedValues)) {
-                                                                        $selectedValues = [$selectedValues];
+                                                                    $selected_values = !empty($field['value']) ? json_decode($field['value'], true) : [];
+                                                                    if (!is_array($selected_values)) {
+                                                                        $selected_values = [$selected_values];
                                                                     }
                                                                 @endphp
-                                                                @foreach($optionsArray as $optionValue => $optionLabel)
+                                                                @foreach($options_array as $option_value => $option_label)
                                                                     <div
                                                                         class="form-check form-check-custom form-check-solid mb-3">
                                                                         <input class="form-check-input checkbox-item"
                                                                                type="checkbox"
                                                                                name="{{ $field['unique_name'] }}[]"
-                                                                               id="{{ $field['unique_name'] }}_{{ $optionValue }}"
-                                                                               value="{{ $optionValue }}"
-                                                                               {{ in_array($optionValue, $selectedValues) ? 'checked' : '' }}
+                                                                               id="{{ $field['unique_name'] }}_{{ $option_value }}"
+                                                                               value="{{ $option_value }}"
+                                                                               {{ in_array($option_value, $option_values) ? 'checked' : '' }}
                                                                                data-group="{{ $field['unique_name'] }}"
-                                                                            {{ $isRequired ? 'data-required=true' : '' }}
+                                                                            {{ $is_required ? 'data-required=true' : '' }}
                                                                         >
                                                                         <label class="form-check-label"
-                                                                               for="{{ $field['unique_name'] }}_{{ $optionValue }}">
-                                                                            {{ $optionLabel }}
+                                                                               for="{{ $field['unique_name'] }}_{{ $option_value }}">
+                                                                            {{ $option_label }}
                                                                         </label>
                                                                     </div>
                                                                 @endforeach
@@ -200,9 +183,9 @@
                                                         <select name="{{ $field['unique_name'] }}"
                                                                 id="{{ $field['unique_name'] }}"
                                                                 class="form-select form-select-lg form-select-solid"
-                                                        {{ $isRequired ? 'required' : '' }}
-                                                        @if(!empty($extraArray))
-                                                            @foreach($extraArray as $k => $v)
+                                                        {{ $is_required ? 'required' : '' }}
+                                                        @if(!empty($extra_array))
+                                                            @foreach($extra_array as $k => $v)
                                                                 @if($k !== 'required')
                                                                     {{ $k }}="{{ $v }}"
                                                                 @endif
@@ -210,12 +193,12 @@
                                                         @endif
                                                         >
                                                         <option value="">Select {{ $field['label'] }}</option>
-                                                        @if(!empty($optionsArray))
-                                                            @foreach($optionsArray as $optionValue => $optionLabel)
-                                                                <option value="{{ $optionValue }}"
-                                                                    {{ old($field['unique_name'], $field['value']) == $optionValue ? 'selected' : '' }}
+                                                        @if(!empty($options_array))
+                                                            @foreach($options_array as $option_value => $option_label)
+                                                                <option value="{{ $option_value }}"
+                                                                    {{ old($field['unique_name'], $field['value']) == $option_value ? 'selected' : '' }}
                                                                 >
-                                                                    {{ $optionLabel }}
+                                                                    {{ $option_label }}
                                                                 </option>
                                                                 @endforeach
                                                                 @endif
@@ -246,7 +229,12 @@
         @push('scripts')
             <script>
                 "use strict";
-
+                @if(session('success'))
+                toastr.success("{{ session('success') }}");
+                @endif
+                @if(session('error'))
+                toastr.error("{{ session('error') }}");
+                @endif
                 var KTSettingsUpdate = function () {
                     var form;
                     var submitButton;

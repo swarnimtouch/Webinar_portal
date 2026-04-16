@@ -4,11 +4,11 @@
             <h3>Contact Tech Team</h3>
             <div class="contact-row">
                 <i class="fa-solid fa-phone"></i>
-                <span>{{ siteSetting('ADMIN_phone', config('app.name')) }}</span>
+                <span>{{ ADMIN_phone }}</span>
             </div>
             <div class="contact-row">
                 <i class="fa-solid fa-envelope"></i>
-                <span>{{ siteSetting('ADMIN_EMAIL', config('app.name')) }}</span>
+                <span>{{ ADMIN_EMAIL }}</span>
             </div>
         </div>
 
@@ -21,8 +21,9 @@
             </ul>
         </div>
 
-    </div> <div class="footer-bottom">
-        {{ siteSetting('footer_text', config('app.name')) }}
+    </div>
+    <div class="footer-bottom">
+        {{ footer_text }}
     </div>
 
 </footer>

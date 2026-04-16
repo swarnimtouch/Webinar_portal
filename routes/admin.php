@@ -192,10 +192,10 @@ Route::middleware(['auth:admin'])->group(function () {
     });
 
     Route::controller(ChatLogController::class)->group(function () {
-        Route::get('chatlog', 'index')->name('chatlog');
-        Route::delete('chatlog/delete/{id}', 'delete')->name('chatlog.delete');
-        Route::post('chatlog/delete-multiple', 'deleteMultiple')->name('chatlog.deleteMultiple');
-        Route::get('chatlog/datatable', 'datatable')->name('chatlog.datatable');
+        Route::get('chatlog', 'index')->name('chat_log');
+        Route::delete('chatlog/delete/{id}', 'delete')->name('chat_log.delete');
+        Route::post('chatlog/delete-multiple', 'deleteMultiple')->name('chat_log.deleteMultiple');
+        Route::get('chatlog/datatable', 'datatable')->name('chat_log.datatable');
     });
 
     Route::controller(CertificateController::class)->group(function () {

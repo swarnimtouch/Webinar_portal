@@ -4,21 +4,6 @@
     <div class="post d-flex flex-column-fluid" id="kt_post">
         <!--begin::Container-->
         <div id="kt_content_container" class="container-xxl">
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
             <!--begin::Post-->
             <div class="card mb-5 mb-xl-10">
                 <!--begin::Card header-->
@@ -225,7 +210,6 @@
 
                     if (!form || !submitButton) return;
 
-                    // 🔥 FormValidation init (same as password page)
                     validator = FormValidation.formValidation(form, {
                         fields: {
                             name: {

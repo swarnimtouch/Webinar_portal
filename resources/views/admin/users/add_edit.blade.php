@@ -42,7 +42,7 @@
                                        value="{{ isset($user) && $user->avatar ? '1' : '0' }}">
 
                                 <div class="card-body border-top p-9">
-                                    @foreach($activeFields as $field)
+                                    @foreach($active_fields as $field)
                                         @php
                                             $fieldName   = $field->field_name;
                                             $label       = $field->label;
@@ -259,26 +259,27 @@
     <script>
         "use strict";
 
-
         KTUtil.onDOMContentLoaded(function () {
 
+
             const form = document.querySelector('#kt_user_form');
-            const submitBtn = document.querySelector('#kt_user_submit');
-            const avatarInput = document.querySelector('#avatar');
-            const avatarRemovedInput = document.querySelector('#avatar_removed');
-            const hasExistingAvatar = document.querySelector('#has_existing_avatar').value === '1';
-            const isEditMode = {{ isset($user) ? 'true' : 'false' }};
+            const submit_btn = document.querySelector('#kt_user_submit');
+            const avatar_input = document.querySelector('#avatar');
+            const avatar_removed_input = document.querySelector('#avatar_removed');
+            const has_existing_avatar = document.querySelector('#has_existing_avatar').value === '1';
+            const is_edit_mode = {{ isset($user) ? 'true' : 'false' }};
 
-            let avatarWasRemoved = false;
-            let newAvatarSelected = false;
+            let avatar_was_removed = false;
+            let new_avatar_selected = false;
 
-            if (avatarRemovedInput) {
+            if (avatar_removed_input) {
 
                 document.querySelectorAll('[data-kt-image-input-action="remove"]').forEach(btn => {
                     btn.addEventListener('click', function () {
-                        avatarWasRemoved = true;
-                        newAvatarSelected = false;
-                        avatarRemovedInput.value = '1';
+                        avatar_was_removed = true;
+                        new_avatar_selected = false;
+                        avatar_removed_input.value = '1';
+
                         setTimeout(() => {
                             if (validator) validator.revalidateField('avatar');
                         }, 100);
@@ -287,230 +288,148 @@
 
                 document.querySelectorAll('[data-kt-image-input-action="cancel"]').forEach(btn => {
                     btn.addEventListener('click', function () {
-                        avatarWasRemoved = false;
-                        newAvatarSelected = false;
-                        avatarRemovedInput.value = '0';
-                        setTimeout(() => {
-                            if (validator) validator.revalidateField('avatar');
-                        }, 100);
+                        avatar_was_removed = false;
+                        new_avatar_selected = false;
+                        avatar_removed_input.value = '0';
                     });
                 });
 
-                if (avatarInput) {
-                    avatarInput.addEventListener('change', function () {
+                if (avatar_input) {
+                    avatar_input.addEventListener('change', function () {
                         if (this.files && this.files.length > 0) {
-                            newAvatarSelected = true;
-                            avatarWasRemoved = false;
-                            avatarRemovedInput.value = '0';
+                            new_avatar_selected = true;
+                            avatar_was_removed = false;
+                            avatar_removed_input.value = '0';
                         }
                     });
                 }
             }
 
-            const validationFields = {};
+            const validation_fields = {};
 
-            @foreach($activeFields as $field)
+            @foreach($active_fields as $field)
                 @php
-                    $fieldName   = $field->field_name;
-                    $fieldMapping = [
-                        'mobile_number'             => 'mobile',
+                    $field_name = $field->field_name;
+                    $field_mapping = [
+                        'mobile_number' => 'mobile',
                         'alternative_mobile_number' => 'alternative_mobile',
                     ];
-                    $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
+                    $db_field_name = $field_mapping[$field_name] ?? $field_name;
                 @endphp
 
-                @if($fieldName == 'avatar')
-                validationFields['avatar'] = {
-                validators: {
-                    @if($field->is_required)
-                    callback: {
-                        message: 'Avatar is required',
-                        callback: function () {
-                            if (isEditMode && hasExistingAvatar) {
-                                if (avatarWasRemoved && !newAvatarSelected) return false;
-                                if (!avatarWasRemoved) return true;
-                            }
-                            return !!(avatarInput && avatarInput.files && avatarInput.files.length > 0);
-                        }
-                    },
-                    @endif
-                    file: {
-                        extension: 'jpg,jpeg,png,gif',
-                        type: 'image/jpeg,image/png,image/gif',
-                        maxSize: 5242880,
-                        message: 'Only JPG/PNG/GIF up to 5MB allowed'
-                    }
-                }
-            };
-
-            @elseif($fieldName == 'email')
-                validationFields['email'] = {
+                @if($field_name == 'email')
+                validation_fields['email'] = {
                 validators: {
                     @if($field->is_required)
                     notEmpty: {message: 'Email is required'},
                     @endif
-                    emailAddress: {message: 'Please enter a valid email address'}
+                    emailAddress: {message: 'Enter valid email'}
                 }
             };
-
-            @elseif($fieldName == 'password')
-                validationFields['password'] = {
-                validators: {
-                    callback: {
-                        callback: function (input) {
-                            const value = input.value;
-                            if (isEditMode && value === '') return true;
-                            @if($field->is_required && !isset($user))
-                            if (value === '') return {valid: false, message: 'Password is required'};
-                            @endif
-                            if (value.length > 0 && value.length < 6) {
-                                return {valid: false, message: 'Password must be at least 6 characters'};
-                            }
-                            return true;
-                        }
-                    }
-                }
-            };
-
-            @elseif(in_array($fieldName, ['mobile_number', 'alternative_mobile_number']))
-                validationFields['{{ $dbFieldName }}'] = {
-                validators: {
-                    @if($field->is_required)
-                    notEmpty: {message: '{{ $field->label }} is required'},
-                    @endif
-                    regexp: {
-                        regexp: /^[0-9]{10}$/,
-                        message: 'Please enter a valid 10-digit mobile number'
-                    }
-                }
-            };
-
             @elseif($field->is_required)
-                validationFields['{{ $dbFieldName }}'] = {
+                validation_fields['{{ $db_field_name }}'] = {
                 validators: {
                     notEmpty: {message: '{{ $field->label }} is required'}
                 }
             };
-
             @endif
             @endforeach
 
             const validator = FormValidation.formValidation(form, {
-                fields: validationFields,
+                fields: validation_fields,
                 plugins: {
                     trigger: new FormValidation.plugins.Trigger(),
-                    bootstrap: new FormValidation.plugins.Bootstrap5({rowSelector: '.row'})
+                    bootstrap: new FormValidation.plugins.Bootstrap5({
+                        rowSelector: '.row'
+                    })
                 }
             });
 
-            document.querySelectorAll('.mobile-number-input').forEach(function (input) {
-                input.addEventListener('keydown', function (e) {
-                    const allowedKeys = [
-                        'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
-                        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
-                    ];
-                    if (allowedKeys.includes(e.key)) return;
-                    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) return;
-                    if (!/^[0-9]$/.test(e.key)) e.preventDefault();
-                });
-                input.addEventListener('paste', function (e) {
-                    const pasted = (e.clipboardData || window.clipboardData).getData('text');
-                    if (!/^[0-9]+$/.test(pasted)) e.preventDefault();
-                });
-            });
-
-            submitBtn.addEventListener('click', function (e) {
+            submit_btn.addEventListener('click', function (e) {
                 e.preventDefault();
+
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
-                        submitBtn.setAttribute('data-kt-indicator', 'on');
-                        submitBtn.disabled = true;
+                        submit_btn.setAttribute('data-kt-indicator', 'on');
+                        submit_btn.disabled = true;
                         form.submit();
                     }
                 });
             });
 
-        });
-        window.oldCountry = "{{ old('country', $user->country ?? '') }}";
-        window.oldState = "{{ old('state',   $user->state   ?? '') }}";
-        window.oldCity = "{{ old('city',    $user->city    ?? '') }}";
 
-        const countryFieldActive = {{ $activeFields->contains('field_name', 'country') ? 'true' : 'false' }};
-        const stateFieldActive = {{ $activeFields->contains('field_name', 'state')   ? 'true' : 'false' }};
-        const cityFieldActive = {{ $activeFields->contains('field_name', 'city')    ? 'true' : 'false' }};
+            window.old_country = "{{ old('country', $user->country ?? '') }}";
+            window.old_state = "{{ old('state', $user->state ?? '') }}";
+            window.old_city = "{{ old('city', $user->city ?? '') }}";
 
-        $.get("{{ route('admin.users.countries') }}", function (countries) {
+            $.get("{{ route('admin.users.countries') }}", function (countries) {
 
-            if (countryFieldActive) {
                 $('#country').append(
                     countries.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
                 );
-                if (window.oldCountry) {
-                    $('#country').val(window.oldCountry);
+
+                if (window.old_country) {
+                    $('#country').val(window.old_country);
                 }
-            }
 
-            const countryName = countryFieldActive ? (window.oldCountry || '') : 'India';
-            const matchedCountry = countries.find(c => c.name === countryName);
+                const selected_country = countries.find(c => c.name === window.old_country);
 
-            if (matchedCountry) {
-                loadStates(matchedCountry.id);
-            }
-        });
+                if (selected_country) {
+                    load_states(selected_country.id);
+                }
+            });
 
-        function loadStates(countryId) {
-            $.get(`/get-states/${countryId}`, function (states) {
+            function load_states(country_id) {
 
-                if (stateFieldActive) {
+                $.get(`/get-states/${country_id}`, function (states) {
+
                     $('#state').html('<option value="">Select State</option>').append(
                         states.map(s => `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`)
                     );
-                    if (window.oldState) {
-                        $('#state').val(window.oldState);
+
+                    if (window.old_state) {
+                        $('#state').val(window.old_state);
                     }
-                }
 
-                const stateName = stateFieldActive ? (window.oldState || '') : 'Gujarat';
-                const matchedState = states.find(s => s.name === stateName);
+                    const selected_state = states.find(s => s.name === window.old_state);
 
-                if (matchedState) {
-                    loadCities(matchedState.id);
-                }
-            });
-        }
+                    if (selected_state) {
+                        load_cities(selected_state.id);
+                    }
+                });
+            }
 
-        function loadCities(stateId) {
-            if (!cityFieldActive) return;
+            function load_cities(state_id) {
 
-            $.get(`/get-cities/${stateId}`, function (cities) {
-                $('#city').html('<option value="">Select City</option>').append(
-                    cities.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
-                );
-                if (window.oldCity) {
-                    $('#city').val(window.oldCity);
-                    window.oldCity = null;
-                }
-            });
-        }
+                $.get(`/get-cities/${state_id}`, function (cities) {
 
-        if (countryFieldActive) {
+                    $('#city').html('<option value="">Select City</option>').append(
+                        cities.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
+                    );
+
+                    if (window.old_city) {
+                        $('#city').val(window.old_city);
+                    }
+                });
+            }
+
             $('#country').on('change', function () {
-                const countryId = $(this).find('option:selected').data('id');
-                if (stateFieldActive) $('#state').html('<option value="">Select State</option>');
-                if (cityFieldActive) $('#city').html('<option value="">Select City</option>');
-                if (!countryId) return;
-                loadStates(countryId);
-            });
-        }
+                const country_id = $(this).find(':selected').data('id');
 
-        if (stateFieldActive) {
+                $('#state').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+
+                if (country_id) load_states(country_id);
+            });
+
             $('#state').on('change', function () {
-                const stateId = $(this).find('option:selected').data('id');
-                if (cityFieldActive) $('#city').html('<option value="">Select City</option>');
-                if (!stateId) return;
-                loadCities(stateId);
-            });
-        }
+                const state_id = $(this).find(':selected').data('id');
 
+                $('#city').html('<option value="">Select City</option>');
+
+                if (state_id) load_cities(state_id);
+            });
+
+        });
     </script>
 @endpush
