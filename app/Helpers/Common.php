@@ -97,61 +97,11 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.user.index', 'admin.user.add_edit_form']
             ],
             [
-                'route' => '#',
-                'name' => 'General Settings',
-                'icon' => 'bi bi-gear',
-                'child' => [
-                    [
-                        'route' => route('admin.settings'),
-                        'name' => 'Site Settings',
-                        'icon' => 'bi bi-sliders',
-                        'all_routes' => ['admin.settings']
-                    ],
-                    [
-                        'route' => route('admin.banners'),
-                        'name' => 'Banners',
-                        'icon' => 'bi bi-image',
-                        'all_routes' => ['admin.banners', 'admin.banner.add_edit_form']
-                    ],
-                    [
-                        'route' => route('admin.speakers'),
-                        'name' => 'Speakers',
-                        'icon' => 'bi bi-mic',
-                        'all_routes' => ['admin.speakers', 'admin.speaker.add_edit_form']
-                    ],
-                    [
-                        'route' => route('admin.brand'),
-                        'name' => 'Brands',
-                        'icon' => 'bi bi-tags',
-                        'all_routes' => ['admin.brand', 'admin.brand.add_edit_form']
-                    ],
-                    [
-                        'route' => route('admin.content'),
-                        'name' => 'Content',
-                        'icon' => 'bi bi-file-text',
-                        'all_routes' => ['admin.content', 'admin.content.add_edit_form']
-                    ],
-                ],
-                'all_routes' => [
-                    'admin.settings', 'admin.banners', 'admin.banner.add_edit_form',
-                    'admin.speakers', 'admin.speaker.add_edit_form',
-                    'admin.brand', 'admin.brand.add_edit_form',
-                    'admin.content', 'admin.content.add_edit_form'
-                ]
-            ],
-            [
                 'route' => route('admin.dynamic-fields'),
                 'name' => 'Dynamic Fields',
                 'icon' => 'bi bi-sliders',
                 'child' => [],
                 'all_routes' => ['admin.dynamic-fields', 'admin.dynamic-fields.store']
-            ],
-            [
-                'route' => route('admin.home_setting'),
-                'name' => 'Home Settings',
-                'icon' => 'bi bi-gear',
-                'child' => [],
-                'all_routes' => ['admin.home_setting', 'admin.home_setting.create']
             ],
             [
                 'route' => route('admin.user_attendance'),
@@ -202,6 +152,160 @@ function getModules($user_type = 'admin'): array
                 'child' => [],
                 'all_routes' => ['admin.certificate-log']
             ],
+            [
+                'route' => '#',
+                'name' => 'General Settings',
+                'icon' => 'bi bi-gear',
+                'child' => [
+                    [
+                        'route' => route('admin.settings'),
+                        'name' => 'Site Settings',
+                        'icon' => 'bi bi-sliders',
+                        'all_routes' => ['admin.settings']
+                    ],
+                    [
+                        'route' => route('admin.banners'),
+                        'name' => 'Banners',
+                        'icon' => 'bi bi-image',
+                        'all_routes' => ['admin.banners', 'admin.banner.add_edit_form']
+                    ],
+                    [
+                        'route' => route('admin.speakers'),
+                        'name' => 'Speakers',
+                        'icon' => 'bi bi-mic',
+                        'all_routes' => ['admin.speakers', 'admin.speaker.add_edit_form']
+                    ],
+                    [
+                        'route' => route('admin.brand'),
+                        'name' => 'Brands',
+                        'icon' => 'bi bi-tags',
+                        'all_routes' => ['admin.brand', 'admin.brand.add_edit_form']
+                    ],
+                    [
+                        'route' => route('admin.content'),
+                        'name' => 'Content',
+                        'icon' => 'bi bi-file-text',
+                        'all_routes' => ['admin.content', 'admin.content.add_edit_form']
+                    ],
+                ],
+                'all_routes' => [
+                    'admin.settings', 'admin.banners', 'admin.banner.add_edit_form',
+                    'admin.speakers', 'admin.speaker.add_edit_form',
+                    'admin.brand', 'admin.brand.add_edit_form',
+                    'admin.content', 'admin.content.add_edit_form'
+                ]
+            ],
+
+        ];
+    } else {
+        $module = [
+            [
+                'route' => route('admin.dashboard'),
+                'name' => 'Dashboard',
+                'icon' => 'bi bi-grid fs-3',
+                'child' => [],
+                'all_routes' => ['admin.dashboard']
+            ],
+            [
+                'route' => route('admin.user.index'),
+                'name' => 'Users',
+                'icon' => 'bi bi-people fs-3',
+                'child' => [],
+                'all_routes' => ['admin.user.index', 'admin.user.add_edit_form']
+            ],
+            [
+                'route' => route('admin.dynamic-fields'),
+                'name' => 'Dynamic Fields',
+                'icon' => 'bi bi-sliders',
+                'child' => [],
+                'all_routes' => ['admin.dynamic-fields', 'admin.dynamic-fields.store']
+            ],
+            [
+                'route' => route('admin.user_attendance'),
+                'name' => 'User Attendance',
+                'icon' => 'bi-calendar-check',
+                'child' => [],
+                'all_routes' => ['admin.user_attendance']
+            ],
+            [
+                'route' => route('admin.feedback.index'),
+                'name' => 'Feedback',
+                'icon' => 'bi-star',
+                'child' => [],
+                'all_routes' => ['admin.feedback.index']
+            ],
+            [
+                'route' => route('admin.poll'),
+                'name' => 'Polls',
+                'icon' => 'bi-bar-chart',
+                'child' => [],
+                'all_routes' => ['admin.poll', 'admin.poll.add_edit_form']
+            ],
+            [
+                'route' => route('admin.user_quiz_result'),
+                'name' => 'User Quiz Answers',
+                'icon' => 'bi-patch-question',
+                'child' => [],
+                'all_routes' => ['admin.user_quiz_result']
+            ],
+            [
+                'route' => route('admin.chat_log'),
+                'name' => 'Chat Log',
+                'icon' => 'bi-chat-dots',
+                'child' => [],
+                'all_routes' => ['admin.chat_log']
+            ],
+            [
+                'route' => route('admin.certificate'),
+                'name' => 'Certificate',
+                'icon' => 'bi-award',
+                'child' => [],
+                'all_routes' => ['admin.certificate', 'admin.certificate.add_edit_form']
+            ],
+            [
+                'route' => route('admin.certificate-log'),
+                'name' => 'Certificate Log',
+                'icon' => 'bi-journal-text',
+                'child' => [],
+                'all_routes' => ['admin.certificate-log']
+            ],
+            [
+                'route' => '#',
+                'name' => 'General Settings',
+                'icon' => 'bi bi-gear',
+                'child' => [
+                    [
+                        'route' => route('admin.settings'),
+                        'name' => 'Site Settings',
+                        'icon' => 'bi bi-sliders',
+                        'all_routes' => ['admin.settings']
+                    ],
+                    [
+                        'route' => route('admin.banners'),
+                        'name' => 'Banners',
+                        'icon' => 'bi bi-image',
+                        'all_routes' => ['admin.banners', 'admin.banner.add_edit_form']
+                    ],
+                    [
+                        'route' => route('admin.speakers'),
+                        'name' => 'Speakers',
+                        'icon' => 'bi bi-mic',
+                        'all_routes' => ['admin.speakers', 'admin.speaker.add_edit_form']
+                    ],
+                    [
+                        'route' => route('admin.brand'),
+                        'name' => 'Brands',
+                        'icon' => 'bi bi-tags',
+                        'all_routes' => ['admin.brand', 'admin.brand.add_edit_form']
+                    ]
+                ],
+                'all_routes' => [
+                    'admin.banners', 'admin.banner.add_edit_form',
+                    'admin.speakers', 'admin.speaker.add_edit_form',
+                    'admin.brand', 'admin.brand.add_edit_form'
+                ]
+            ],
+
         ];
     }
 

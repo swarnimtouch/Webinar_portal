@@ -93,6 +93,7 @@ class EventsController
         if ($isDynamicFieldsExist == 0) {
             foreach (get_dynamic_fields() as $key => $fields) {
                 $fields['event_id'] = $event->id;
+                $fields['is_required'] = 1;
                 $fields['created_at'] = now();
                 $fields['updated_at'] = now();
                 DynamicFields::insert($fields);
