@@ -395,7 +395,6 @@
                 if (statusEl) statusEl.value = '';
                 eventTable.draw();
             });
-        $('.image-link').viewbox();
         KTUtil.onDOMContentLoaded(() => initEventTable());
     </script>
 @endpush
