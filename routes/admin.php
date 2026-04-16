@@ -20,7 +20,8 @@ use App\Http\Controllers\Admin\{
     ChatLogController,
     CertificateController,
     CertificateLogController,
-    EventsController
+    EventsController,
+    SubAdminController
 };
 
 /*
@@ -59,6 +60,20 @@ Route::middleware(['auth:admin'])->group(function () {
     });
 
     /*
+    | Sub Admin
+    */
+    Route::controller(SubAdminController::class)->group(function () {
+        Route::get('sub-admin', 'index')->name('sub_admin');
+        Route::get('sub-admin/add-edit/{id?}', 'addEditForm')->name('sub_admin.add_edit_form');
+        Route::match(['POST', 'PUT'], 'sub-admin/save/{id?}', 'save')->name('sub_admin.save');
+        Route::delete('sub-admin/delete/{id}', 'delete')->name('sub_admin.delete');
+
+        Route::post('sub-admin/delete-multiple', 'deleteMultiple')->name('sub_admin.deleteMultiple');
+        Route::post('sub-admin/toggle-status/{id}', 'toggleStatus')->name('sub_admin.toggleStatus');
+        Route::get('sub-admin/datatable', 'datatable')->name('sub_admin.datatable');
+    });
+
+    /*
     | Users
     */
     Route::controller(UserController::class)->group(function () {
@@ -84,6 +99,8 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::post('/profile/update', 'update')->name('profile.update');
         Route::get('/password', 'password')->name('password');
         Route::post('/password/update', 'updatePassword')->name('password.update');
+        Route::post('check-email-exists', 'checkEmailExists')->name('check-email-exists');
+        Route::post('check-mobile-exists', 'checkMobileExists')->name('check-mobile-exists');
     });
 
     /*

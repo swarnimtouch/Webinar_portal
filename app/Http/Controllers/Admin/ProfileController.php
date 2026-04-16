@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -83,6 +84,38 @@ class ProfileController extends Controller
             ->with('success', 'Password updated successfully');
     }
 
+    public function checkEmailExists(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
 
+        $exists = User::where('email', $request->email)
+            ->when($request->id, function ($query) use ($request) {
+                $query->where('id', '!=', $request->id);
+            })
+            ->exists();
+
+        return response()->json([
+            'valid' => !$exists
+        ]);
+    }
+
+    public function checkMobileExists(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required'
+        ]);
+
+        $exists = User::where('mobile', $request->mobile)
+            ->when($request->id, function ($query) use ($request) {
+                $query->where('id', '!=', $request->id);
+            })
+            ->exists();
+
+        return response()->json([
+            'valid' => !$exists
+        ]);
+    }
 }
 

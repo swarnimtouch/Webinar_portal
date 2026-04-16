@@ -24,4 +24,9 @@ class Events extends Model
     {
         return !empty($value) ? asset('storage/events/' . $value) : asset('assets/media/no_image.png');
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
 }

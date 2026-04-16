@@ -78,9 +78,16 @@ function getModules($user_type = 'admin'): array
             [
                 'route' => route('admin.events'),
                 'name' => 'Events',
-                'icon' => 'bi bi-gear',
+                'icon' => 'bi bi-calendar-event',
                 'child' => [],
                 'all_routes' => ['admin.events', 'admin.events.add_edit_form']
+            ],
+            [
+                'route' => route('admin.sub_admin'),
+                'name' => 'Sub Admin',
+                'icon' => 'bi bi-person-x-fill',
+                'child' => [],
+                'all_routes' => ['admin.sub_admin', 'admin.sub_admin.add_edit_form']
             ],
             [
                 'route' => route('admin.user.index'),
