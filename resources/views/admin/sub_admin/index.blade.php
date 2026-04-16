@@ -139,9 +139,7 @@
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
         let subAdminTable;
-        @if(session('success'))
-        toastr.success("{{ session('success') }}");
-        @endif
+        
         function initSubAdminTable() {
             subAdminTable = $('#kt_table_sub_admin').DataTable({
                 processing: true,
