@@ -3,7 +3,7 @@
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
-                
+
                 <div class="card">
                     <div class="card-header border-0 pt-6">
                         <div class="card-title">
@@ -133,11 +133,14 @@
                             data: 'media_url',
                             orderable: false,
                             searchable: false,
-                            render: data => `
-                        <div class="banner-preview" data-url="${data}"
-                             style="width:80px;height:80px;cursor:pointer;">
-                            <img src="${data}" style="width:100%;height:100%;object-fit:cover;">
-                        </div>`
+                            render: data =>
+                                data
+                                    ? `<a href="${data}" class="image-link">
+                                   <img src="${data}" width="50" height="50"
+                                        style="object-fit:contain;border-radius:4px;background:#f5f8fa;"
+                                        alt="Speaker">
+                               </a>`
+                                    : '<span class="text-muted">—</span>'
                         },
                         {data: 'name'},
                         {data: 'line1'},
@@ -180,7 +183,7 @@
                                         menu-column menu-rounded menu-gray-600
                                         menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
                                 <div class="menu-item px-3">
-                                    <a href="#" class="menu-link px-3 banner-delete" data-id="${id}">
+                                    <a href="#" class="menu-link px-3 speaker-delete" data-id="${id}">
                                         Delete
                                     </a>
                                 </div>
@@ -398,34 +401,13 @@
             };
 
             document.addEventListener('click', function (e) {
-                const preview = e.target.closest('.banner-preview');
-                if (preview) {
-                    showBannerPreview(preview.dataset.url);
-                }
-
-                const del = e.target.closest('.banner-delete');
+                const del = e.target.closest('.speaker-delete');
                 if (del) {
                     e.preventDefault();
                     confirmDelete(del.dataset.id);
                 }
             });
 
-            function showBannerPreview(fileUrl) {
-                const modal = new bootstrap.Modal(document.getElementById('bannerPreviewModal'));
-                const modalTitle = document.getElementById('bannerPreviewTitle');
-                const modalBody = document.getElementById('bannerPreviewBody');
-
-                modalTitle.textContent = 'Speaker Photo';
-                modalBody.innerHTML = '';
-
-                const img = document.createElement('img');
-                img.src = fileUrl;
-                img.className = 'img-fluid rounded';
-                img.style.maxHeight = '70vh';
-                modalBody.appendChild(img);
-
-                modal.show();
-            }
 
             return {
                 init: function () {
@@ -441,6 +423,10 @@
 
         KTUtil.onDOMContentLoaded(function () {
             KTSpeakersList.init();
+            $('#kt_table_speakers').on('draw.dt', function () {
+                $('.image-link').viewbox();
+            });
+
         });
     </script>
 @endpush

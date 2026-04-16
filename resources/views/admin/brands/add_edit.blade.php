@@ -69,11 +69,13 @@
                                     <div class="col-lg-8">
                                         <!--begin::Image input-->
                                         <div class="image-input image-input-outline" data-kt-image-input="true"
-                                             style="background-image: url('{{ asset('assets/media/avatars/blank.png') }}')">
+                                             style="background-image: url('{{ asset('assets/media/no_image.png') }}')"
+                                        >
 
                                             <!--begin::Preview-->
                                             <div class="image-input-wrapper w-125px h-125px" id="brandImagePreview"
-                                                 style="background-image: url('{{ $brand->filename && $brand->type === 'image' ? asset('storage/brands/'.$brand->filename) : asset('assets/media/avatars/blank.png') }}')">
+                                                 style="background-image: url('{{ $brand->filename && $brand->type === 'image' ? asset('storage/brands/'.$brand->filename) : asset('assets/media/no_image.png') }}')"
+                                            >
                                             </div>
                                             <!--end::Preview-->
 
@@ -146,10 +148,11 @@
 
                     let form, submitBtn, validator;
                     const isEdit = {{ $brand->exists ? 'true' : 'false' }};
-                    const blankImage = "{{ asset('assets/media/avatars/blank.png') }}";
+                    const blankImage = "{{ asset('assets/media/no_image.png') }}";
                     const originalImage = "{{ $brand->filename && $brand->type === 'image'
-                    ? asset('storage/brands/'.$brand->filename)
-                    : asset('assets/media/avatars/blank.png') }}";
+                        ? asset('storage/brands/'.$brand->filename)
+                        : asset('assets/media/no_image.png') }}";
+
 
                     let fileRemoved = false;
 

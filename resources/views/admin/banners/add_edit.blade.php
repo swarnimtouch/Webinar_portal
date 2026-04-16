@@ -97,11 +97,13 @@
                                 <div class="col-lg-8">
                                     <!--begin::Image input-->
                                     <div class="image-input image-input-outline" data-kt-image-input="true"
-                                         style="background-image: url('{{ asset('assets/media/avatars/blank.png') }}')">
+                                         style="background-image: url('{{ asset('assets/media/no_image.png') }}')"
+                                    >
 
                                         <!--begin::Preview existing/new image-->
                                         <div class="image-input-wrapper w-125px h-125px" id="bannerImagePreview"
-                                             style="background-image: url('{{ $banner->media_url }}')">
+                                             style="background-image: url('{{ $banner->filename && $banner->type === 'image' ? asset('storage/banners/'.$banner->filename) : asset('assets/media/no_image.png') }}')"
+                                        >
                                         </div>
                                         <!--end::Preview existing/new image-->
 
@@ -244,10 +246,10 @@
                     let imageRemoved = false;
                     let videoRemoved = false;
 
-                    const blankImage = "{{ asset('assets/media/avatars/blank.png') }}";
-                    const originalImage = "{{ $banner->type === 'image' && $banner->filename
+                    const blankImage = "{{ asset('assets/media/no_image.png') }}";
+                    const originalImage = "{{ $banner->filename && $banner->type === 'image'
                     ? asset('storage/banners/'.$banner->filename)
-                    : asset('assets/media/avatars/blank.png') }}";
+                    : asset('assets/media/no_image.png') }}";
 
 
                     const showImageSection = () => {

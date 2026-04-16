@@ -252,18 +252,12 @@
                     url: '{{ route("admin.events.delete", ":id") }}'.replace(':id', id),
                     method: 'DELETE',
                     data: {_token: '{{ csrf_token() }}'},
-                    success: function () {
+                    success: function (data) {
                         eventTable.draw(false);
-                        toastr.success('Event deleted successfully!');
+                        toastr.success(data.message);
                     },
-                    error: function () {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Could not delete the event. Please try again.',
-                            confirmButtonText: 'OK'
-                        });
-                    }
+                    error: xhr => toastr.error(xhr.responseJSON?.message ?? 'Delete failed.')
+
                 });
             });
         }
@@ -295,16 +289,12 @@
                     url: '{{ route("admin.events.toggleStatus", ":id") }}'.replace(':id', id),
                     method: 'POST',
                     data: {_token: '{{ csrf_token() }}', status},
-                    success: function () {
-                        toastr.success('Status updated successfully!');
+                    success: function (data) {
+                        toastr.success(data.message);
                     },
-                    error: function () {
+                    error: xhr => {
                         checkbox.checked = !checkbox.checked;
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Could not update status. Please try again.'
-                        });
+                        toastr.error(xhr.responseJSON?.message ?? 'Error updating status.');
                     }
                 });
             });
@@ -374,11 +364,14 @@
                     })
                         .then(res => {
                             if (!res.ok) throw new Error();
-                            toastr.success('Selected events deleted successfully.');
+                            return res.json();
+                        })
+                        .then(data => {
+                            toastr.success(data.message || "Success!");
                             eventTable.draw(false);
                         })
                         .catch(() => {
-                            Swal.fire({icon: 'error', text: 'Failed to delete events. Please try again.'});
+                            toastr.error("Something went wrong!");
                         });
                 });
             });
