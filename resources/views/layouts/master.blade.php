@@ -19,6 +19,7 @@
     <!--begin::Global Stylesheets Bundle(used by all pages)-->
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css"/>
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="{{asset('assets/css/viewbox.css')}}">
     <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css"/>
     <!--end::Global Stylesheets Bundle-->
 
@@ -37,7 +38,21 @@
 <script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
 <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
 <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+<script src="{{asset('assets/js/viewbox.min.js')}}"></script>
+<script type="application/javascript">
+    $(document).on('click', '.image-link', function (e) {
+        e.preventDefault();
+        if (!$(this).data('viewbox-initialized')) {
+            $(this).viewbox({
+                margin: 150,
+                closeButton: true
+            });
+            $(this).data('viewbox-initialized', true);
+        }
 
+        $(this).trigger('click');
+    });
+</script>
 @stack('scripts')
 </body>
 </html>

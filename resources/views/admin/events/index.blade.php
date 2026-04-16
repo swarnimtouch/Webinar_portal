@@ -155,7 +155,7 @@
                         d.status = qs('[data-kt-user-table-filter="status"]')?.value ?? '';
                     }
                 },
-                order: [[1, 'desc']],
+                order: [[3, 'desc']],
                 pageLength: 10,
                 columns: [
                     {data: null, orderable: false, defaultContent: ''},
@@ -170,18 +170,15 @@
                         data: 'logo', orderable: false,
                         render: (data, type, row) =>
                             data
-                                ? `<img src="${data}" width="50" height="50"
+                                ? `<a href="${data}" class="image-link"><img src="${data}" width="50" height="50"
                                style="object-fit:contain;border-radius:4px;background:#f5f8fa;"
-                               alt="Logo">`
+                               alt="Logo"></a>`
                                 : '<span class="text-muted">—</span>'
                     },
-
                     {data: 'name'},
                     {data: 'domain'},
                     {data: 'email'},
                     {data: 'phone'},
-
-                    // Status toggle
                     {
                         data: 'status', orderable: false,
                         render: (data, type, row) =>
@@ -192,8 +189,6 @@
                                ${row.status === 'active' ? 'checked' : ''}>
                     </div>`
                     },
-
-                    // Actions dropdown
                     {
                         data: 'id', orderable: false, searchable: false,
                         render: id =>
@@ -226,19 +221,17 @@
             });
         }
 
-        // ─── FIX: Delegated click listener for dynamically rendered delete links ────
         document.addEventListener('click', function (e) {
             const link = e.target.closest('.event-delete');
             if (!link) return;
 
             e.preventDefault();
-            e.stopPropagation(); // prevent dropdown re-opening
+            e.stopPropagation();
 
             const id = link.dataset.id;
             confirmDelete(id);
         });
 
-        // ─── Single delete ────────────────────────────────────────────────────────────
         function confirmDelete(id) {
             Swal.fire({
                 title: 'Delete Event?',
@@ -275,7 +268,6 @@
             });
         }
 
-        // ─── Status toggle ────────────────────────────────────────────────────────────
         document.addEventListener('change', function (e) {
             if (!e.target.classList.contains('event-status-toggle')) return;
 
@@ -307,7 +299,7 @@
                         toastr.success('Status updated successfully!');
                     },
                     error: function () {
-                        checkbox.checked = !checkbox.checked; // revert on error
+                        checkbox.checked = !checkbox.checked;
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
@@ -318,14 +310,12 @@
             });
         });
 
-        // ─── Select-all checkbox ──────────────────────────────────────────────────────
         document.addEventListener('change', function (e) {
             if (!e.target.matches('[data-kt-check="true"]')) return;
             qsa('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
             updateToolbar();
         });
 
-        // ─── Per-row checkbox ─────────────────────────────────────────────────────────
         document.addEventListener('change', function (e) {
             if (!e.target.classList.contains('row-checkbox')) return;
             updateToolbar();
@@ -347,11 +337,9 @@
                 countEl.textContent = '';
             }
 
-            // Disable individual status toggles when multiple rows selected
             qsa('.event-status-toggle').forEach(t => t.disabled = selectedCount > 1);
         }
 
-        // ─── Bulk delete ──────────────────────────────────────────────────────────────
         qs('[data-kt-user-table-select="delete_selected"]')
             ?.addEventListener('click', () => {
                 const ids = qsa('.row-checkbox:checked').map(cb => cb.value);
@@ -395,7 +383,6 @@
                 });
             });
 
-        // ─── Search & filter wiring ───────────────────────────────────────────────────
         qs('[data-kt-user-table-filter="search"]')
             .addEventListener('keyup', () => eventTable.draw());
 
@@ -408,8 +395,7 @@
                 if (statusEl) statusEl.value = '';
                 eventTable.draw();
             });
-
-        // ─── Init ─────────────────────────────────────────────────────────────────────
+        $('.image-link').viewbox();
         KTUtil.onDOMContentLoaded(() => initEventTable());
     </script>
 @endpush
