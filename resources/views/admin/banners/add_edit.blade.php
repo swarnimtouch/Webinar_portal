@@ -52,7 +52,29 @@
                             <input type="hidden" name="current_type" id="current_type"
                                    value="{{ $banner->type ?? '' }}">
 
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
+                                <div class="col-lg-8">
+                                    <select name="event_id" id="event_id"
+                                            class="form-select form-select-solid form-select-lg"
+                                            data-control="select2" data-placeholder="Select a Event "
+                                            data-hide-search="true">
+                                        <option value="Select Event " disabled>
+                                            Select Event
+                                        </option>
+                                        <option value="" disabled selected>Select Event</option>
 
+                                        @foreach($events as $event)
+                                            <option value="{{ $event->id }}"
+                                                {{ old('event_id', $banner->event_id ?? '') == $event->id ? 'selected' : '' }}>
+                                                {{ $event->name }}
+                                            </option>
+                                        @endforeach
+
+
+                                    </select>
+                                </div>
+                            </div>
                             <!-- Title -->
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Title</label>
@@ -63,6 +85,8 @@
                                            placeholder="Enter banner title"/>
                                 </div>
                             </div>
+
+                            <!-- Banner Type -->
 
                             <!-- Banner Type -->
                             <div class="row mb-6">
@@ -309,6 +333,11 @@
                                 title: {
                                     validators: {
                                         notEmpty: {message: 'Title is required'}
+                                    }
+                                },
+                                event_id: {
+                                    validators: {
+                                        notEmpty: {message: 'Event  is required'}
                                     }
                                 },
                                 type: {

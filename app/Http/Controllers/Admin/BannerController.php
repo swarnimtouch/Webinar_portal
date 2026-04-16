@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Banner;
+use App\Models\Events;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -17,9 +18,11 @@ class BannerController extends Controller
     public function addEditForm($id = null)
     {
         $banner = $id ? Banner::findOrFail($id) : new Banner();
+        $events = Events::get();
 
         $response = [
             'banner' => $banner,
+            'events' => $events,
             'title' => __('Banner'),
             'breadcrumb' => breadcrumb([__('Banners') => route('admin.banners'), ($id ? 'Edit' : 'Add' . ' Banner') => '']),
         ];
@@ -36,6 +39,8 @@ class BannerController extends Controller
                 'required',
                 Rule::in(['image', 'video']),
             ],
+            'event_id' => 'required|exists:events,id',
+
             'image_file' => [
                 Rule::requiredIf(fn() => !$id && $request->type === 'image'),
                 Rule::when($request->type === 'image', [
@@ -58,6 +63,7 @@ class BannerController extends Controller
 
         $banner->title = $request->title ?? null;
         $banner->type = $request->type ?? 'image';
+        $banner->event_id = $request->event_id;
 
         if ($request->type === 'image' && $request->hasFile('image_file')) {
 
@@ -138,12 +144,16 @@ class BannerController extends Controller
 
     public function datatable(Request $request)
     {
-        $query = Banner::query();
+        $query = Banner::with('event');
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('type', 'like', "%{$search}%");
+                    ->orWhere('type', 'like', "%{$search}%")
+                    ->orWhereHas('event', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    });
+
             });
         }
         if ($request->has('type') && !empty($request->type)) {
@@ -178,6 +188,7 @@ class BannerController extends Controller
             return [
                 'id' => $banner->id,
                 'title' => $banner->title,
+                'event' => $banner->event->name ?? '-',
                 'media_url' => $banner->media_url,
                 'created_at' => $banner->created_at->format('d M Y'),
                 'status' => $banner->status,

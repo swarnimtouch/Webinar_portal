@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Banner;
+use App\Models\Events;
 use App\Models\Speakers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -23,9 +24,10 @@ class SpeakersController extends Controller
     public function addEditForm($id = null)
     {
         $speaker = $id ? Speakers::findOrFail($id) : null;
-
+        $events = Events::get();
         $response = [
             'speaker' => $speaker,
+            'events' => $events,
             'title' => __('Speakers'),
             'breadcrumb' => breadcrumb([__('Speakers') => route('admin.speakers'), ($id ? 'Edit' : 'Add' . ' Speakers') => '']),
         ];
@@ -41,6 +43,7 @@ class SpeakersController extends Controller
     {
         $speaker = $id ? Speakers::findOrFail($id) : new Speakers();
         $validated = $request->validate([
+            'event_id' => 'required|exists:events,id',
             'name' => 'required|string|max:255',
             'line1' => 'required|string|max:255',
             'filename' => $id
@@ -48,6 +51,7 @@ class SpeakersController extends Controller
                 : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
             'status' => 'required|in:active,inactive'
         ]);
+        $speaker->event_id = $request->event_id;
         $speaker->name = $request->name;
         $speaker->line1 = $request->line1;
         $speaker->line2 = $request->line2;
@@ -130,7 +134,7 @@ class SpeakersController extends Controller
 
     public function datatable(Request $request)
     {
-        $query = Speakers::query();
+        $query = Speakers::with('event');
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -138,7 +142,10 @@ class SpeakersController extends Controller
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('line1', 'like', "%{$search}%")
                     ->orWhere('line2', 'like', "%{$search}%")
-                    ->orWhere('line3', 'like', "%{$search}%");
+                    ->orWhere('line3', 'like', "%{$search}%")
+                    ->orWherehas('event', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -169,6 +176,7 @@ class SpeakersController extends Controller
         $data = $speakers->map(function ($speaker) {
             return [
                 'id' => $speaker->id,
+                'event' => $speaker->event->name ?? '-',
                 'name' => $speaker->name,
                 'media_url' => $speaker->media_url,
                 'line1' => $speaker->line1,

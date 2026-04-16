@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Brands;
+use App\Models\Events;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -27,9 +28,10 @@ class BrandsController extends Controller
     public function addEditForm($id = null)
     {
         $brand = $id ? Brands::findOrFail($id) : new Brands();
-
+        $events = Events::get();
         $response = [
             'brand' => $brand,
+            'events' => $events,
             'title' => __('Brand'),
             'breadcrumb' => breadcrumb([__('Brands') => route('admin.brand'), ($id ? 'Edit' : 'Add' . ' Brand') => '']),
         ];
@@ -43,6 +45,7 @@ class BrandsController extends Controller
 
         $rules = [
             'title' => 'required|string|max:255',
+            'event_id' => 'required|exists:events,id',
         ];
 
         if (!$isUpdate) {
@@ -54,6 +57,7 @@ class BrandsController extends Controller
         $request->validate($rules);
 
         $brand->title = $request->title;
+        $brand->event_id = $request->event_id;
         $brand->status = $brand->status ?? 'active';
 
         if ($request->hasFile('filename')) {
@@ -132,11 +136,14 @@ class BrandsController extends Controller
 
     public function datatable(Request $request)
     {
-        $query = Brands::query();
+        $query = Brands::with('event');
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%");
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhereHas('event', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    });
             });
         }
         if ($request->has('type') && !empty($request->type)) {
@@ -171,6 +178,7 @@ class BrandsController extends Controller
             return [
                 'id' => $brand->id,
                 'title' => $brand->title,
+                'event' => $brand->event->name ?? '-',
                 'media_url' => $brand->media_url,
                 'created_at' => $brand->created_at->format('d M Y'),
                 'status' => $brand->status,

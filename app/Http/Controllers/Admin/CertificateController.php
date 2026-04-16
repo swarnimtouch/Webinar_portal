@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Events;
 use Illuminate\Http\Request;
 use App\Models\Certificate;
 use Illuminate\Support\Facades\Validator;
@@ -29,11 +30,13 @@ class CertificateController
     {
         $certificate = $id ? Certificate::findOrFail($id) : new Certificate();
 
+        $events = Events::get();
         $title = $certificate->exists ? __('Edit Certificate') : __('Add Certificate');
 
         return view('admin.certificate.add_edit', [
             'certificate' => $certificate,
             'title' => $title,
+            'events' => $events,
             'breadcrumb' => breadcrumb([
                 __('Certificate') => route('admin.certificate'),
                 $title => ''
@@ -53,6 +56,7 @@ class CertificateController
             'background_image' => $certificate->exists
                 ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
                 : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'event_id' => 'required|exists:events,id',
             'font_file' => 'nullable|file',
             'font_size' => 'required|integer|min:1|max:300',
             'font_color' => 'required|string|max:20',
@@ -84,6 +88,7 @@ class CertificateController
             $certificate->font_file = $fontFile->storeAs('certificates/fonts', $originalName, 'public');
         }
 
+        $certificate->event_id = $request->event_id;
         $certificate->name = $request->name;
         $certificate->font_size = $request->font_size;
         $certificate->font_color = $request->font_color;
@@ -187,14 +192,17 @@ class CertificateController
      */
     public function datatable(Request $request)
     {
-        $query = Certificate::query();
+        $query = Certificate::with('event');
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('font_file', 'like', "%{$search}%")
-                    ->orWhere('font_color', 'like', "%{$search}%");
+                    ->orWhere('font_color', 'like', "%{$search}%")
+                    ->orwherehas('event', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -228,6 +236,7 @@ class CertificateController
             return [
                 'id' => $certificate->id,
                 'name' => $certificate->name,
+                'event' => $certificate->event->name ?? '-',
                 'background_image' => $certificate->background_image
                     ? asset('storage/' . $certificate->background_image)
                     : null,

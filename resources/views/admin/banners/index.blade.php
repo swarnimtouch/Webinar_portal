@@ -162,6 +162,7 @@
                                 </th>
                                 <th>Banner</th>
                                 <th>Title</th>
+                                <th>Event</th>
                                 <th>Created At</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -254,6 +255,7 @@
                            </a>`
                             },
                             {data: 'title'},
+                            {data: 'event'},
                             {data: 'created_at'},
                             {
                                 data: 'status',

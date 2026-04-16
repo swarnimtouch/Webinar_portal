@@ -44,7 +44,29 @@
                             @if($certificate->exists)
                                 @method('PUT')
                             @endif
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
+                                <div class="col-lg-8">
+                                    <select name="event_id" id="event_id"
+                                            class="form-select form-select-solid form-select-lg"
+                                            data-control="select2" data-placeholder="Select a Event "
+                                            data-hide-search="true">
+                                        <option value="Select Event " disabled>
+                                            Select Event
+                                        </option>
+                                        <option value="" disabled selected>Select Event</option>
 
+                                        @foreach($events as $event)
+                                            <option value="{{ $event->id }}"
+                                                {{ old('event_id', $certificate->event_id ?? '') == $event->id ? 'selected' : '' }}>
+                                                {{ $event->name }}
+                                            </option>
+                                        @endforeach
+
+
+                                    </select>
+                                </div>
+                            </div>
                             <!-- Name -->
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Certificate Name</label>
@@ -81,7 +103,9 @@
 
                             <!-- Font File -->
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label fw-bold fs-6">Font File</label>
+                                <label
+                                    class="col-lg-4 col-form-label {{ $certificate->exists ? '' : 'required' }} fw-bold fs-6">Font
+                                    File</label>
                                 <div class="col-lg-8">
                                     @if($certificate->exists && $certificate->font_file)
                                         <div class="mb-3">
@@ -235,6 +259,35 @@
                             validators: {
                                 notEmpty: {message: 'Certificate name is required'},
                                 stringLength: {min: 2, max: 255, message: 'Name must be between 2 and 255 characters'}
+                            }
+                        },
+                        event_id: {
+                            validators: {
+                                notEmpty: {message: 'Event  is required'}
+                            }
+                        },
+                        background_image: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Background image is required'
+                                },
+                                file: {
+                                    extension: 'jpg,jpeg,png,webp',
+                                    type: 'image/jpeg,image/png,image/webp',
+                                    maxSize: 5242880,
+                                    message: 'Invalid image (max 5MB)'
+                                }
+                            }
+                        },
+                        font_file: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Font File image is required'
+                                },
+                                file: {
+                                    extension: 'ttf,otf,woff,woff2',
+                                    type: '\.ttf|\.otf|\.woff|\.woff2',
+                                }
                             }
                         },
                         font_size: {

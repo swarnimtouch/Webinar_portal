@@ -45,6 +45,29 @@
                                    value="{{ isset($speaker) && $speaker->filename ? '1' : '0' }}">
 
                             <div class="card-body border-top p-9">
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
+                                    <div class="col-lg-8">
+                                        <select name="event_id" id="event_id"
+                                                class="form-select form-select-solid form-select-lg"
+                                                data-control="select2" data-placeholder="Select a Event "
+                                                data-hide-search="true">
+                                            <option value="Select Event " disabled>
+                                                Select Event
+                                            </option>
+                                            <option value="" disabled selected>Select Event</option>
+
+                                            @foreach($events as $event)
+                                                <option value="{{ $event->id }}"
+                                                    {{ old('event_id', $speaker->event_id ?? '') == $event->id ? 'selected' : '' }}>
+                                                    {{ $event->name }}
+                                                </option>
+                                            @endforeach
+
+
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="row mb-6" id="imageUploadSection">
                                     <label class="col-lg-4 col-form-label required fw-bold fs-6">Image</label>
                                     <div class="col-lg-8">
@@ -181,6 +204,11 @@
                                 name: {
                                     validators: {
                                         notEmpty: {message: 'Name is required'}
+                                    }
+                                },
+                                event_id: {
+                                    validators: {
+                                        notEmpty: {message: 'Event is required'}
                                     }
                                 },
                                 line1: {

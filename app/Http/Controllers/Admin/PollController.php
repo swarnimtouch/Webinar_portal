@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Events;
 use App\Models\Poll;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -29,10 +30,13 @@ class PollController
     {
         $poll = $id ? Poll::findOrFail($id) : new Poll();
 
+        $events = Events::get();
+
         $title = $poll->exists ? __('Edit Poll') : __('Add Poll');
 
         return view('admin.poll.add_edit', [
             'poll' => $poll,
+            'events' => $events,
             'title' => $title,
             'breadcrumb' => breadcrumb([
                 __('Poll') => route('admin.poll'),
@@ -49,6 +53,7 @@ class PollController
         $poll = $id ? Poll::findOrFail($id) : new Poll();
 
         $validator = Validator::make($request->all(), [
+            'event_id' => 'required|exists:events,id',
             'question' => 'required|string|min:5|max:500',
             'answers' => 'required|array|min:2|max:10',
             'answers.*' => 'required|string|min:1|max:255',
@@ -78,7 +83,7 @@ class PollController
                 ->withErrors(['answers' => 'Please provide at least 2 answers'])
                 ->withInput();
         }
-
+        $poll->event_id = $request->event_id;
         $poll->question = $request->question;
         $poll->answers = json_encode($answers);
         $poll->status = $request->status;
@@ -169,13 +174,16 @@ class PollController
      */
     public function datatable(Request $request)
     {
-        $query = Poll::query();
+        $query = Poll::with('event');
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('question', 'like', "%{$search}%")
-                    ->orWhere('answers', 'like', "%{$search}%");
+                    ->orWhere('answers', 'like', "%{$search}%")
+                    ->orWherehas('event', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -211,6 +219,7 @@ class PollController
 
             return [
                 'id' => $poll->id,
+                'event' => $poll->event->name ?? '-',
                 'question' => $poll->question,
                 'answers' => $answers,
                 'status' => $poll->status,

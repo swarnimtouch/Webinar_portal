@@ -23,9 +23,14 @@ class Certificate extends Model
 
     protected $casts = [
         'font_size' => 'integer',
-        'is_bold'   => 'boolean',
-        'start_x'   => 'integer',
-        'end_x'     => 'integer',
-        'y'         => 'integer',
+        'is_bold' => 'boolean',
+        'start_x' => 'integer',
+        'end_x' => 'integer',
+        'y' => 'integer',
     ];
+
+    public function event()
+    {
+        return $this->belongsTo(Events::class);
+    }
 }
