@@ -166,22 +166,7 @@
             </div>
             <!--end::Container-->
         </div>
-        <div class="modal fade" id="bannerPreviewModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="bannerPreviewTitle">Brand Preview</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body text-center" id="bannerPreviewBody">
-                        <!-- Preview content will be inserted here -->
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+
         <!--end::Post-->
         @endsection
 
@@ -192,20 +177,10 @@
                 const qs = (s, p = document) => p.querySelector(s);
                 const qsa = (s, p = document) => [...p.querySelectorAll(s)];
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+
                 @if(session('success'))
                 toastr.success("{{ session('success') }}");
                 @endif
-                function openBrandPreview(url) {
-                    const modalEl = qs('#bannerPreviewModal');
-                    const modal = new bootstrap.Modal(modalEl);
-                    const body = qs('#bannerPreviewBody');
-                    const title = qs('#bannerPreviewTitle');
-
-                    title.textContent = 'Brand';
-                    body.innerHTML = `<img src="${url}" class="img-fluid rounded" style="max-height:70vh">`;
-
-                    modal.show();
-                }
 
                 let brandTable;
 
@@ -229,63 +204,61 @@
                                 orderable: false,
                                 searchable: false,
                                 render: id => `
-                                <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                    <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
-                                </div>`
+                <div class="form-check form-check-sm form-check-custom form-check-solid">
+                    <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
+                </div>`
                             },
                             {
                                 data: 'media_url',
-                                render: (data, type, row) => `
-                                <div class="brand-preview"
-                                     data-url="${row.media_url}"
-                                     style="width:80px;height:80px;cursor:pointer;">
-                                    <img src="${row.media_url}" style="width:100%;height:100%;object-fit:cover">
-                                </div>`
+                                render: (data, type, row) =>
+                                    row.media_url
+                                        ? `<a href="${row.media_url}" class="image-link">
+                               <img src="${row.media_url}" width="50" height="50"
+                                    style="object-fit:contain;border-radius:4px;background:#f5f8fa;"
+                                    alt="Brand">
+                           </a>`
+                                        : '<span class="text-muted">—</span>'
                             },
                             {data: 'title'},
                             {data: 'created_at'},
                             {
                                 data: 'status',
                                 render: (data, type, row) => `
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input brand-status-toggle"
-                                           type="checkbox"
-                                           data-id="${row.id}"
-                                           ${row.status === 'active' ? 'checked' : ''}>
-                                </div>`
+                <div class="form-check form-switch">
+                    <input class="form-check-input brand-status-toggle"
+                           type="checkbox"
+                           data-id="${row.id}"
+                           ${row.status === 'active' ? 'checked' : ''}>
+                </div>`
                             },
                             {
                                 data: 'id',
                                 orderable: false,
                                 searchable: false,
-                                render: id => `<div >
-                                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
-                                                        <span class="svg-icon svg-icon-5 m-0">
-                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/> </svg>
-                                                            </span>
-                                                    </a>
-                                                    <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
-                                                        <div class="menu-item px-3">
-                                                            <a href="#" class="menu-link px-3 brand-delete" data-id="${id}"> Delete </a>
-                                                        </div>
-                                                        <div class="menu-item px-3">
-                                                            <a href="{{ route('admin.brand.add_edit_form') }}/${id}" class="menu-link px-3 "> Edit </a>
-                                                        </div>
-                                                    </div>
-                                            </div>`
+                                render: id => `<div>
+                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
+                        Actions
+                        <span class="svg-icon svg-icon-5 m-0">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                        <div class="menu-item px-3">
+                            <a href="#" class="menu-link px-3 brand-delete" data-id="${id}">Delete</a>
+                        </div>
+                        <div class="menu-item px-3">
+                            <a href="{{ route('admin.brand.add_edit_form') }}/${id}" class="menu-link px-3">Edit</a>
+                        </div>
+                    </div>
+                </div>`
                             }
                         ]
                     });
                 }
 
                 document.addEventListener('click', e => {
-                    const preview = e.target.closest('.brand-preview');
-                    if (preview) {
-                        openBrandPreview(preview.dataset.url);
-                        return;
-                    }
-
                     const del = e.target.closest('.brand-delete');
                     if (del) {
                         e.preventDefault();
@@ -315,7 +288,11 @@
                             url: '{{ route("admin.brand.toggleStatus", ":id") }}'.replace(':id', id),
                             method: 'POST',
                             data: {_token: '{{ csrf_token() }}', status},
-                            success: () => toastr.success('Status updated successfully!')
+                            success: data => toastr.success(data.message),
+                            error: xhr => {
+                                checkbox.checked = !checkbox.checked;
+                                toastr.error(xhr.responseJSON?.message ?? 'Error updating status.');
+                            }
                         });
                     });
                 });
@@ -333,13 +310,44 @@
                             url: '{{ route("admin.brand.delete", ":id") }}'.replace(':id', id),
                             method: 'DELETE',
                             data: {_token: '{{ csrf_token() }}'},
-                            success: () => {
-                                brandTable.draw();
-                                toastr.success('Brand has been deleted!');
-                            }
+                            success: data => {
+                                toastr.success(data.message);
+                                brandTable.draw(false);
+                            },
+                            error: xhr => toastr.error(xhr.responseJSON?.message ?? 'Delete failed.')
                         });
                     });
                 }
+
+                qs('[data-kt-user-table-select="delete_selected"]')?.addEventListener('click', () => {
+                    const ids = qsa('.row-checkbox:checked').map(cb => cb.value);
+
+                    if (!ids.length) {
+                        Swal.fire({text: "Please select at least one brand.", icon: "info"});
+                        return;
+                    }
+
+                    Swal.fire({
+                        text: `Delete ${ids.length} selected brand(s)?`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, delete"
+                    }).then(result => {
+                        if (!result.isConfirmed) return;
+
+                        fetch('{{ route("admin.brand.deleteMultiple") }}', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf},
+                            body: JSON.stringify({ids})
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                toastr.success(data.message);
+                                brandTable.draw(false);
+                            })
+                            .catch(() => toastr.error('Delete failed.'));
+                    });
+                });
 
                 qs('[data-kt-user-table-filter="search"]').addEventListener('keyup', () => brandTable.draw());
                 qs('[data-kt-user-table-filter="filter"]').addEventListener('click', () => brandTable.draw());
@@ -374,46 +382,15 @@
                         selected.classList.add('d-none');
                         counter.textContent = '';
                     }
+
+                    qsa('.brand-status-toggle').forEach(t => t.disabled = count > 1);
                 }
-
-                qs('[data-kt-user-table-select="delete_selected"]')?.addEventListener('click', () => {
-                    const ids = qsa('.row-checkbox:checked').map(cb => cb.value);
-
-                    if (!ids.length) {
-                        Swal.fire({text: "Please select at least one brand.", icon: "info"});
-                        return;
-                    }
-
-                    Swal.fire({
-                        text: `Delete ${ids.length} selected brand(s)?`,
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Yes, delete"
-                    }).then(result => {
-                        if (!result.isConfirmed) return;
-
-                        fetch('{{ route("admin.brand.deleteMultiple") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrf
-                            },
-                            body: JSON.stringify({ids})
-                        })
-                            .then(res => {
-                                if (!res.ok) throw new Error();
-
-                                toastr.success("Selected brands deleted successfully.");
-
-                                brandTable.draw(false);
-                                location.reload();
-                            })
-                    });
-                });
 
                 KTUtil.onDOMContentLoaded(() => {
                     initBrandTable();
+                    $('#kt_table_Brands').on('draw.dt', () => $('.image-link').viewbox());
                 });
+
             </script>
 
     @endpush

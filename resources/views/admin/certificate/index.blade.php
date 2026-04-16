@@ -287,15 +287,15 @@
                             if (!res.ok) throw new Error();
                             return res.json();
                         })
-                        .then(() => {
+                        .then(data => {
+                            toastr.success(data.message || "Selected certificates deleted successfully");
 
-                            toastr.success("Selected certificates deleted successfully");
 
                             certificateTable.draw(false);
                             toggleBulkToolbar();
                         })
-                        .catch(() => {
-                            toastr.error("Failed to delete certificates");
+                        .catch(err => {
+                            toastr.error(err.message || "Failed to delete certificates");
                         });
                 });
             });
@@ -315,18 +315,17 @@
                     cb.checked = !cb.checked;
                     return;
                 }
-
-                $.post(
-                    '{{ route("admin.certificate.toggleStatus", ":id") }}'.replace(':id', id),
-                    {_token: '{{ csrf_token() }}'},
-                    () => {
-                        toastr.success('Status updated');
-                        certificateTable.draw(false);
+                $.ajax({
+                    url: '{{ route("admin.certificate.toggleStatus", ":id") }}'.replace(':id', id),
+                    method: 'POST',
+                    data: {_token: '{{ csrf_token() }}', status},
+                    success: data => toastr.success(data.message),
+                    error: xhr => {
+                        checkbox.checked = !checkbox.checked;
+                        toastr.error(xhr.responseJSON?.message ?? 'Error updating status.');
                     }
-                ).fail(() => {
-                    cb.checked = !cb.checked;
-                    toastr.error('Failed to update status');
                 });
+
             });
         });
 
@@ -348,11 +347,12 @@
                     url: '{{ route("admin.certificate.delete", ":id") }}'.replace(':id', id),
                     method: 'DELETE',
                     data: {_token: '{{ csrf_token() }}'},
-                    success: () => {
-                        toastr.success('Certificate deleted');
+                    success: (data) => {
+                        toastr.success(data.message);
                         certificateTable.draw(false);
                     },
-                    error: () => toastr.error('Failed to delete certificate')
+                    error: xhr => toastr.error(xhr.responseJSON?.message ?? 'Delete failed.')
+
                 });
             });
         });
