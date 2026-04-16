@@ -2924,13 +2924,4 @@
         @push('scripts')
             <!--begin::Page Custom Javascript(used by this page)-->
             <script src="{{ asset('assets/js/custom/widgets.js')}}"></script>
-            <script>
-                @if(session('success'))
-                toastr.success("{{ session('success') }}");
-                @endif
-                @if(session('error'))
-                toastr.error("{{ session('error') }}");
-                @endif
-            </script>
-
     @endpush

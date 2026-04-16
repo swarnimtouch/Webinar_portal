@@ -204,9 +204,6 @@
                 const qsa = (s, p = document) => [...p.querySelectorAll(s)];
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
-                @if(session('success'))
-                toastr.success("{{ session('success') }}");
-                @endif
 
                 let bannerTable;
 

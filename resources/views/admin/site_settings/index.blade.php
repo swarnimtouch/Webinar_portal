@@ -229,12 +229,7 @@
         @push('scripts')
             <script>
                 "use strict";
-                @if(session('success'))
-                toastr.success("{{ session('success') }}");
-                @endif
-                @if(session('error'))
-                toastr.error("{{ session('error') }}");
-                @endif
+
                 var KTSettingsUpdate = function () {
                     var form;
                     var submitButton;
@@ -360,7 +355,6 @@
 
                                     if (checked.length === 0) {
                                         checkboxValid = false;
-                                        // Show error message
                                         var container = checkboxes[0].closest('.checkbox-group');
                                         var errorMsg = container.querySelector('.checkbox-error');
                                         if (!errorMsg) {

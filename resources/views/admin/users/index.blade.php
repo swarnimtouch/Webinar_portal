@@ -98,7 +98,6 @@
         </div>
     </div>
 
-    {{-- View User Modal --}}
     <div class="modal fade" id="kt_modal_view_user" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered mw-650px">
             <div class="modal-content">
@@ -133,9 +132,7 @@
     <script>
         "use strict";
         const qsa = (s, p = document) => [...p.querySelectorAll(s)];
-        @if(session('success'))
-        toastr.success("{{ session('success') }}");
-        @endif
+
         var KTUsersList = function () {
             var table = document.getElementById('kt_table_users');
             let userTable;
@@ -360,9 +357,7 @@
                         .then(res => res.json())
                         .then(data => {
 
-                            userTable.draw(); // reload table
-
-                            // ✅ Toast message
+                            userTable.draw();
                             toastr.success(data.message ?? 'User deleted successfully!');
                         })
                         .catch(() => {

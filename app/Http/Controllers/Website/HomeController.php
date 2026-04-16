@@ -58,10 +58,6 @@ class HomeController
             'slider_data' => $sliderData,
             'title' => __('Home'),
         ]);
-//        return view('website.home', array_merge(
-//            compact('homeSetting', 'banners', 'registerFields', 'contents', 'speakers', 'brands', 'loginFields', 'sliderData'),
-//            ['title' => __('Home')]
-//        ));
     }
 
     public function login(Request $request)

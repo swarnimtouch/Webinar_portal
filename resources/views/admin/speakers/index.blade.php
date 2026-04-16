@@ -98,9 +98,7 @@
 @push('scripts')
     <script>
         "use strict";
-        @if(session('success'))
-        toastr.success("{{ session('success') }}");
-        @endif
+       
 
         var KTSpeakersList = function () {
             var table = document.getElementById('kt_table_speakers');
@@ -302,18 +300,20 @@
 
                     $.ajax({
                         url: '{{ route("admin.speaker.toggleStatus", ":id") }}'.replace(':id', id),
-                        method: 'POST',
+                        type: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
-                            status
+                            status: status
                         },
-                        success: function () {
+                        success: function (res) {
+
+                            let message = res.message || "Status updated successfully!";
 
                             if (typeof toastr !== 'undefined') {
-                                toastr.success('Status updated successfully!');
+                                toastr.success(message);
                             } else {
                                 Swal.fire({
-                                    text: "Status updated successfully!",
+                                    text: message,
                                     icon: "success",
                                     buttonsStyling: false,
                                     confirmButtonText: "Ok",
@@ -322,19 +322,32 @@
                                     }
                                 });
                             }
+
+                            // optional: table refresh
+                            if (typeof eventTable !== 'undefined') {
+                                eventTable.draw(false);
+                            }
                         },
                         error: function () {
+
+                            // revert checkbox
                             checkbox.checked = previousState;
 
-                            Swal.fire({
-                                text: "Error updating status. Please try again.",
-                                icon: "error",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok",
-                                customClass: {
-                                    confirmButton: "btn fw-bold btn-primary",
-                                }
-                            });
+                            let message = "Error updating status. Please try again.";
+
+                            if (typeof toastr !== 'undefined') {
+                                toastr.error(message);
+                            } else {
+                                Swal.fire({
+                                    text: message,
+                                    icon: "error",
+                                    buttonsStyling: false,
+                                    confirmButtonText: "Ok",
+                                    customClass: {
+                                        confirmButton: "btn fw-bold btn-primary",
+                                    }
+                                });
+                            }
                         }
                     });
                 });

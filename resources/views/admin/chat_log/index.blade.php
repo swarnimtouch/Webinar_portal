@@ -352,7 +352,6 @@
                     },
                     success: function (response) {
 
-                        // ✅ Toast success
                         toastr.success(response.message ?? 'Message deleted successfully');
 
                         chatMessageTable.draw(false);
@@ -360,7 +359,6 @@
                     },
                     error: function () {
 
-                        // ❌ Toast error
                         toastr.error('Failed to delete message');
                     }
                 });
