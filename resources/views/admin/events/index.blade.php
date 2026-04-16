@@ -140,9 +140,7 @@
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
         let eventTable;
-        @if(session('success'))
-        toastr.success("{{ session('success') }}");
-        @endif
+
         function initEventTable() {
             eventTable = $('#kt_table_events').DataTable({
                 processing: true,

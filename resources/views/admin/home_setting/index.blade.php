@@ -190,12 +190,6 @@
     <script>
         "use strict";
 
-        @if(session('success'))
-        toastr.success("{{ session('success') }}");
-        @endif
-        @if(session('error'))
-        toastr.error("{{ session('error') }}");
-        @endif
 
         let editorInstance;
 

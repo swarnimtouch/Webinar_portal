@@ -40,6 +40,12 @@
 <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 <script src="{{asset('assets/js/viewbox.min.js')}}"></script>
 <script type="application/javascript">
+    @if(session('success'))
+    toastr.success("{{ session('success') }}");
+    @endif
+    @if(session('error'))
+    toastr.error("{{ session('error') }}");
+    @endif
     $(document).on('click', '.image-link', function (e) {
         e.preventDefault();
         if (!$(this).data('viewbox-initialized')) {

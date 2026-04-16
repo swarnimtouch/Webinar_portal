@@ -225,8 +225,8 @@
                         url: '{{ route("admin.user_attendance.delete", ":id") }}'.replace(':id', id),
                         method: 'DELETE',
                         data: {_token: '{{ csrf_token() }}'},
-                        success: function () {
-                            toastr.success('Attendance record has been deleted!');
+                        success: function (data) {
+                            toastr.success(data.message);
                             datatable.draw(false);
                         },
                         error: function () {

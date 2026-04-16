@@ -164,9 +164,7 @@
         "use strict";
 
         let pollTable;
-        @if(session('success'))
-        toastr.success("{{ session('success') }}");
-        @endif
+
         function initPollTable() {
             pollTable = $('#kt_table_polls').DataTable({
                 processing: true,
@@ -361,16 +359,16 @@
                     return;
                 }
 
-                $.post(
-                    '{{ route("admin.poll.toggleStatus", ":id") }}'.replace(':id', id),
-                    {_token: '{{ csrf_token() }}', status},
-                    () => {
-                        toastr.success('Status updated');
-                        pollTable.draw(false);
+
+                $.ajax({
+                    url: '{{ route("admin.poll.toggleStatus", ":id") }}'.replace(':id', id),
+                    method: 'POST',
+                    data: {_token: '{{ csrf_token() }}', status},
+                    success: data => toastr.success(data.message),
+                    error: xhr => {
+                        checkbox.checked = !checkbox.checked;
+                        toastr.error(xhr.responseJSON?.message ?? 'Error updating status.');
                     }
-                ).fail(() => {
-                    cb.checked = !cb.checked;
-                    toastr.error('Failed to update status');
                 });
             });
         });
@@ -392,8 +390,8 @@
                     url: '{{ route("admin.poll.delete", ":id") }}'.replace(':id', id),
                     method: 'DELETE',
                     data: {_token: '{{ csrf_token() }}'},
-                    success: () => {
-                        toastr.success('Poll deleted');
+                    success: (data) => {
+                        toastr.success(data.message);
                         pollTable.draw(false);
                     }
                 });
