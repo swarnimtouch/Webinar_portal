@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 if (!function_exists('pre')) {
     function pre($data = null, $exit = true): void
@@ -73,6 +74,13 @@ function getModules($user_type = 'admin'): array
                 'icon' => 'bi bi-grid fs-3',
                 'child' => [],
                 'all_routes' => ['admin.dashboard']
+            ],
+            [
+                'route' => route('admin.events'),
+                'name' => 'Events',
+                'icon' => 'bi bi-gear',
+                'child' => [],
+                'all_routes' => ['admin.events', 'admin.events.add_edit_form']
             ],
             [
                 'route' => route('admin.user.index'),
@@ -360,4 +368,26 @@ if (!function_exists('siteSetting')) {
 }
 
 
+if (!function_exists('generate_slug')) {
 
+    function generate_slug($name, $table = 'events', $ignoreId = null)
+    {
+        $slug = Str::slug($name);
+        $originalSlug = $slug;
+        $count = 1;
+        while (true) {
+            $query = DB::table($table)->where('slug', $slug);
+
+            if ($ignoreId) {
+                $query->where('id', '!=', $ignoreId);
+            }
+
+            if (!$query->exists()) {
+                break;
+            }
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+        return $slug;
+    }
+}
