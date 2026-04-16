@@ -233,9 +233,21 @@
                                     },
                                     emailAddress: {
                                         message: "The value is not a valid email address"
+                                    },
+                                    remote: {
+                                        url: "{{ route('admin.check-email-exists') }}",
+                                        method: "POST",
+                                        headers: {
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                        },
+                                        data: () => ({
+                                            email: form.querySelector('[name="email"]').value,
+                                            id: {{ $sub_admin->id ?? 0 }}
+                                        }),
+                                        message: "Email already exists"
                                     }
                                 }
-                            }
+                            },
                         },
                         plugins: {
                             trigger: new FormValidation.plugins.Trigger(),
