@@ -157,8 +157,10 @@
 
     <div id="loginModal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-modal-btn">×</span>
-            <h2>Welcome</h2>
+            <div class="modal-title-row">
+                <span class="close-modal-btn">×</span>
+                <h2>Welcome</h2>
+            </div>
             <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
                 @csrf
                 @foreach($login_fields as $field)
@@ -181,8 +183,10 @@
 
     <div id="registerModal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-modal-btn close-register-btn">×</span>
-            <h2>Doctor Registration</h2>
+            <div class="modal-title-row">
+                <h2>Doctor Registration</h2>
+                <span class="close-modal-btn close-register-btn">×</span>
+            </div>
             <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm" autocomplete="off">
                 @csrf
                 <div class="row">
@@ -379,7 +383,7 @@
         @endif
 
         <script>
-            window.sliderdata = @json($slider_data);
+            window.sliderData = @json($slider_data);
             window._openLoginModal = {{ session('open_login_modal')    ? 'true' : 'false' }};
             window._openRegisterModal = {{ session('open_register_modal') ? 'true' : 'false' }};
         </script>

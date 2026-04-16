@@ -80,7 +80,6 @@ class User extends Authenticatable
     {
         parent::boot();
 
-        // Set default type when creating a new user
         static::creating(function ($user) {
             if (empty($user->type)) {
                 $user->type = 'doctor';
