@@ -3,14 +3,6 @@
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
-
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-
                 <div class="card">
                     <div class="card-header border-0 pt-6">
                         <div class="card-title">
@@ -148,7 +140,9 @@
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
         let eventTable;
-
+        @if(session('success'))
+        toastr.success("{{ session('success') }}");
+        @endif
         function initEventTable() {
             eventTable = $('#kt_table_events').DataTable({
                 processing: true,
