@@ -153,7 +153,7 @@ class PollController
 
             return response()->json([
                 'success' => true,
-                'message' => __('Poll status updated successfully'),
+                'message' => __('Status updated successfully'),
                 'status' => $poll->status
             ]);
         } catch (\Exception $e) {

@@ -134,9 +134,7 @@
         "use strict";
 
         let certificateTable;
-        @if(session('success'))
-        toastr.success("{{ session('success') }}");
-        @endif
+
         function initCertificateTable() {
             certificateTable = $('#kt_table_certificates').DataTable({
                 processing: true,

@@ -79,9 +79,7 @@
         const qs = (s, p = document) => p.querySelector(s);
 
         let contentTable;
-        @if(session('success'))
-        toastr.success("{{ session('success') }}");
-        @endif
+
         function initContentTable() {
             contentTable = $('#kt_table_Content').DataTable({
                 processing: true,
