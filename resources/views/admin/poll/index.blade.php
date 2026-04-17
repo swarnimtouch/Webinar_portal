@@ -136,7 +136,9 @@
                                                value="1"/>
                                     </div>
                                 </th>
-                                <th>Event</th>
+                                @if(auth()->user()->type === 'admin')
+                                    <th>Event</th>
+                                @endif
                                 <th>Question</th>
                                 <th>Answers</th>
                                 <th>Created At</th>
@@ -165,6 +167,7 @@
         "use strict";
 
         let pollTable;
+        const isAdmin = {{auth()->user()->type === 'admin' ? 'true' : 'false'}};
 
         function initPollTable() {
             pollTable = $('#kt_table_polls').DataTable({
@@ -191,7 +194,7 @@
                     </div>`
                     },
 
-                    {data: 'event'},
+                    ...(isAdmin ? [{data: 'event'}] : []),
 
                     /* QUESTION */
                     {

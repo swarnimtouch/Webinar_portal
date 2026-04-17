@@ -43,7 +43,7 @@ class SpeakersController extends Controller
     {
         $speaker = $id ? Speakers::findOrFail($id) : new Speakers();
         $validated = $request->validate([
-            'event_id' => 'required|exists:events,id',
+            'event_id' => 'nullable|exists:events,id',
             'name' => 'required|string|max:255',
             'line1' => 'required|string|max:255',
             'filename' => $id
@@ -134,16 +134,23 @@ class SpeakersController extends Controller
 
     public function datatable(Request $request)
     {
+        $user = auth()->user();
+
         $query = Speakers::with('event');
 
-        if ($request->has('search')) {
+        if ($user->type === 'sub_admin') {
+            $query->where('event_id', $user->event_id);
+        }
+
+        if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
+
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('line1', 'like', "%{$search}%")
                     ->orWhere('line2', 'like', "%{$search}%")
                     ->orWhere('line3', 'like', "%{$search}%")
-                    ->orWherehas('event', function ($q) use ($search) {
+                    ->orWhereHas('event', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%");
                     });
             });
@@ -153,6 +160,7 @@ class SpeakersController extends Controller
 
         if ($request->has('order')) {
             $columns = $request->columns;
+
             foreach ($request->order as $order) {
                 $columnIndex = $order['column'];
                 $columnName = $columns[$columnIndex]['data'];
@@ -171,17 +179,18 @@ class SpeakersController extends Controller
 
         $length = $request->input('length', 10);
         $start = $request->input('start', 0);
+
         $speakers = $query->skip($start)->take($length)->get();
 
         $data = $speakers->map(function ($speaker) {
             return [
                 'id' => $speaker->id,
-                'event' => $speaker->event->name ?? '-',
+                'event' => $speaker->event->name ?? 'N/A',
                 'name' => $speaker->name,
                 'media_url' => $speaker->media_url,
                 'line1' => $speaker->line1,
-                'line2' => $speaker->line2 ?? '-',
-                'line3' => $speaker->line3 ?? '-',
+                'line2' => $speaker->line2 ?? 'N/A',
+                'line3' => $speaker->line3 ?? 'N/A',
                 'created_at' => $speaker->created_at->format('d M Y'),
                 'status' => $speaker->status,
                 'actions' => '',

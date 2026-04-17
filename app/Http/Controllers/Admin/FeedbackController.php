@@ -21,6 +21,7 @@ class FeedbackController
         ]);
 
     }
+
     public function delete($id)
     {
         try {
@@ -60,10 +61,15 @@ class FeedbackController
             return response()->json(['success' => false, 'message' => 'Error deleting FeedBack'], 500);
         }
     }
+
     public function datatable(Request $request)
     {
-        $query = Feedback::with('user');
+        $user = auth()->user();
 
+        $query = Feedback::with(['user', 'event']);
+        if ($user->type === 'sub_admin') {
+            $query->where('event_id', $user->event_id);
+        }
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('user', function ($q) use ($search) {
@@ -94,7 +100,7 @@ class FeedbackController
         }
 
         $length = $request->input('length', 10);
-        $start  = $request->input('start', 0);
+        $start = $request->input('start', 0);
 
         $feedbacks = $query->skip($start)->take($length)->get();
 
@@ -103,6 +109,7 @@ class FeedbackController
                 'id' => $feedback->id,
                 'user_name' => optional($feedback->user)->name ?? 'N/A',
                 'user_email' => optional($feedback->user)->email ?? 'N/A',
+                'event' => $feedback->event->name ?? 'N/A',
                 'rating' => $feedback->rating,
                 'comment' => $feedback->comment ?? '-',
                 'created_at' => $feedback->created_at->format('d M Y'),
@@ -111,7 +118,7 @@ class FeedbackController
         });
 
         return response()->json([
-            'draw' => (int) $request->input('draw'),
+            'draw' => (int)$request->input('draw'),
             'recordsTotal' => $total,
             'recordsFiltered' => $total,
             'data' => $data,

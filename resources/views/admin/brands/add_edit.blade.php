@@ -45,29 +45,33 @@
                             <input type="hidden" name="status" value="active">
 
                             <div class="card-body border-top p-9">
-                                <div class="row mb-6">
-                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
-                                    <div class="col-lg-8">
-                                        <select name="event_id" id="event_id"
-                                                class="form-select form-select-solid form-select-lg"
-                                                data-control="select2" data-placeholder="Select a Event "
-                                                data-hide-search="true">
-                                            <option value="Select Event " disabled>
-                                                Select Event
-                                            </option>
-                                            <option value="" disabled selected>Select Event</option>
-
-                                            @foreach($events as $event)
-                                                <option value="{{ $event->id }}"
-                                                    {{ old('event_id', $brand->event_id ?? '') == $event->id ? 'selected' : '' }}>
-                                                    {{ $event->name }}
+                                @if(auth()->user()->type === 'admin')
+                                    <div class="row mb-6">
+                                        <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
+                                        <div class="col-lg-8">
+                                            <select name="event_id" id="event_id"
+                                                    class="form-select form-select-solid form-select-lg"
+                                                    data-control="select2" data-placeholder="Select a Event "
+                                                    data-hide-search="true">
+                                                <option value="Select Event " disabled>
+                                                    Select Event
                                                 </option>
-                                            @endforeach
+                                                <option value="" disabled selected>Select Event</option>
+
+                                                @foreach($events as $event)
+                                                    <option value="{{ $event->id }}"
+                                                        {{ old('event_id', $brand->event_id ?? '') == $event->id ? 'selected' : '' }}>
+                                                        {{ $event->name }}
+                                                    </option>
+                                                @endforeach
 
 
-                                        </select>
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
+                                @else
+                                    <input type="hidden" name="event_id" value="{{ auth()->user()->event_id }}">
+                                @endif
                                 <!-- Title -->
                                 <div class="row mb-6">
                                     <label class="col-lg-4 col-form-label required fw-bold fs-6">Title</label>
@@ -134,7 +138,8 @@
                                         </div>
                                         <!--end::Image input-->
 
-                                        <div class="form-text">Allowed file types: jpg, jpeg, png, gif, mp4, mov, avi.
+                                        <div class="form-text">Allowed file types: jpg, jpeg, png, gif, mp4, mov,
+                                            avi.
                                             Max size: 20MB
                                         </div>
 
@@ -175,6 +180,7 @@
                     const originalImage = "{{ $brand->filename && $brand->type === 'image'
                         ? asset('storage/brands/'.$brand->filename)
                         : asset('assets/media/no_image.png') }}";
+                    const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
 
 
                     let fileRemoved = false;
@@ -196,11 +202,13 @@
                                         notEmpty: {message: 'Title is required'}
                                     }
                                 },
-                                event_id: {
-                                    validators: {
-                                        notEmpty: {message: 'Event  is required'}
+                                ...(isAdmin && {
+                                    event_id: {
+                                        validators: {
+                                            notEmpty: {message: 'Event is required'}
+                                        }
                                     }
-                                },
+                                }),
                                 filename: {
                                     validators: {
                                         callback: {
@@ -227,7 +235,13 @@
                                 })
                             }
                         });
+                        if (isAdmin && $('#event_id').length) {
+                            $('#event_id').select2();
 
+                            $('#event_id').on('change', function () {
+                                validator.revalidateField('event_id');
+                            });
+                        }
                         fileInput.addEventListener('change', function () {
                             if (!this.files.length) return;
 

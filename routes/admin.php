@@ -89,6 +89,7 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/get-countries', 'countries')->name('users.countries');
         Route::get('/get-states/{country}', 'states')->name('users.states');
         Route::get('/get-cities/{state}', 'cities')->name('users.cities');
+        Route::get('get-event-fields/{eventId}', 'getEventFields')->name('get-event-fields');
     });
 
     /*
@@ -232,5 +233,6 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::post('certificate-log/delete-multiple', 'deleteMultiple')->name('certificate-log.deleteMultiple');
         Route::get('certificate-log/datatable', 'datatable')->name('certificate-log.datatable');
     });
+
 
 });

@@ -61,8 +61,10 @@
                                                value="1"/>
                                     </div>
                                 </th>
-                                <th>Photo</th>
-                                <th>Event</th>
+                                <th>Image</th>
+                                @if(auth()->user()->type === 'admin')
+                                    <th>Event</th>
+                                @endif
                                 <th>Name</th>
                                 <th>Line 1</th>
                                 <th>Line 2</th>
@@ -104,6 +106,7 @@
         var KTSpeakersList = function () {
             var table = document.getElementById('kt_table_speakers');
             var datatable;
+            const isAdmin = {{auth()->user()->type === 'admin' ? 'true' : 'false'}};
 
             var initSpeakerTable = function () {
                 datatable = $(table).DataTable({
@@ -116,7 +119,6 @@
                             d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
                         }
                     },
-                    order: [[2, 'asc']],
                     pageLength: 10,
                     columns: [
                         {
@@ -141,7 +143,7 @@
                                </a>`
                                     : '<span class="text-muted">—</span>'
                         },
-                        {data: 'event'},
+                        ...(isAdmin ? [{data: 'event'}] : []),
                         {data: 'name'},
                         {data: 'line1'},
                         {data: 'line2'},
@@ -325,14 +327,12 @@
                                 });
                             }
 
-                            // optional: table refresh
                             if (typeof eventTable !== 'undefined') {
                                 eventTable.draw(false);
                             }
                         },
                         error: function () {
 
-                            // revert checkbox
                             checkbox.checked = previousState;
 
                             let message = "Error updating status. Please try again.";

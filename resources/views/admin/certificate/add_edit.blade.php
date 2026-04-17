@@ -44,32 +44,37 @@
                             @if($certificate->exists)
                                 @method('PUT')
                             @endif
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
-                                <div class="col-lg-8">
-                                    <select name="event_id" id="event_id"
-                                            class="form-select form-select-solid form-select-lg"
-                                            data-control="select2" data-placeholder="Select a Event "
-                                            data-hide-search="true">
-                                        <option value="Select Event " disabled>
-                                            Select Event
-                                        </option>
-                                        <option value="" disabled selected>Select Event</option>
-
-                                        @foreach($events as $event)
-                                            <option value="{{ $event->id }}"
-                                                {{ old('event_id', $certificate->event_id ?? '') == $event->id ? 'selected' : '' }}>
-                                                {{ $event->name }}
+                            @if(auth()->user()->type === 'admin')
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
+                                    <div class="col-lg-8">
+                                        <select name="event_id" id="event_id"
+                                                class="form-select form-select-solid form-select-lg"
+                                                data-control="select2" data-placeholder="Select a Event "
+                                                data-hide-search="true">
+                                            <option value="Select Event " disabled>
+                                                Select Event
                                             </option>
-                                        @endforeach
+                                            <option value="" disabled selected>Select Event</option>
+
+                                            @foreach($events as $event)
+                                                <option value="{{ $event->id }}"
+                                                    {{ old('event_id', $certificate->event_id ?? '') == $event->id ? 'selected' : '' }}>
+                                                    {{ $event->name }}
+                                                </option>
+                                            @endforeach
 
 
-                                    </select>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
+                            @else
+                                <input type="hidden" name="event_id" value="{{ auth()->user()->event_id }}">
+                            @endif
                             <!-- Name -->
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Certificate Name</label>
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Certificate
+                                    Name</label>
                                 <div class="col-lg-8">
                                     <input type="text" name="name"
                                            class="form-control form-control-lg form-control-solid"
@@ -171,7 +176,8 @@
 
                             <!-- Position: start_x, end_x, y -->
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Text Position (X)</label>
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Text Position
+                                    (X)</label>
                                 <div class="col-lg-8">
                                     <div class="row g-3">
                                         <div class="col-6">
@@ -189,18 +195,21 @@
                                                    min="0" placeholder="0"/>
                                         </div>
                                     </div>
-                                    <div class="form-text">Horizontal range where the name text will be rendered</div>
+                                    <div class="form-text">Horizontal range where the name text will be rendered
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Text Position (Y)</label>
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Text Position
+                                    (Y)</label>
                                 <div class="col-lg-8">
                                     <input type="number" name="y"
                                            class="form-control form-control-lg form-control-solid"
                                            value="{{ old('y', $certificate->y ?? 0) }}"
                                            min="0" placeholder="0"/>
-                                    <div class="form-text">Vertical position where the name text will be rendered</div>
+                                    <div class="form-text">Vertical position where the name text will be rendered
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -240,7 +249,8 @@
 
                 const colorPicker = document.getElementById('font_color_picker');
                 const colorText = document.getElementById('font_color');
-
+                const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
+                const isEdit = {{ isset($certificate) ? 'true' : 'false' }};
                 colorPicker.addEventListener('input', () => {
                     colorText.value = colorPicker.value;
                 });
@@ -261,13 +271,15 @@
                                 stringLength: {min: 2, max: 255, message: 'Name must be between 2 and 255 characters'}
                             }
                         },
-                        event_id: {
-                            validators: {
-                                notEmpty: {message: 'Event  is required'}
+                        ...(isAdmin && {
+                            event_id: {
+                                validators: {
+                                    notEmpty: {message: 'Event is required'}
+                                }
                             }
-                        },
+                        }),
                         background_image: {
-                            validators: {
+                            validators: isEdit ? {} : {
                                 notEmpty: {
                                     message: 'Background image is required'
                                 },
@@ -279,14 +291,16 @@
                                 }
                             }
                         },
+
                         font_file: {
-                            validators: {
+                            validators: isEdit ? {} : {
                                 notEmpty: {
-                                    message: 'Font File image is required'
+                                    message: 'Font file is required'
                                 },
                                 file: {
                                     extension: 'ttf,otf,woff,woff2',
-                                    type: '\.ttf|\.otf|\.woff|\.woff2',
+                                    type: 'application/x-font-ttf,application/x-font-opentype,font/woff,font/woff2',
+                                    message: 'Invalid font file'
                                 }
                             }
                         },
@@ -332,7 +346,13 @@
                         bootstrap5: new FormValidation.plugins.Bootstrap5({rowSelector: '.row'})
                     }
                 });
+                if (isAdmin && $('#event_id').length) {
+                    $('#event_id').select2();
 
+                    $('#event_id').on('change', function () {
+                        validator.revalidateField('event_id');
+                    });
+                }
                 /* ===== SUBMIT ===== */
                 submitBtn.addEventListener('click', e => {
                     e.preventDefault();

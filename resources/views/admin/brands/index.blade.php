@@ -145,9 +145,11 @@
                                                data-kt-check-target="#kt_table_Brands .row-checkbox"/>
                                     </div>
                                 </th>
-                                <th>Preview</th>
+                                <th>Image</th>
+                                @if(auth()->user()->type === 'admin')
+                                    <th>Event</th>
+                                @endif
                                 <th>Title</th>
-                                <th>Event</th>
                                 <th>Created At</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -178,7 +180,7 @@
                 const qs = (s, p = document) => p.querySelector(s);
                 const qsa = (s, p = document) => [...p.querySelectorAll(s)];
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-
+                const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
 
                 let brandTable;
 
@@ -217,8 +219,10 @@
                            </a>`
                                         : '<span class="text-muted">—</span>'
                             },
+                            ...(isAdmin ? [{data: 'event'}] : []),
                             {data: 'title'},
-                            {data: 'event'},
+
+
                             {data: 'created_at'},
                             {
                                 data: 'status',

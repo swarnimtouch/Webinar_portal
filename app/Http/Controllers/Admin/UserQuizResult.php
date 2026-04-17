@@ -48,8 +48,14 @@ class UserQuizResult
 
     public function datatable(Request $request)
     {
-        $query = UserQuizAnswer::with('user', 'poll');
+        $user = auth()->user();
 
+        $query = UserQuizAnswer::with('user', 'poll');
+        if ($user->type === 'sub_admin') {
+            $query->whereHas('poll', function ($q) use ($user) {
+                $q->where('event_id', $user->event_id);
+            });
+        }
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -93,6 +99,7 @@ class UserQuizResult
         $data = $userQuizAnswers->map(function ($userQuizAnswer) {
             return [
                 'id' => $userQuizAnswer->id,
+                'event' => optional($userQuizAnswer->user)->event->name ?? 'N/A',
                 'user_name' => optional($userQuizAnswer->user)->name ?? 'N/A',
                 'user_email' => optional($userQuizAnswer->user)->email ?? 'N/A',
                 'question' => optional($userQuizAnswer->poll)->question ?? 'N/A',

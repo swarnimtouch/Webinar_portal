@@ -12,7 +12,15 @@ class DynamicFieldsController extends Controller
      */
     public function index()
     {
-        $fields = DynamicFields::orderBy('index_no')->get();
+        $authUser = auth()->user();
+
+        if ($authUser->type === 'sub_admin') {
+            $fields = DynamicFields::where('event_id', $authUser->event_id)
+                ->orderBy('index_no')
+                ->get();
+        } else {
+            $fields = DynamicFields::orderBy('index_no')->get();
+        }
 
         return view('admin.dynamic_fields.index', [
             'fields' => $fields,

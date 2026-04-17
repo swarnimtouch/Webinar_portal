@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\DynamicFields;
+use App\Models\Events;
 use App\Models\State;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -16,41 +17,80 @@ class UserController extends Controller
 {
     public function index()
     {
+        $authUser = auth()->user();
 
-        $dynamicFields = DynamicFields::where('status', 'active')
-            ->orderBy('index_no')
-            ->get();
+        if ($authUser->type === 'sub_admin') {
+            $dynamicFields = DynamicFields::where('status', 'active')
+                ->where('event_id', $authUser->event_id)
+                ->orderBy('index_no')
+                ->get();
+        } else {
+            $dynamicFields = DynamicFields::where('status', 'active')
+                ->orderBy('index_no')
+                ->get()
+                ->unique('field_name');
+        }
+
         $usersColumns = Schema::getColumnListing('users');
         $excludeColumns = ['password'];
+
         $validDynamicFields = $dynamicFields->filter(function ($field) use ($usersColumns, $excludeColumns) {
             if (in_array($field->field_name, $excludeColumns)) {
                 return false;
             }
             return in_array($field->field_name, $usersColumns);
-        });
+        })->values();
+
         $users = User::where('type', 'doctor')->get();
 
-        return view('admin.users.index', ['users' => $users, 'valid_dynamic_fields' => $validDynamicFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index')])]);
+        return view('admin.users.index', [
+            'users' => $users,
+            'valid_dynamic_fields' => $validDynamicFields,
+            'title' => __('Users'),
+            'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index')])
+        ]);
     }
 
     public function addEditForm($id = null)
     {
         $user = $id ? User::findOrFail($id) : null;
+        $authUser = auth()->user();
+        $events = Events::get();
 
-        $activeFields = DynamicFields::where('status', 'active')
-            ->orderBy('index_no')
-            ->get();
+        $fieldsQuery = DynamicFields::join('attributes', 'dynamic_fields.attribute_id', '=', 'attributes.id')
+            ->select('dynamic_fields.*', 'attributes.type as attr_type')
+            ->where('dynamic_fields.status', 'active')
+            ->orderBy('dynamic_fields.index_no');
+
+        if ($authUser->type === 'sub_admin') {
+            $activeFields = $fieldsQuery
+                ->where('dynamic_fields.event_id', $authUser->event_id)
+                ->get();
+        } else {
+            $activeFields = ($id && $user->event_id)
+                ? $fieldsQuery
+                    ->where('dynamic_fields.event_id', $user->event_id)
+                    ->get()
+                : collect();
+        }
 
         return view('admin.users.add_edit', [
             'user' => $user,
             'active_fields' => $activeFields,
+            'events' => $events,
+            'is_admin' => $authUser->type === 'admin',
             'title' => __('Users'),
-            'breadcrumb' => breadcrumb([__('Banners') => route('admin.banners'), ($id ? 'Edit' : 'Add' . ' Banner') => '']),
+            'breadcrumb' => breadcrumb([
+                __('Users') => route('admin.user.index'),
+                ($id ? 'Edit' : 'Add') . ' User' => ''
+            ]),
         ]);
     }
 
+
     public function save(Request $request, $id = null)
     {
+
         $user = $id ? User::findOrFail($id) : null;
         $activeFields = DynamicFields::where('status', 'active')->get();
 
@@ -62,7 +102,6 @@ class UserController extends Controller
 
             $fieldMapping = [
                 'mobile_number' => 'mobile',
-                'alternative_mobile_number' => 'alternative_mobile',
             ];
 
             $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
@@ -93,7 +132,7 @@ class UserController extends Controller
                     $rules[$dbFieldName] = 'nullable|digits:10';
                 }
             }
-
+            $rules['event_id'] = 'nullable';
             $messages[$dbFieldName . '.required'] = $field->label . ' is required';
         }
 
@@ -106,7 +145,6 @@ class UserController extends Controller
 
             $fieldMapping = [
                 'mobile_number' => 'mobile',
-                'alternative_mobile_number' => 'alternative_mobile',
             ];
 
             $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
@@ -136,6 +174,7 @@ class UserController extends Controller
             }
         }
         $userData['name'] = $request->first_name . $request->last_name;
+        $userData['event_id'] = $request->event_id;
         $userData['type'] = 'doctor';
 
         if ($user) {
@@ -189,23 +228,41 @@ class UserController extends Controller
 
     public function datatable(Request $request)
     {
-        $activeFields = DynamicFields::where('status', 'active')->orderBy('index_no')->get();
+        $authUser = auth()->user();
+
+        if ($authUser->type === 'sub_admin') {
+            $activeFields = DynamicFields::where('status', 'active')
+                ->where('event_id', $authUser->event_id)
+                ->orderBy('index_no')
+                ->get();
+        } else {
+            $activeFields = DynamicFields::where('status', 'active')
+                ->orderBy('index_no')
+                ->get()
+                ->unique('field_name'); // <-- Fix duplicate columns
+        }
 
         $userTableColumns = \Schema::getColumnListing('users');
 
         $validDynamicFields = $activeFields->filter(function ($field) use ($userTableColumns) {
             return in_array($field->field_name, $userTableColumns);
-        });
+        })->values(); // <-- re-index
 
-        $select = ['id'];
+        $select = ['id', 'event_id'];
         foreach ($validDynamicFields as $field) {
-            $select[] = $field->field_name;
+            if (!in_array($field->field_name, $select)) { // prevent duplicate select columns
+                $select[] = $field->field_name;
+            }
         }
 
-        $query = User::select($select)->where('type', 'doctor');
+        $query = User::with('event')->select($select)->where('type', 'doctor');
+
+        if ($authUser->type === 'sub_admin') {
+            $query->where('event_id', $authUser->event_id);
+        }
+
         if ($request->search) {
             $search = $request->search;
-
             $query->where(function ($q) use ($validDynamicFields, $search) {
                 foreach ($validDynamicFields as $field) {
                     $q->orWhere($field->field_name, 'LIKE', "%$search%");
@@ -218,7 +275,12 @@ class UserController extends Controller
         $data = $query
             ->skip($request->start)
             ->take($request->length)
-            ->get();
+            ->get()
+            ->map(function ($user) {
+                $row = $user->toArray();
+                $row['event_name'] = $user->event->name ?? '-';
+                return $row;
+            });
 
         return response()->json([
             "draw" => intval($request->draw),
@@ -253,4 +315,22 @@ class UserController extends Controller
 
     }
 
+    public function getEventFields($eventId)
+    {
+        $fields = DynamicFields::with('attributeInput')
+            ->where('event_id', $eventId)
+            ->where('status', 'active')
+            ->orderBy('index_no')
+            ->get()
+            ->map(function ($field) {
+                $field->attr_type = $field->attributeInput->type ?? 'text';
+                return $field;
+            });
+
+        // ✅ Sirf yeh line badlo
+        return view('admin.users._dynamic_fields', [
+            'active_fields' => $fields,
+            'user' => null
+        ])->render();
+    }
 }

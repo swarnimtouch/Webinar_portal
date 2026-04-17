@@ -152,6 +152,9 @@
                                                value="1"/>
                                     </div>
                                 </th>
+                                @if(auth()->user()->type === 'admin')
+                                    <th>Event</th>
+                                @endif
                                 <th>Group</th>
                                 <th>Sender</th>
                                 <th>Message</th>
@@ -179,6 +182,7 @@
         "use strict";
 
         let chatMessageTable;
+        const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
 
         function initChatMessageTable() {
             chatMessageTable = $('#kt_table_chat_messages').DataTable({
@@ -202,6 +206,7 @@
                         <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
                     </div>`
                     },
+                    ...(isAdmin ? [{data: 'event'}] : []),
 
                     {
                         data: 'group_name',

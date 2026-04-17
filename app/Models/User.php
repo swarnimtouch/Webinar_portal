@@ -18,6 +18,7 @@ class User extends Authenticatable
     protected $fillable = [
         'type',
         'status',
+        'event_id',
         'first_name',
         'last_name',
         'name',
@@ -90,5 +91,11 @@ class User extends Authenticatable
     public function getAvatarAttribute($value): string
     {
         return (!empty($value)) ? asset("storage/" . $value) : asset('assets/media/avatars/blank.png');
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Events::class);
+
     }
 }
