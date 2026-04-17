@@ -12,7 +12,7 @@ use App\Http\Controllers\Admin\{
     BrandsController,
     ContentController,
     DynamicFieldsController,
-    HomeSettingController,
+    EventSettingController,
     UserAttendanceController,
     FeedbackController,
     PollController,
@@ -171,9 +171,9 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::post('dynamic-fields/save', 'save')->name('dynamic-fields.save');
     });
 
-    Route::controller(HomeSettingController::class)->group(function () {
-        Route::get('home-setting', 'index')->name('home_setting');
-        Route::post('/home-setting/save', 'save')->name('home_setting.save');
+    Route::controller(EventSettingController::class)->group(function () {
+        Route::get('event-setting', 'index')->name('event_setting');
+        Route::post('event-setting/save', 'save')->name('event_setting.save');
     });
 
     Route::controller(UserAttendanceController::class)->group(function () {

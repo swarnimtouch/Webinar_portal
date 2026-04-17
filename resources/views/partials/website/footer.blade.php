@@ -4,11 +4,11 @@
             <h3>Contact Tech Team</h3>
             <div class="contact-row">
                 <i class="fa-solid fa-phone"></i>
-                <span>{{ ADMIN_phone }}</span>
+                <span>{{ app('event')->phone??'N/A' }}</span>
             </div>
             <div class="contact-row">
                 <i class="fa-solid fa-envelope"></i>
-                <span>{{ ADMIN_EMAIL }}</span>
+                <span>{{ app('event')->email??'N/A' }}</span>
             </div>
         </div>
 
@@ -23,7 +23,7 @@
 
     </div>
     <div class="footer-bottom">
-        {{ footer_text }}
+        {{ app('event')->footer_text??'N/A' }}
     </div>
 
 </footer>

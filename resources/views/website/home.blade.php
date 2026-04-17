@@ -3,7 +3,7 @@
     <main>
         <div class="container">
             <div class="header-section">
-                <h1>{{$home_setting->title ?? 'Webinar Portal'}}</h1>
+                <h1>{{app('event')->name ?? 'Webinar Portal'}}</h1>
                 <button class="btn btn-gold" id="openRegisterModal">Register</button>
             </div>
 
@@ -20,32 +20,32 @@
                     </div>
                 </div>
 
-                @if($home_setting && ($home_setting->event_start_time || $home_setting->event_end_time))
+                @if(app('event') && (app('event')->start_time || app('event')->end_time))
                     <div class="info-bar">
                         <div class="info-item">
                             <i class="fa-regular fa-calendar"></i>
                             <div class="info-text">
                                 <span>
-                                    {{ $home_setting->event_start_time
-                                        ? \Carbon\Carbon::parse($home_setting->event_start_time)->format('j F, Y')
+                                    {{ app('event')->start_time
+                                        ? \Carbon\Carbon::parse(app('event')->start_time)->format('j F, Y')
                                         : '' }}
-                                    @if($home_setting->event_start_time && $home_setting->event_end_time)
+                                    @if(app('event')->start_time && app('event')->end_time)
                                         -
                                     @endif
-                                    {{ $home_setting->event_end_time
-                                        ? \Carbon\Carbon::parse($home_setting->event_end_time)->format('j F, Y')
+                                    {{ app('event')->end_time
+                                        ? \Carbon\Carbon::parse(app('event')->end_time)->format('j F, Y')
                                         : '' }}
                                 </span>
                                 <small>Summit Date</small>
                             </div>
                         </div>
 
-                        @if($home_setting->event_start_time)
+                        @if(app('event')->start_time)
                             <div class="info-item">
                                 <i class="fa-regular fa-clock"></i>
                                 <div class="info-text">
                                 <span>
-                                    {{ \Carbon\Carbon::parse($home_setting->event_start_time)->format('H:i') }} Onwards
+                                    {{ \Carbon\Carbon::parse(app('event')->start_time)->format('H:i') }} Onwards
                                 </span>
                                     <small>Reporting</small>
                                 </div>
@@ -120,38 +120,40 @@
                     </div>
                 </div>
             </div>
-
-            <div class="speakers-section" id="speakers">
-                <h3>Speakers</h3>
-                <div class="speakers-grid">
-                    @forelse($speakers as $speaker)
-                        <div class="speaker-profile-card">
-                            <div class="sp-img-container">
-                                <img src="{{ $speaker->image_url }}" alt="{{ $speaker->name }}">
+            @if($speakers->count()>0)
+                <div class="speakers-section" id="speakers">
+                    <h3>Speakers</h3>
+                    <div class="speakers-grid">
+                        @forelse($speakers as $speaker)
+                            <div class="speaker-profile-card">
+                                <div class="sp-img-container">
+                                    <img src="{{ $speaker->image_url }}" alt="{{ $speaker->name }}">
+                                </div>
+                                <h4>{{ $speaker->name }}</h4>
+                                <p>{{ $speaker->line1 }}</p>
+                                <p>{{ $speaker->line2 }}</p>
+                                <p>{{ $speaker->line3 }}</p>
                             </div>
-                            <h4>{{ $speaker->name }}</h4>
-                            <p>{{ $speaker->line1 }}</p>
-                            <p>{{ $speaker->line2 }}</p>
-                            <p>{{ $speaker->line3 }}</p>
-                        </div>
-                    @empty
-                        <p>No speakers available.</p>
-                    @endforelse
+                        @empty
+                            <p>No speakers available.</p>
+                        @endforelse
+                    </div>
                 </div>
-            </div>
-
-            <div class="sponsors-section" id="brands">
-                <h3>Brands</h3>
-                <div class="sponsors-grid">
-                    @forelse($brands as $brand)
-                        <div class="sponsor-card">
-                            <img src="{{ $brand->image_url }}" alt="{{ $brand->name }}">
-                        </div>
-                    @empty
-                        <p>No brands available.</p>
-                    @endforelse
+            @endif
+            @if($brands->count()>0)
+                <div class="sponsors-section" id="brands">
+                    <h3>Brands</h3>
+                    <div class="sponsors-grid">
+                        @forelse($brands as $brand)
+                            <div class="sponsor-card">
+                                <img src="{{ $brand->image_url }}" alt="{{ $brand->name }}">
+                            </div>
+                        @empty
+                            <p>No brands available.</p>
+                        @endforelse
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
     </main>
 
@@ -161,12 +163,12 @@
                 <span class="close-modal-btn">×</span>
                 <h2>Welcome</h2>
             </div>
-            <form method="POST" action="{{ route('website.login.submit') }}" id="loginForm">
+            <form method="POST" action="{{route('login',['slug'=>request()->route('slug')])}}" id="loginForm">
                 @csrf
                 @foreach($login_fields as $field)
                     <div class="email-input-group">
                         <div class="icon-box">
-                            <i class="{{ $field->icon ?? 'fa-solid fa-user' }}"></i>
+                            <i class="{{ $field->html_class ?? 'fa-solid fa-user' }}"></i>
                         </div>
                         <input type="{{ $field->field_type }}"
                                name="{{ $field->field_name }}"
@@ -176,7 +178,7 @@
                                data-is-required="1"/>
                     </div>
                 @endforeach
-                <button type="submit" class="btn btn-gold full-width">Login</button>
+                <button type="button" class="btn btn-gold full-width" id="btnLogin">Login</button>
             </form>
         </div>
     </div>
@@ -187,7 +189,8 @@
                 <h2>Doctor Registration</h2>
                 <span class="close-modal-btn close-register-btn">×</span>
             </div>
-            <form method="POST" action="{{ route('website.register.submit') }}" id="registerForm" autocomplete="off">
+            <form method="POST" action="{{ route('register',['slug'=>request()->route('slug')]) }}" id="registerForm"
+                  autocomplete="off">
                 @csrf
                 <div class="row">
                     @foreach($register_fields as $field)
@@ -205,32 +208,19 @@
                              ? json_decode($field->input_value, true)
                              : [];
 
-                            $icon_class = $field->icon;
-
-                            if (empty($icon_class)) {
-                              $field_name = strtolower($field->field_name);
-
-                              if (str_contains($field_name, 'name')) {
-                                $icon_class = 'fa-solid fa-user';
-                              } elseif (str_contains($field_name, 'email')) {
-                                $icon_class = 'fa-solid fa-envelope';
-                              } elseif (str_contains($field_name, 'mobile') || str_contains($field_name, 'phone')) {
-                                $icon_class = 'fa-solid fa-phone';
-                              } elseif (str_contains($field_name, 'password')) {
-                                $icon_class = 'fa-solid fa-lock';
-                              } elseif ($field_name === 'country') {
-                                $icon_class = 'fa-solid fa-globe';
-                              } elseif ($field_name === 'state') {
-                                $icon_class = 'fa-solid fa-map-location-dot';
-                              } elseif ($field_name === 'city') {
-                                $icon_class = 'fa-solid fa-city';
-                              } elseif ($field->attribute_id == 5) {
-                                $icon_class = 'fa-solid fa-calendar-days';
-                              } elseif ($field->attribute_id == 6) {
-                                $icon_class = 'fa-solid fa-file-arrow-up';
-                              } else {
-                                $icon_class = 'fa-solid fa-pen';
-                              }
+                            $icon_class = $field->html_class;
+                            $input_value = json_decode($field->input_value,true);
+                            $source = [];
+                            $source_value = '';
+                            $source_label = '';
+                            if (json_last_error() !== JSON_ERROR_NONE){
+                                $input_value = $field->input_value;
+                            }else{
+                                if(isset($input_value['source']) && !empty($input_value['source'])){
+                                    $source_value = isset($input_value['value'])?$input_value['value']:'id';
+                                    $source_label = isset($input_value['label'])?$input_value['label']:'name';
+                                    $source = \Illuminate\Support\Facades\DB::table($input_value['source'])->select('*')->get();
+                                }
                             }
                         @endphp
 
@@ -239,130 +229,74 @@
                                 <div class="icon-box">
                                     <i class="{{ $icon_class }}"></i>
                                 </div>
-
-                                @if($field->attribute_id == 1)
-                                    <input type="text" data-is-required="{{ $field->is_required }}"
-                                           name="{{ $field->field_name }}" data-label="{{ $field->label }}"
-                                           placeholder="{{ $field->label }}"
-                                           value="{{ old($field->field_name) }}" class="form-control"
-                                           autocomplete="nope">
-
-                                @elseif($field->attribute_id == 2)
-                                    <textarea name="{{ $field->field_name }}"
-                                              data-is-required="{{ $field->is_required }}"
-                                              data-label="{{ $field->label }}" class="form-control" autocomplete="nope"
-                                              placeholder="{{ $field->label }}">{{ old($field->field_name) }}</textarea>
-                                @elseif($field->attribute_id == 7)
-                                    <input type="password" data-is-required="{{ $field->is_required }}"
-                                           name="{{ $field->field_name }}" data-label="{{ $field->label }}"
-                                           placeholder="{{ $field->label }}"
-                                           value="{{ old($field->field_name) }}" class="form-control"
-                                           autocomplete="nope">
-
-                                @elseif(in_array($field->attribute_id, [3,13]))
-
-                                    @if($field->field_name === 'country')
+                                @switch($field->attribute_data->type)
+                                    @case('text')
+                                        <input type="text" data-is-required="{{ $field->is_required }}"
+                                               name="{{ $field->field_name }}" data-label="{{ $field->label }}"
+                                               placeholder="{{ $field->label }}"
+                                               value="{{ old($field->field_name) }}" class="form-control"
+                                               autocomplete="nope">
+                                        @break('text')
+                                    @case('textarea')
+                                        <textarea name="{{ $field->field_name }}"
+                                                  data-is-required="{{ $field->is_required }}"
+                                                  data-label="{{ $field->label }}" class="form-control"
+                                                  autocomplete="nope"
+                                                  placeholder="{{ $field->label }}">{{ old($field->field_name) }}</textarea>
+                                        @break('textarea')
+                                    @case('password')
+                                        <input type="password" data-is-required="{{ $field->is_required }}"
+                                               name="{{ $field->field_name }}" data-label="{{ $field->label }}"
+                                               placeholder="{{ $field->label }}"
+                                               value="{{ old($field->field_name) }}" class="form-control"
+                                               autocomplete="nope">
+                                        @break('password')
+                                    @case('select')
                                         <select
-                                            name="country"
-                                            id="country"
+                                            name="{{$field->field_name}}"
+                                            id="{{$field->field_name}}"
                                             class="form-select select2"
-                                            data-label="{{ $field->label }}"
-                                            data-is-required="{{ $field->is_required }}">
-                                            <option value="">Select Country</option>
-                                        </select>
-
-                                    @elseif($field->field_name === 'state')
-                                        <select
-                                            name="state"
-                                            id="state"
-                                            class="form-select select2"
-                                            data-label="{{ $field->label }}"
-                                            data-is-required="{{ $field->is_required }}">
-                                            <option value="">Select State</option>
-                                        </select>
-
-                                    @elseif($field->field_name === 'city')
-                                        <select
-                                            name="city"
-                                            id="city"
-                                            class="form-select select2"
-                                            data-label="{{ $field->label }}"
-                                            data-is-required="{{ $field->is_required }}">
-                                            <option value="">Select City</option>
-                                        </select>
-
-                                    @else
-                                        <select
-                                            name="{{ $field->field_name }}"
-                                            class="form-select"
                                             data-label="{{ $field->label }}"
                                             data-is-required="{{ $field->is_required }}">
                                             <option value="">Select {{ $field->label }}</option>
-                                            @foreach($options as $k => $v)
-                                                <option value="{{ $k }}">{{ $v }}</option>
+                                            @foreach($source as $key=>$value)
+                                                <option
+                                                    value="@php echo $value->{$source_value} @endphp">@php echo $value->{$source_label} @endphp</option>
                                             @endforeach
                                         </select>
-                                    @endif
-
-                                @elseif($field->attribute_id == 4)
-                                    <select data-is-required="{{ $field->is_required }}"
-                                            data-label="{{ $field->label }}"
-                                            name="{{ $field->field_name }}[]" multiple class="form-control">
+                                        @break('select')
+                                    @case('checkbox')
                                         @foreach($options as $k => $v)
-                                            <option value="{{ $k }}">{{ $v }}</option>
+                                            <label>
+                                                <input data-is-required="{{ $field->is_required }}"
+                                                       data-label="{{ $field->label }}"
+                                                       type="checkbox" name="{{ $field->field_name }}[]"
+                                                       value="{{ $k }}">
+                                                {{ $v }}
+                                            </label>
                                         @endforeach
-                                    </select>
-
-                                @elseif($field->attribute_id == 5)
-                                    <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}"
-                                           type="date" name="{{ $field->field_name }}" class="form-control">
-
-                                @elseif($field->attribute_id == 6)
-                                    <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}"
-                                           type="file" name="{{ $field->field_name }}" class="form-control">
-
-                                @elseif($field->attribute_id == 7)
-                                    <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}"
-                                           type="password" name="{{ $field->field_name }}" class="form-control">
-
-                                @elseif($field->attribute_id == 9)
-                                    @forelse($options as $k => $v)
-                                        <label>
-                                            <input data-is-required="{{ $field->is_required }}"
-                                                   data-label="{{ $field->label }}"
-                                                   type="checkbox" name="{{ $field->field_name }}[]" value="{{ $k }}">
-                                            {{ $v }}
-                                        </label>
-                                    @empty
-                                        <p class="text-danger">No options available</p>
-                                    @endforelse
-
-                                @elseif($field->attribute_id == 10)
-                                    <label>
+                                        @break('checkbox')
+                                    @case('date')
                                         <input data-is-required="{{ $field->is_required }}"
                                                data-label="{{ $field->label }}"
-                                               type="checkbox" name="{{ $field->field_name }}"> {{ $field->label }}
-                                    </label>
-
-                                @elseif($field->attribute_id == 11)
-                                    <label class="me-3">
-                                        {{ $field->label }}
-                                    </label>
-                                    @forelse($options as $k => $v)
-
+                                               type="date" name="{{ $field->field_name }}" class="form-control">
+                                        @break('date')
+                                    @case('file')
                                         <input data-is-required="{{ $field->is_required }}"
                                                data-label="{{ $field->label }}"
-                                               type="radio" name="{{ $field->field_name }}" value="{{ $k }}">
-                                        {{ $v }}
-                                    @empty
-                                        <p class="text-danger">No options configured</p>
-                                    @endforelse
-
-                                @elseif($field->attribute_id == 12)
-                                    <input data-is-required="{{ $field->is_required }}" data-label="{{ $field->label }}"
-                                           type="datetime-local" name="{{ $field->field_name }}" class="form-control">
-
-                                @endif
+                                               type="file" name="{{ $field->field_name }}" class="form-control">
+                                        @break('file')
+                                    @case('radio')
+                                        @foreach($options as $k => $v)
+                                            <label>
+                                                <input data-is-required="{{ $field->is_required }}"
+                                                       data-label="{{ $field->label }}"
+                                                       type="radio" name="{{ $field->field_name }}"
+                                                       value="{{ $k }}">{{ $v }}
+                                            </label>
+                                        @endforeach
+                                        @break('radio')
+                                @endswitch
                             </div>
                         </div>
                     @endforeach
@@ -378,14 +312,332 @@
     </div>
 
     @push('scripts')
-        @if(session('toast_error'))
-            <script>toastr.error("{{ session('toast_error') }}");</script>
-        @endif
-
         <script>
-            window.sliderData = @json($slider_data);
+            $(function () {
+
+                const loginForm = $("#loginForm");
+
+                loginForm.validate({
+                    errorElement: "div",
+                    errorClass: "error-text",
+                    errorPlacement: function (error, element) {
+                        error.insertAfter(element.closest(".email-input-group"));
+                    },
+                    highlight: el => $(el).addClass("is-invalid"),
+                    unhighlight: el => $(el).removeClass("is-invalid")
+                });
+
+                loginForm.find("input").each(function () {
+                    const $el = $(this);
+                    const label = $el.data("label") || "This field";
+                    const type = $el.attr("type");
+                    const name = $el.attr("name");
+
+                    let rules = {}, messages = {};
+
+                    if ($el.data("is-required") == 1) {
+                        rules.required = true;
+                        messages.required = `${label} is required`;
+                    }
+
+                    if (type === "email" || name === "email") {
+                        rules.email = true;
+                        messages.email = "Enter valid email";
+                    }
+
+                    if (type === "tel" || name === "mobile_number" || name === "phone") {
+                        rules.digits = true;
+                        rules.minlength = 10;
+                        rules.maxlength = 10;
+
+                        messages.digits = "Only numbers allowed";
+                        messages.minlength = "Must be 10 digits";
+                        messages.maxlength = "Must be 10 digits";
+                    }
+
+                    if (Object.keys(rules).length) {
+                        $el.rules("add", {...rules, messages});
+                    }
+                });
+
+                $("#btnLogin").on("click", function () {
+
+                    if (!loginForm.valid()) return;
+
+                    const formData = new FormData(loginForm[0]);
+
+                    $.ajax({
+                        url: "{{ route('login',['slug'=>request()->route('slug')]) }}",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        dataType: "json",
+
+                        beforeSend: function () {
+                            $("#btnLogin").prop("disabled", true).text("Please wait...");
+                        },
+
+                        success: function (res) {
+                            if (res.status) {
+                                toastr.success(res.message || "Login successful");
+                                window.location.href = '{{route('dashboard',['slug'=>request()->route('slug')])}}';
+                            } else {
+                                toastr.error(res.message || "Login failed");
+                            }
+                        },
+
+                        error: function (xhr) {
+                            const res = xhr.responseJSON;
+
+                            if (xhr.status === 422 && res?.errors) {
+                                $.each(res.errors, function (field, messages) {
+                                    toastr.error(messages[0]);
+                                });
+                            } else if (xhr.status === 401) {
+                                toastr.error(res.message || "Invalid credentials");
+                            } else {
+                                toastr.error("Something went wrong");
+                            }
+                        },
+                        complete: function () {
+                            $("#btnLogin").prop("disabled", false).text("Login");
+                        }
+                    });
+                });
+            });
+            window.sliderData = @json($banners??[]);
+            const loginModal = document.getElementById("loginModal");
+            const registerModal = document.getElementById("registerModal");
+            const loginBtn = document.getElementById("openLoginModal");
+            const registerBtn = document.getElementById("openRegisterModal");
+            const closeLoginBtn = document.querySelector(".close-modal-btn");
+            const closeRegisterBtn = document.querySelector(".close-register-btn");
             window._openLoginModal = {{ session('open_login_modal')    ? 'true' : 'false' }};
             window._openRegisterModal = {{ session('open_register_modal') ? 'true' : 'false' }};
+
+            function openLoginModal() {
+                if (loginModal) {
+                    loginModal.style.display = "flex";
+                    body.style.overflow = "hidden";
+                }
+            }
+
+            function closeLoginModal() {
+                if (loginModal) {
+                    loginModal.style.display = "none";
+                    body.style.overflow = "auto";
+                }
+            }
+
+            function openRegisterModal() {
+                if (registerModal) {
+                    registerModal.style.display = "flex";
+                    body.style.overflow = "hidden";
+                }
+            }
+
+            function closeRegisterModal() {
+                if (registerModal) {
+                    registerModal.style.display = "none";
+                    body.style.overflow = "auto";
+                }
+            }
+
+            if (loginBtn) loginBtn.addEventListener("click", openLoginModal);
+            if (registerBtn) registerBtn.addEventListener("click", openRegisterModal);
+            if (closeLoginBtn) closeLoginBtn.addEventListener("click", closeLoginModal);
+            if (closeRegisterBtn) closeRegisterBtn.addEventListener("click", closeRegisterModal);
+
+            window.addEventListener("click", function (event) {
+                if (event.target === loginModal) closeLoginModal();
+                if (event.target === registerModal) closeRegisterModal();
+            });
+
+            if (window._openLoginModal) {
+                openLoginModal();
+                window._openLoginModal = false;
+            }
+            if (window._openRegisterModal) {
+                openRegisterModal();
+                window._openRegisterModal = false;
+            }
+            $(document).ready(function () {
+                const $track = $("#sliderTrack");
+                const sliderData = window.sliderData || [];
+                let slideIndex = 0;
+                let slideInterval;
+                const slideDuration = 3000;
+
+                if ($track.length === 0 || sliderData.length === 0) return;
+
+                function initSlider() {
+                    $track.empty();
+                    $.each(sliderData, function (index, item) {
+                        let mediaElement = '';
+                        if (item.type === 'image') {
+                            mediaElement = `<img src="${item.src}" alt="Event Banner">`;
+                        } else if (item.type === 'video') {
+                            mediaElement = `<video poster="${item.poster || ''}" muted playsinline loop>
+                                    <source src="${item.src}" type="video/mp4">
+                                </video>`;
+                        }
+                        $track.append(`<div class="slide">${mediaElement}</div>`);
+                    });
+                    updateSlider();
+                    startAutoSlide();
+                }
+
+                function updateSlider() {
+                    $track.css("transform", `translateX(-${slideIndex * 100}%)`);
+                    updateBackground(slideIndex);
+                    $(".slide video").each(function () {
+                        this.pause();
+                        this.currentTime = 0;
+                    });
+                    const $activeVideo = $(".slide").eq(slideIndex).find("video");
+                    if ($activeVideo.length > 0) {
+                        const p = $activeVideo.get(0).play();
+                        if (p !== undefined) p.catch(e => console.log("Auto-play blocked:", e));
+                    }
+                }
+
+                function updateBackground(index) {
+                    const data = sliderData[index];
+                    const $bgImg = $("#bgImage");
+                    const $bgVid = $("#bgVideo");
+                    $(".bg-media").removeClass("active");
+                    if (data.type === 'image') {
+                        $bgVid.trigger('pause');
+                        $bgImg.attr("src", data.src).addClass("active");
+                    } else if (data.type === 'video') {
+                        $bgVid.attr("src", data.src).addClass("active");
+                        const v = $bgVid.get(0);
+                        v.load();
+                        const p = v.play();
+                        if (p !== undefined) p.catch(e => console.log("Bg Video Auto-play blocked:", e));
+                    }
+                }
+
+                function nextSlide() {
+                    slideIndex = (slideIndex + 1) % sliderData.length;
+                    updateSlider();
+                }
+
+                function startAutoSlide() {
+                    if (slideInterval) clearInterval(slideInterval);
+                    slideInterval = setInterval(nextSlide, slideDuration);
+                }
+
+                initSlider();
+            });
+
+            $("#registerForm").validate({
+                errorElement: "div",
+                errorClass: "error-text",
+                errorPlacement: function (error, element) {
+                    error.insertAfter(element.closest(".email-input-group"));
+                },
+                highlight: function (el) {
+                    $(el).addClass("is-invalid");
+                },
+                unhighlight: function (el) {
+                    $(el).removeClass("is-invalid");
+                }
+            });
+
+            $("#registerForm").find("input, select, textarea").each(function () {
+                const $input = $(this);
+                const label = $input.data("label") || "This field";
+                const type = $input.attr("type");
+                const name = $input.attr("name");
+                let rules = {}, messages = {};
+
+                if ($input.data("is-required") == 1) {
+                    rules.required = true;
+                    messages.required = label + " is required";
+                }
+                if (name === "email") {
+                    rules.email = true;
+                    messages.email = "Please enter a valid email address";
+                }
+                if (type === "tel" || name === "mobile_number") {
+                    rules.digits = true;
+                    rules.minlength = 10;
+                    rules.maxlength = 10;
+                    messages.digits = "Only numbers are allowed";
+                    messages.minlength = "Mobile number must be 10 digits";
+                    messages.maxlength = "Mobile number must be 10 digits";
+                }
+                if (name === "password") {
+                    rules.minlength = 6;
+                    messages.minlength = label + " must be at least 6 characters";
+                }
+                if (Object.keys(rules).length > 0) {
+                    $input.rules("add", {...rules, messages});
+                }
+            });
+            $.get('/get-countries', function (countries) {
+                $('#country').append(
+                    countries.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
+                );
+                const india = countries.find(c => c.name.toLowerCase() === 'india');
+                if (india) {
+                    $('#country').is(':visible')
+                        ? $('#country').val(india.name).trigger('change')
+                        : loadStates(india.id);
+                }
+            });
+
+            function loadStates(countryId) {
+                $('#state').empty().append('<option value="">Select State</option>').trigger('change');
+                $('#city').empty().append('<option value="">Select City</option>').trigger('change');
+                $.get(`/get-states/${countryId}`, function (states) {
+                    $('#state').append(
+                        states.map(s => `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`)
+                    );
+                    const gujarat = states.find(s => s.name.toLowerCase() === 'gujarat');
+                    if (gujarat) {
+                        $('#state').is(':visible')
+                            ? $('#state').val(gujarat.name).trigger('change')
+                            : loadCities(gujarat.id);
+                    }
+                });
+            }
+
+            function loadCities(stateId) {
+                $('#city').empty().append('<option value="">Select City</option>').trigger('change');
+                $.get(`/get-cities/${stateId}`, function (cities) {
+                    $('#city').append(
+                        cities.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
+                    );
+                });
+            }
+
+            $('#country').on('change', function () {
+                const countryId = $('#country option:selected').data('id');
+                $('#state').empty().append('<option value="">Select State</option>').trigger('change');
+                $('#city').empty().append('<option value="">Select City</option>').trigger('change');
+                if (!countryId) return;
+                $.get(`/get-states/${countryId}`, function (states) {
+                    $('#state').append(
+                        states.map(s => `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`)
+                    );
+                    if (window.oldState) $('#state').val(window.oldState).trigger('change');
+                });
+            });
+
+            $('#state').on('change', function () {
+                const stateId = $('#state option:selected').data('id');
+                $('#city').empty().append('<option value="">Select City</option>').trigger('change');
+                if (!stateId) return;
+                $.get(`/get-cities/${stateId}`, function (cities) {
+                    $('#city').append(
+                        cities.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
+                    );
+                    if (window.oldCity) $('#city').val(window.oldCity).trigger('change');
+                });
+            });
         </script>
     @endpush
 

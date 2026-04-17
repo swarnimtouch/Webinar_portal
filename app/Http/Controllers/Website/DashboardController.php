@@ -17,18 +17,9 @@ class DashboardController
 {
     public function dashboard()
     {
-        $homeSetting = HomeSetting::first();
-
-        if ($homeSetting && $homeSetting->user_attendance) {
-            $this->trackUserAttendance($homeSetting);
-        }
-
         $polls = Poll::activeVisibleLatest()->get();
-
         $activeCertificate = Certificate::where('status', 'active')->first();
-
         return view('website.dashboard', [
-            'home_setting' => $homeSetting,
             'polls' => $polls,
             'active_certificate' => $activeCertificate,
             'title' => __('Dashboard'),

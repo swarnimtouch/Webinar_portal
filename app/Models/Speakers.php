@@ -25,11 +25,6 @@ class Speakers extends Model
         return $query->where('status', 'active');
     }
 
-    public function scopeOrdered($query)
-    {
-        return $query->orderBy('id');
-    }
-
     public function getMediaUrlAttribute()
     {
         return $this->filename

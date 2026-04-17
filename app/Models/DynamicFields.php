@@ -21,7 +21,7 @@ class DynamicFields extends Model
         'login_with'
     ];
 
-    public function attributeInput()
+    public function attribute_data()
     {
         return $this->belongsTo(Attribute::class, 'attribute_id');
     }
@@ -29,15 +29,5 @@ class DynamicFields extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
-    }
-
-    public function scopeLoginFields($query)
-    {
-        return $query->where('login_with', 1);
-    }
-
-    public function scopeOrdered($query)
-    {
-        return $query->orderBy('index_no');
     }
 }
