@@ -45,7 +45,7 @@ class BrandsController extends Controller
 
         $rules = [
             'title' => 'required|string|max:255',
-            'event_id' => 'required|exists:events,id',
+            'event_id' => 'nullable|exists:events,id',
         ];
 
         if (!$isUpdate) {
@@ -136,7 +136,11 @@ class BrandsController extends Controller
 
     public function datatable(Request $request)
     {
+        $user = auth()->user();
         $query = Brands::with('event');
+        if ($user->type === 'sub_admin') {
+            $query->where('event_id', $user->event_id);
+        }
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -178,7 +182,7 @@ class BrandsController extends Controller
             return [
                 'id' => $brand->id,
                 'title' => $brand->title,
-                'event' => $brand->event->name ?? '-',
+                'event' => $brand->event->name ?? 'N/A',
                 'media_url' => $brand->media_url,
                 'created_at' => $brand->created_at->format('d M Y'),
                 'status' => $brand->status,

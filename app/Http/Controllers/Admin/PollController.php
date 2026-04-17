@@ -53,7 +53,7 @@ class PollController
         $poll = $id ? Poll::findOrFail($id) : new Poll();
 
         $validator = Validator::make($request->all(), [
-            'event_id' => 'required|exists:events,id',
+            'event_id' => 'nullable|exists:events,id',
             'question' => 'required|string|min:5|max:500',
             'answers' => 'required|array|min:2|max:10',
             'answers.*' => 'required|string|min:1|max:255',
@@ -174,8 +174,11 @@ class PollController
      */
     public function datatable(Request $request)
     {
+        $user = auth()->user();
         $query = Poll::with('event');
-
+        if ($user->type === 'sub_admin') {
+            $query->where('event_id', $user->event_id);
+        }
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -219,7 +222,7 @@ class PollController
 
             return [
                 'id' => $poll->id,
-                'event' => $poll->event->name ?? '-',
+                'event' => $poll->event->name ?? 'N/A',
                 'question' => $poll->question,
                 'answers' => $answers,
                 'status' => $poll->status,

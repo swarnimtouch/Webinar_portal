@@ -12,7 +12,12 @@ class UserAttendanceController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+
         $activeFields = DynamicFields::where('status', 'active')
+            ->when($user->type === 'sub_admin', function ($q) use ($user) {
+                $q->where('event_id', $user->event_id);
+            })
             ->orderBy('index_no')
             ->get();
 
@@ -27,19 +32,28 @@ class UserAttendanceController extends Controller
 
     public function datatable(Request $request)
     {
+        $user = auth()->user();
+
         $activeFields = DynamicFields::where('status', 'active')
+            ->when($user->type === 'sub_admin', function ($q) use ($user) {
+                $q->where('event_id', $user->event_id);
+            })
             ->orderBy('index_no')
             ->get();
 
         $query = UserAttendance::query()
             ->join('users', 'user_attendances.user_id', '=', 'users.id')
+            ->leftJoin('events', 'users.event_id', '=', 'events.id')
             ->select([
                 'user_attendances.id as attendance_id',
                 'user_attendances.session_time',
                 'users.created_at as registration_date',
-                'users.*'
+                'users.*',
+                'events.name as event_name'
             ]);
-
+        if ($user->type === 'sub_admin') {
+            $query->where('users.event_id', $user->event_id);
+        }
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search, $activeFields) {
@@ -83,14 +97,15 @@ class UserAttendanceController extends Controller
 
         $data = $records->map(function ($record) use ($activeFields) {
             $row = [
+
                 'attendance_id' => $record->attendance_id,
             ];
 
             foreach ($activeFields as $field) {
                 $dbColumn = $this->mapFieldNameToColumn($field->field_name);
-                $row[$field->field_name] = $record->{$dbColumn} ?? '-';
+                $row[$field->field_name] = $record->{$dbColumn} ?? 'N/A';
             }
-
+            $row['event'] = $record->event_name ?? 'N/A';
             $row['session_time'] = $record->session_time ?? 0;
             $row['registration_date'] = $record->registration_date
                 ? Carbon::parse($record->registration_date)->format('d M Y h:i A')

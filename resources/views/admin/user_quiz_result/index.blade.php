@@ -88,6 +88,9 @@
                                                value="1"/>
                                     </div>
                                 </th>
+                                @if(auth()->user()->type === 'admin')
+                                    <th>Event</th>
+                                @endif
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Question</th>
@@ -119,6 +122,7 @@
         var KTUserQuizResultList = function () {
             var table = document.getElementById('kt_table_user_quiz_results');
             let quizResultTable;
+            const isAdmin = {{auth()->user()->type === 'admin' ? 'true' : 'false'}};
 
             function initQuizResultTable() {
                 quizResultTable = $('#kt_table_user_quiz_results').DataTable({
@@ -141,6 +145,7 @@
                                 <input class="form-check-input row-checkbox" type="checkbox" value="${id}" />
                             </div>`
                         },
+                        ...(isAdmin ? [{data: 'event'}] : []),
                         {
                             data: 'user_name',
                             render: (data) => data ? data : 'N/A'

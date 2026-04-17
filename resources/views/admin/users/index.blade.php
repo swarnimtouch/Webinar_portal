@@ -84,6 +84,9 @@
                                                value="1"/>
                                     </div>
                                 </th>
+                                @if(auth()->user()->type === 'admin')
+                                    <th>Event</th>
+                                @endif
                                 @foreach($valid_dynamic_fields as $field)
                                     <th>{{ $field->label }}</th>
                                 @endforeach
@@ -132,7 +135,7 @@
     <script>
         "use strict";
         const qsa = (s, p = document) => [...p.querySelectorAll(s)];
-
+        const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
         var KTUsersList = function () {
             var table = document.getElementById('kt_table_users');
             let userTable;
@@ -174,6 +177,7 @@
                                     <input class="form-check-input row-checkbox" type="checkbox" value="${id}"/>
                                 </div>`
                         },
+                        ...(isAdmin ? [{data: 'event'}] : []),
                         ...dynamicFields.map(f => ({
                             data: f.field_name,
                             render: (data) => data ?? 'N/A'

@@ -88,7 +88,13 @@ class CertificateLogController
 
     public function datatable(Request $request)
     {
+        $user = auth()->user();
         $query = CertificateLogs::with(['certificate', 'user']);
+        if ($user->type === 'sub_admin') {
+            $query->whereHas('certificate', function ($q) use ($user) {
+                $q->where('event_id', $user->event_id);
+            });
+        }
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -123,10 +129,11 @@ class CertificateLogController
             return [
                 'id' => $download->id,
                 'certificate_id' => $download->certificate_id,
-                'certificate_name' => $download->certificate?->name ?? '-',
+                'event' => $download->certificate?->event->name ?? 'N/A',
+                'certificate_name' => $download->certificate?->name ?? 'N/A',
                 'user_id' => $download->user_id,
-                'user_name' => $download->user?->name ?? '-',
-                'user_email' => $download->user?->email ?? '-',
+                'user_name' => $download->user?->name ?? 'N/A',
+                'user_email' => $download->user?->email ?? 'N/A',
                 'file_path' => $download->file_path,
                 'downloaded_at' => $download->created_at
                     ? $download->created_at->format('d M, Y H:i')

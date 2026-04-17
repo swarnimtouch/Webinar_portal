@@ -89,6 +89,9 @@
                                                value="1"/>
                                     </div>
                                 </th>
+                                @if(auth()->user()->type === 'admin')
+                                    <th>Event</th>
+                                @endif
                                 <th>User</th>
                                 <th>Certificate</th>
                                 <th>File</th>
@@ -111,6 +114,7 @@
         "use strict";
 
         let downloadTable;
+        const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
 
         function initDownloadTable() {
             downloadTable = $('#kt_table_certificate_downloads').DataTable({
@@ -134,6 +138,7 @@
                                 <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
                             </div>`
                     },
+                    ...(isAdmin ? [{data: 'event'}] : []),
 
                     {
                         data: 'user_name',

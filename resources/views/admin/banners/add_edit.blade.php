@@ -52,29 +52,32 @@
                             <input type="hidden" name="current_type" id="current_type"
                                    value="{{ $banner->type ?? '' }}">
 
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
-                                <div class="col-lg-8">
-                                    <select name="event_id" id="event_id"
-                                            class="form-select form-select-solid form-select-lg"
-                                            data-control="select2" data-placeholder="Select a Event "
-                                            data-hide-search="true">
-                                        <option value="Select Event " disabled>
-                                            Select Event
-                                        </option>
-                                        <option value="" disabled selected>Select Event</option>
+                            @if(auth()->user()->type === 'admin')
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
+                                    <div class="col-lg-8">
+                                        <select name="event_id" id="event_id"
+                                                class="form-select form-select-solid form-select-lg"
+                                                data-control="select2"
+                                                data-placeholder="Select Event">
 
-                                        @foreach($events as $event)
-                                            <option value="{{ $event->id }}"
-                                                {{ old('event_id', $banner->event_id ?? '') == $event->id ? 'selected' : '' }}>
-                                                {{ $event->name }}
-                                            </option>
-                                        @endforeach
+                                            <option value="" disabled selected>Select Event</option>
 
+                                            @foreach($events as $event)
+                                                <option value="{{ $event->id }}"
+                                                    {{ old('event_id', $banner->event_id ?? '') == $event->id ? 'selected' : '' }}>
+                                                    {{ $event->name }}
+                                                </option>
+                                            @endforeach
 
-                                    </select>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
+                            @else
+                                <input type="hidden" name="event_id" value="{{ auth()->user()->event_id }}">
+                            @endif
+
+
                             <!-- Title -->
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Title</label>
@@ -266,6 +269,7 @@
                     let form, submitBtn, validator;
                     const isEdit = {{ $banner->exists ? 'true' : 'false' }};
                     const originalType = "{{ $banner->type ?? '' }}";
+                    const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
 
                     let imageRemoved = false;
                     let videoRemoved = false;
@@ -320,13 +324,15 @@
                     };
 
                     const init = () => {
-
                         form = document.getElementById('kt_banner_form');
                         submitBtn = document.getElementById('kt_banner_submit');
 
                         if (!form) return;
 
-                        $('#type').select2({minimumResultsForSearch: Infinity});
+                        if ($('#type').length) {
+                            $('#type').select2({minimumResultsForSearch: Infinity});
+                        }
+
 
                         validator = FormValidation.formValidation(form, {
                             fields: {
@@ -335,11 +341,13 @@
                                         notEmpty: {message: 'Title is required'}
                                     }
                                 },
-                                event_id: {
-                                    validators: {
-                                        notEmpty: {message: 'Event  is required'}
+                                ...(isAdmin && {
+                                    event_id: {
+                                        validators: {
+                                            notEmpty: {message: 'Event is required'}
+                                        }
                                     }
-                                },
+                                }),
                                 type: {
                                     validators: {
                                         notEmpty: {message: 'Type is required'}
@@ -375,6 +383,14 @@
                                 })
                             }
                         });
+                        if (isAdmin && $('#event_id').length) {
+                            $('#event_id').select2();
+
+                            $('#event_id').on('change', function () {
+                                validator.revalidateField('event_id');
+                            });
+                        }
+
 
                         if (isEdit) {
                             validator.disableValidator('image_file', 'notEmpty');
