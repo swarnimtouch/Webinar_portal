@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use \App\Http\Middleware\Authenticate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,14 +13,29 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
         then: function () {
-            \Illuminate\Support\Facades\Route::middleware(['web'])->prefix('admin')
+            Route::middleware(['web'])->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
+
+            Route::prefix('{slug}')
+                ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
+                ->middleware(['event','web'])
+                ->group(base_path('routes/event.php'));
+
+            Route::domain('{slug}.doctorly.com')
+                ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
+                ->middleware(['event','web'])
+                ->group(base_path('routes/event.php'));
+
+
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->use([
             \App\Http\Middleware\DefineConstants::class,
+        ]);
+        $middleware->alias([
+            'event' => \App\Http\Middleware\SetEvent::class,
         ]);
         $middleware->redirectGuestsTo(function (Request $request) {
 
@@ -30,7 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('admin.login');
             }
 
-            return route('home');
+            return route('home',['slug' => $request->route('slug')]);
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {

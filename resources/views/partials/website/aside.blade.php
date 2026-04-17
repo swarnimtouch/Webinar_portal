@@ -1,6 +1,5 @@
 <aside class="chat-sidebar">
     <div class="chat-sidebar-container">
-
         <div class="tab-navigation">
             <button class="tab-link active" data-tab="chat">
                 <i class="fa-solid fa-comments"></i> Live Chat
@@ -15,10 +14,7 @@
                 <i class="fa-solid fa-star"></i> Feedback
             </button>
         </div>
-
         <div class="sidebar-scrollable-content">
-
-
             <div class="tab-content" id="chat">
                 <div class="chat-messages" id="chatMessages">
 
@@ -50,7 +46,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="tab-content" id="polls">
                 <div class="poll-container" id="pollBox">
                     <p class="poll-question" id="pollQuestion">
@@ -69,8 +64,6 @@
                     </p>
                 </div>
             </div>
-
-
             <div class="tab-content" id="feedback">
                 <div class="feedback-container">
                     <h3>Rate this Session</h3>
@@ -88,7 +81,6 @@
                     <button id="submitFeedbackBtn" class="btn-primary-full">Submit Feedback</button>
                 </div>
             </div>
-
             <div class="chat-input-area">
                 <div class="input-wrapper">
                     <input type="text" id="chatInput" placeholder="Type your message...">
@@ -97,7 +89,6 @@
                     </button>
                 </div>
             </div>
-
             <div class="sidebar-extra-content">
 
                 <div class="quick-actions-panel">
@@ -111,9 +102,6 @@
                             <i class="fa-solid fa-share-from-square"></i>
                             <span>Share Screen</span>
                         </button>
-                        @php
-                            $file = siteSetting('resources');
-                        @endphp
 
                         @if(!empty($file))
                             <a href="{{ asset('storage/site_settings/'.$file) }}"
@@ -173,4 +161,5 @@
 
             </div>
         </div>
+    </div>
 </aside>

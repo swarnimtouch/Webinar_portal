@@ -8,63 +8,46 @@ use App\Models\City;
 use App\Models\Content;
 use App\Models\Country;
 use App\Models\DynamicFields;
-use App\Models\HomeSetting;
+use App\Models\Events;
 use App\Models\Speakers;
 use App\Models\State;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class HomeController
 {
     public function index()
     {
-
-        $banners = Banner::active()->ordered()->get();
-        
-        $contents = Content::get()
-            ->keyBy('slug');
-
-
-        $speakers = Speakers::active()->ordered()->get();
-
-        $brands = Brands::active()->ordered()->get();
-
-        $homeSetting = HomeSetting::first();
-
-        $loginFields = DynamicFields::active()
-            ->loginFields()
-            ->ordered()
+        $event = app('event');
+        $fields = DynamicFields::with('attribute_data')
+            ->where('event_id', $event->id)
+            ->Active()
+            ->orderBy('index_no')
             ->get();
-
-        $registerFields = DynamicFields::with('attributeInput')
-            ->active()
-            ->ordered()
-            ->get();
-
-
-        $sliderData = $banners->pluck('slider_data');
 
         return view('website.home', [
-            'home_setting' => $homeSetting,
-            'banners' => $banners,
-            'register_fields' => $registerFields,
-            'contents' => $contents,
-            'speakers' => $speakers,
-            'brands' => $brands,
-            'login_fields' => $loginFields,
-            'slider_data' => $sliderData,
-            'title' => __('Home'),
+            'banners' => Banner::Active()->where('event_id', $event->id)->get()->pluck('slider_data'),
+            'register_fields' => $fields,
+            'login_fields' => $fields->where('login_with', 1)->values(),
+            'contents' => Content::all()->keyBy('slug'),
+            'speakers' => Speakers::where('event_id', $event->id)->Active()->get(),
+            'brands' => Brands::where('event_id', $event->id)->Active()->get(),
+            'title' => 'Home',
         ]);
     }
 
     public function login(Request $request)
     {
+        $event = app('event');
+
         $loginFields = DynamicFields::active()
-            ->loginFields()
-            ->ordered()
+            ->where('event_id', $event->id)
+            ->where('login_with', 1)
+            ->orderBy('index_no')
             ->get();
 
         $rules = [];
@@ -78,7 +61,17 @@ class HomeController
             }
         }
 
-        $validated = $request->validate($rules);
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'type' => 'validation',
+                'errors' => $validator->errors()
+            ], 412);
+        }
+
+        $validated = $validator->validated();
 
         $fieldMapping = [
             'mobile_number' => 'mobile',
@@ -94,26 +87,20 @@ class HomeController
 
         $user = $query->first();
 
-        if (!$user) {
-            return back()
-                ->with('toast_error', 'User not found. Please register first.')
-                ->withInput()
-                ->with('open_login_modal', true);
+        if (!$user || $user->type !== 'doctor') {
+            return response()->json([
+                'status' => false,
+                'type' => 'auth',
+                'message' => 'Invalid credentials'
+            ], 401);
         }
 
+        Auth::guard('web')->login($user);
 
-        if ($user->type !== 'doctor') {
-            return back()
-                ->with('toast_error', 'Only doctors are allowed to login.')
-                ->withInput()
-                ->with('open_login_modal', true);
-        }
-
-        Auth::login($user);
-
-        return redirect()
-            ->route('website.dashboard')
-            ->with('toast_success', 'Login successful!');
+        return response()->json([
+            'status' => true,
+            'message' => 'Login successful'
+        ], 200);
     }
 
 
@@ -201,10 +188,10 @@ class HomeController
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('home', ['slug' => $request->route('slug')]);
     }
 }

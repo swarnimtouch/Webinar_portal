@@ -275,10 +275,10 @@ function getModules($user_type = 'admin'): array
                 'icon' => 'bi bi-gear',
                 'child' => [
                     [
-                        'route' => route('admin.settings'),
-                        'name' => 'Site Settings',
+                        'route' => route('admin.event_setting'),
+                        'name' => 'Settings',
                         'icon' => 'bi bi-sliders',
-                        'all_routes' => ['admin.settings']
+                        'all_routes' => ['admin.event_setting']
                     ],
                     [
                         'route' => route('admin.banners'),
@@ -300,6 +300,7 @@ function getModules($user_type = 'admin'): array
                     ]
                 ],
                 'all_routes' => [
+                    'admin.event_setting',
                     'admin.banners', 'admin.banner.add_edit_form',
                     'admin.speakers', 'admin.speaker.add_edit_form',
                     'admin.brand', 'admin.brand.add_edit_form'

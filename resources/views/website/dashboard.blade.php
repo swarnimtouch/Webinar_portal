@@ -5,12 +5,12 @@
 
         <section class="video-section">
             <div class="video-player">
-                {!! $home_setting->url !!}
+                {!! app('event')->player_iframe !!}
             </div>
 
             <div class="webinar-details">
                 <p class="category">TECHNOLOGY & AI</p>
-                <h1>{{ $home_setting->title}}</h1>
+                <h1>{{ app('event')->name}}</h1>
                 <p class="description">
                     Join industry experts as we explore the cutting-edge applications of generative AI, from code
                     generation to automated testing and beyond.
@@ -26,14 +26,10 @@
 
                     <div class="about-webinar">
                         <h3>About This Webinar</h3>
-                        <p>{!!$home_setting->about_us!!}</p>
+                        <p>{!!app('event')->description!!}</p>
                     </div>
                     <div class="webinar-actions">
                         <div class="action-group-right">
-                            @php
-                                $file = siteSetting('resources');
-                            @endphp
-
                             @if(!empty($file))
                                 <a href="{{ asset('storage/site_settings/'.$file) }}"
                                    class="action-btn download"
@@ -204,17 +200,15 @@
 @endsection
 
 @push('scripts')
-    @if(session('toast_success'))
-        <script>window._toastSuccess = "{{ session('toast_success') }}";</script>
-    @endif
     <script>
-        window.feedbackStoreUrl = "{{ route('feedback.save') }}";
-        window.chatMessagesUrl = "{{ route('chat.messages') }}";
-        window.chatSendUrl = "{{ route('chat.send') }}";
-        window.pollUrl = "{{ route('poll') }}";
-        window.pollVoteUrl = "{{ route('poll.vote') }}";
-        window.attendanceUrl = "{{ route('dashboard.attendance.update') }}";
+        window.feedbackStoreUrl = "{{ route('feedback.save',['slug'=>request()->route('slug')]) }}";
+        window.chatMessagesUrl = "{{ route('chat.messages',['slug'=>request()->route('slug')]) }}";
+        window.chatSendUrl = "{{ route('chat.send',['slug'=>request()->route('slug')]) }}";
+        window.pollUrl = "{{ route('poll',['slug'=>request()->route('slug')]) }}";
+        window.pollVoteUrl = "{{ route('poll.vote',['slug'=>request()->route('slug')]) }}";
+        window.attendanceUrl = "{{ route('dashboard.attendance.update',['slug'=>request()->route('slug')]) }}";
         window.csrfToken = "{{ csrf_token() }}";
         window.trackingEnabled = {{ (isset($home_setting) && $home_setting->user_attendance) ? 'true' : 'false' }};
     </script>
+    <script src="{{ asset('website/js/dashboard.js') }}"></script>
 @endpush
