@@ -304,7 +304,7 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <button type="submit" class="btn btn-gold full-width mt-3">Register</button>
+                        <button type="button" class="btn btn-gold full-width mt-3" id="btnRegister">Register</button>
                     </div>
                 </div>
             </form>
@@ -316,6 +316,7 @@
             $(function () {
 
                 const loginForm = $("#loginForm");
+                const registerForm = $("#registerForm");
 
                 loginForm.validate({
                     errorElement: "div",
@@ -405,6 +406,100 @@
                         }
                     });
                 });
+
+
+                registerForm.validate({
+                    errorElement: "div",
+                    errorClass: "error-text",
+                    errorPlacement: function (error, element) {
+                        error.insertAfter(element.closest(".email-input-group"));
+                    },
+                    highlight: function (el) {
+                        $(el).addClass("is-invalid");
+                    },
+                    unhighlight: function (el) {
+                        $(el).removeClass("is-invalid");
+                    }
+                });
+
+                registerForm.find("input, select, textarea").each(function () {
+                    const $input = $(this);
+                    const label = $input.data("label") || "This field";
+                    const type = $input.attr("type");
+                    const name = $input.attr("name");
+                    let rules = {}, messages = {};
+
+                    if ($input.data("is-required") == 1) {
+                        rules.required = true;
+                        messages.required = label + " is required";
+                    }
+                    if (name === "email") {
+                        rules.email = true;
+                        messages.email = "Please enter a valid email address";
+                    }
+                    if (type === "tel" || name === "mobile_number") {
+                        rules.digits = true;
+                        rules.minlength = 10;
+                        rules.maxlength = 10;
+                        messages.digits = "Only numbers are allowed";
+                        messages.minlength = "Mobile number must be 10 digits";
+                        messages.maxlength = "Mobile number must be 10 digits";
+                    }
+                    if (name === "password") {
+                        rules.minlength = 6;
+                        messages.minlength = label + " must be at least 6 characters";
+                    }
+                    if (Object.keys(rules).length > 0) {
+                        $input.rules("add", {...rules, messages});
+                    }
+                });
+
+                $("#btnRegister").on("click", function () {
+
+                    if (!registerForm.valid()) return;
+
+                    const formData = new FormData(registerForm[0]);
+
+                    $.ajax({
+                        url: "{{ route('register',['slug'=>request()->route('slug')]) }}",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        dataType: "json",
+
+                        beforeSend: function () {
+                            $("#btnRegister").prop("disabled", true).text("Please wait...");
+                        },
+
+                        success: function (res) {
+                            if (res.status) {
+                                toastr.success(res.message || "Register successful");
+                                window.location.href = '{{route('dashboard',['slug'=>request()->route('slug')])}}';
+                            } else {
+                                toastr.error(res.message || "Register failed");
+                            }
+                        },
+
+                        error: function (xhr) {
+                            const res = xhr.responseJSON;
+
+                            if (xhr.status === 422 && res?.errors) {
+                                $.each(res.errors, function (field, messages) {
+                                    toastr.error(messages[0]);
+                                });
+                            } else if (xhr.status === 401) {
+                                toastr.error(res.message || "Invalid credentials");
+                            } else {
+                                toastr.error("Something went wrong");
+                            }
+                        },
+                        complete: function () {
+                            $("#btnRegister").prop("disabled", false).text("Register");
+                        }
+                    });
+                });
+
             });
             window.sliderData = @json($banners??[]);
             const loginModal = document.getElementById("loginModal");
@@ -413,8 +508,6 @@
             const registerBtn = document.getElementById("openRegisterModal");
             const closeLoginBtn = document.querySelector(".close-modal-btn");
             const closeRegisterBtn = document.querySelector(".close-register-btn");
-            window._openLoginModal = {{ session('open_login_modal')    ? 'true' : 'false' }};
-            window._openRegisterModal = {{ session('open_register_modal') ? 'true' : 'false' }};
 
             function openLoginModal() {
                 if (loginModal) {
@@ -448,20 +541,10 @@
             if (registerBtn) registerBtn.addEventListener("click", openRegisterModal);
             if (closeLoginBtn) closeLoginBtn.addEventListener("click", closeLoginModal);
             if (closeRegisterBtn) closeRegisterBtn.addEventListener("click", closeRegisterModal);
-
             window.addEventListener("click", function (event) {
                 if (event.target === loginModal) closeLoginModal();
                 if (event.target === registerModal) closeRegisterModal();
             });
-
-            if (window._openLoginModal) {
-                openLoginModal();
-                window._openLoginModal = false;
-            }
-            if (window._openRegisterModal) {
-                openRegisterModal();
-                window._openRegisterModal = false;
-            }
             $(document).ready(function () {
                 const $track = $("#sliderTrack");
                 const sliderData = window.sliderData || [];
@@ -530,113 +613,6 @@
                 }
 
                 initSlider();
-            });
-
-            $("#registerForm").validate({
-                errorElement: "div",
-                errorClass: "error-text",
-                errorPlacement: function (error, element) {
-                    error.insertAfter(element.closest(".email-input-group"));
-                },
-                highlight: function (el) {
-                    $(el).addClass("is-invalid");
-                },
-                unhighlight: function (el) {
-                    $(el).removeClass("is-invalid");
-                }
-            });
-
-            $("#registerForm").find("input, select, textarea").each(function () {
-                const $input = $(this);
-                const label = $input.data("label") || "This field";
-                const type = $input.attr("type");
-                const name = $input.attr("name");
-                let rules = {}, messages = {};
-
-                if ($input.data("is-required") == 1) {
-                    rules.required = true;
-                    messages.required = label + " is required";
-                }
-                if (name === "email") {
-                    rules.email = true;
-                    messages.email = "Please enter a valid email address";
-                }
-                if (type === "tel" || name === "mobile_number") {
-                    rules.digits = true;
-                    rules.minlength = 10;
-                    rules.maxlength = 10;
-                    messages.digits = "Only numbers are allowed";
-                    messages.minlength = "Mobile number must be 10 digits";
-                    messages.maxlength = "Mobile number must be 10 digits";
-                }
-                if (name === "password") {
-                    rules.minlength = 6;
-                    messages.minlength = label + " must be at least 6 characters";
-                }
-                if (Object.keys(rules).length > 0) {
-                    $input.rules("add", {...rules, messages});
-                }
-            });
-            $.get('/get-countries', function (countries) {
-                $('#country').append(
-                    countries.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
-                );
-                const india = countries.find(c => c.name.toLowerCase() === 'india');
-                if (india) {
-                    $('#country').is(':visible')
-                        ? $('#country').val(india.name).trigger('change')
-                        : loadStates(india.id);
-                }
-            });
-
-            function loadStates(countryId) {
-                $('#state').empty().append('<option value="">Select State</option>').trigger('change');
-                $('#city').empty().append('<option value="">Select City</option>').trigger('change');
-                $.get(`/get-states/${countryId}`, function (states) {
-                    $('#state').append(
-                        states.map(s => `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`)
-                    );
-                    const gujarat = states.find(s => s.name.toLowerCase() === 'gujarat');
-                    if (gujarat) {
-                        $('#state').is(':visible')
-                            ? $('#state').val(gujarat.name).trigger('change')
-                            : loadCities(gujarat.id);
-                    }
-                });
-            }
-
-            function loadCities(stateId) {
-                $('#city').empty().append('<option value="">Select City</option>').trigger('change');
-                $.get(`/get-cities/${stateId}`, function (cities) {
-                    $('#city').append(
-                        cities.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
-                    );
-                });
-            }
-
-            $('#country').on('change', function () {
-                const countryId = $('#country option:selected').data('id');
-                $('#state').empty().append('<option value="">Select State</option>').trigger('change');
-                $('#city').empty().append('<option value="">Select City</option>').trigger('change');
-                if (!countryId) return;
-                $.get(`/get-states/${countryId}`, function (states) {
-                    $('#state').append(
-                        states.map(s => `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`)
-                    );
-                    if (window.oldState) $('#state').val(window.oldState).trigger('change');
-                });
-            });
-
-            $('#state').on('change', function () {
-                const stateId = $('#state option:selected').data('id');
-                $('#city').empty().append('<option value="">Select City</option>').trigger('change');
-                if (!stateId) return;
-                $.get(`/get-cities/${stateId}`, function (cities) {
-                    $('#city').append(
-                        cities.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
-                    );
-                    if (window.oldCity) $('#city').val(window.oldCity).trigger('change');
-                });
             });
         </script>
     @endpush

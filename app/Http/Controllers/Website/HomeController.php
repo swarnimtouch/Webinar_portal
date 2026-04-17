@@ -78,7 +78,7 @@ class HomeController
             'alternative_mobile_number' => 'alternative_mobile',
         ];
 
-        $query = User::query();
+        $query = User::where('event_id', $event->id);
 
         foreach ($validated as $field => $value) {
             $dbField = $fieldMapping[$field] ?? $field;
@@ -96,6 +96,7 @@ class HomeController
         }
 
         Auth::guard('web')->login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'status' => true,
@@ -106,7 +107,9 @@ class HomeController
 
     public function register(Request $request)
     {
-        $fields = DynamicFields::where('status', 'active')->get();
+        $event = app('event');
+        $fields = DynamicFields::Active()->where('event_id', $event->id)->get();
+
         $rules = [];
 
         foreach ($fields as $field) {
@@ -122,43 +125,47 @@ class HomeController
             }
         }
 
-        try {
-            $validated = $request->validate($rules);
+        $validator = Validator::make($request->all(), $rules);
 
-        } catch (ValidationException $e) {
-
-            $firstError = collect($e->errors())->first()[0];
-
-            return back()
-                ->with('toast_error', $firstError)
-                ->withErrors($e->errors())
-                ->withInput()
-                ->with('open_register_modal', true);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'type' => 'validation',
+                'errors' => $validator->errors()
+            ], 422);
         }
+
         $data = $request->except('_token');
 
         if (isset($data['mobile_number'])) {
             $data['mobile'] = $data['mobile_number'];
             unset($data['mobile_number']);
         }
-        if (!empty($data['first_name']) || !empty($data['last_name'])) {
-            $data['name'] = trim(
-                ($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')
-            );
 
+        if (!empty($data['first_name']) || !empty($data['last_name'])) {
+            $data['name'] = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
         }
+
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+
         $user = new User();
         $user->fill($data);
-
         $user->type = 'doctor';
+        $user->event_id = $event->id;
         $user->save();
 
-        Auth::login($user);
+        Auth::guard('web')->login($user);
 
-        return redirect()
-            ->route('website.dashboard')
-            ->with('toast_success', 'Registration successful!');
+        $request->session()->regenerate();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Registration successful'
+        ]);
     }
+
 
 
     public function countries()
