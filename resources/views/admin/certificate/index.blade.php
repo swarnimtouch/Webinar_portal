@@ -111,9 +111,11 @@
                                                value="1"/>
                                     </div>
                                 </th>
-                                <th>Background</th>
+                                <th>Image</th>
+                                @if(auth()->user()->type === 'admin')
+                                    <th>Event</th>
+                                @endif
                                 <th>Name</th>
-                                <th>Event</th>
                                 <th>Font</th>
                                 <th>Created At</th>
                                 <th>Status</th>
@@ -135,6 +137,7 @@
         "use strict";
 
         let certificateTable;
+        const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
 
         function initCertificateTable() {
             certificateTable = $('#kt_table_certificates').DataTable({
@@ -167,7 +170,8 @@
                             ? `<img src="${img}" alt="Certificate" class="rounded" style="height:45px; width:70px; object-fit:cover;">`
                             : `<span class="badge badge-light-warning">No Image</span>`
                     },
-                    {data: 'event',},
+                    ...(isAdmin ? [{data: 'event'}] : []),
+
                     {
                         data: 'name',
                         render: (name, type, row) => `

@@ -56,7 +56,7 @@ class CertificateController
             'background_image' => $certificate->exists
                 ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
                 : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'event_id' => 'required|exists:events,id',
+            'event_id' => 'nullable|exists:events,id',
             'font_file' => 'nullable|file',
             'font_size' => 'required|integer|min:1|max:300',
             'font_color' => 'required|string|max:20',
@@ -192,8 +192,11 @@ class CertificateController
      */
     public function datatable(Request $request)
     {
+        $user = auth()->user();
         $query = Certificate::with('event');
-
+        if ($user->type === 'sub_admin') {
+            $query->where('event_id', $user->event_id);
+        }
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -236,7 +239,7 @@ class CertificateController
             return [
                 'id' => $certificate->id,
                 'name' => $certificate->name,
-                'event' => $certificate->event->name ?? '-',
+                'event' => $certificate->event->name ?? 'N/A',
                 'background_image' => $certificate->background_image
                     ? asset('storage/' . $certificate->background_image)
                     : null,

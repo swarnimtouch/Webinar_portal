@@ -50,29 +50,33 @@
                             @if($poll->exists)
                                 @method('PUT')
                             @endif
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
-                                <div class="col-lg-8">
-                                    <select name="event_id" id="event_id"
-                                            class="form-select form-select-solid form-select-lg"
-                                            data-control="select2" data-placeholder="Select a Event "
-                                            data-hide-search="true">
-                                        <option value="Select Event " disabled>
-                                            Select Event
-                                        </option>
-                                        <option value="" disabled selected>Select Event</option>
-
-                                        @foreach($events as $event)
-                                            <option value="{{ $event->id }}"
-                                                {{ old('event_id', $poll->event_id ?? '') == $event->id ? 'selected' : '' }}>
-                                                {{ $event->name }}
+                            @if(auth()->user()->type === 'admin')
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
+                                    <div class="col-lg-8">
+                                        <select name="event_id" id="event_id"
+                                                class="form-select form-select-solid form-select-lg"
+                                                data-control="select2" data-placeholder="Select a Event "
+                                                data-hide-search="true">
+                                            <option value="Select Event " disabled>
+                                                Select Event
                                             </option>
-                                        @endforeach
+                                            <option value="" disabled selected>Select Event</option>
+
+                                            @foreach($events as $event)
+                                                <option value="{{ $event->id }}"
+                                                    {{ old('event_id', $poll->event_id ?? '') == $event->id ? 'selected' : '' }}>
+                                                    {{ $event->name }}
+                                                </option>
+                                            @endforeach
 
 
-                                    </select>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
+                            @else
+                                <input type="hidden" name="event_id" value="{{ auth()->user()->event_id }}">
+                            @endif
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Question</label>
                                 <div class="col-lg-8">
@@ -147,7 +151,8 @@
                                 <label class="col-lg-4 col-form-label fw-bold fs-6">Hidden</label>
                                 <div class="col-lg-8">
                                     <div class="form-check form-switch form-check-custom form-check-solid">
-                                        <input class="form-check-input" type="checkbox" name="is_hidden" id="is_hidden"
+                                        <input class="form-check-input" type="checkbox" name="is_hidden"
+                                               id="is_hidden"
                                                value="1" {{ old('is_hidden', $poll->is_hidden ?? false) ? 'checked' : '' }}/>
                                         <label class="form-check-label" for="is_hidden">
                                             Hide this poll from public view
@@ -182,6 +187,7 @@
 
             let form, submitBtn, validator;
             let answerCount = {{ count($answers) }};
+            const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
 
             const init = () => {
                 form = document.getElementById('kt_poll_form');
@@ -205,13 +211,13 @@
                                 }
                             }
                         },
-                        event_id: {
-                            validators: {
-                                notEmpty: {
-                                    message: 'Event is required'
+                        ...(isAdmin && {
+                            event_id: {
+                                validators: {
+                                    notEmpty: {message: 'Event is required'}
                                 }
-                            },
-                        },
+                            }
+                        }),
                         status: {
                             validators: {
                                 notEmpty: {
@@ -227,7 +233,13 @@
                         })
                     }
                 });
+                if (isAdmin && $('#event_id').length) {
+                    $('#event_id').select2();
 
+                    $('#event_id').on('change', function () {
+                        validator.revalidateField('event_id');
+                    });
+                }
                 document.getElementById('add-answer').addEventListener('click', () => {
                     if (answerCount >= 10) {
                         Swal.fire({

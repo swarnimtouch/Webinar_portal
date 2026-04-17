@@ -94,6 +94,9 @@
                                     <th class="min-w-150px">{{ $field->label }}</th>
                                 @endforeach
                                 <th class="min-w-150px">Session Time</th>
+                                @if(auth()->user()->type === 'admin')
+                                    <th>Event</th>
+                                @endif
                                 <th class="min-w-150px">Registration Date</th>
                                 <th class="text-end min-w-100px">Actions</th>
                             </tr>
@@ -114,6 +117,7 @@
 
         var KTUserAttendanceList = function () {
             var table = document.getElementById('kt_table_user_attendance');
+            const isAdmin = {{auth()->user()->type === 'admin' ? 'true' : 'false'}};
             var datatable;
             var toolbarBase;
             var toolbarSelected;
@@ -131,8 +135,9 @@
                             <div class="form-check form-check-sm form-check-custom form-check-solid">
                                 <input class="form-check-input row-checkbox" type="checkbox" value="${id}" />
                             </div>`
-                    }
+                    },
                 ];
+
 
                 active_fields.forEach(fieldName => {
                     columns.push({
@@ -154,11 +159,13 @@
                             return `${h}h ${m}m ${s}s`;
                         }
                     },
-
+                    ...(isAdmin ? [{data: 'event'}] : []),
                     {
                         data: 'registration_date',
                         render: date => date || '-'
                     },
+
+
                     {
                         data: 'attendance_id',
                         orderable: false,

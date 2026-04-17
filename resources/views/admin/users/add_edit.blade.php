@@ -42,196 +42,35 @@
                                        value="{{ isset($user) && $user->avatar ? '1' : '0' }}">
 
                                 <div class="card-body border-top p-9">
-                                    @foreach($active_fields as $field)
-                                        @php
-                                            $fieldName   = $field->field_name;
-                                            $label       = $field->label;
-                                            $isRequired  = $field->is_required ? 'required' : '';
-
-                                            $fieldMapping = [
-                                                'mobile_number'             => 'mobile',
-                                                'alternative_mobile_number' => 'alternative_mobile',
-                                            ];
-
-                                            $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
-                                            $value       = old($dbFieldName, $user->$dbFieldName ?? '');
-                                        @endphp
-
-                                        @if($fieldName == 'avatar')
-                                            @php
-                                                $avatarUrl = (isset($user) && $user->avatar)
-                                                    ? Storage::url($user->avatar)
-                                                    : asset('assets/media/avatars/blank.png');
-                                            @endphp
-                                            <div class="row mb-6" id="avatarUploadSection">
-                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
-                                                    {{ $label }}
-                                                </label>
-                                                <div class="col-lg-8">
-                                                    <div class="image-input image-input-outline"
-                                                         data-kt-image-input="true"
-                                                         style="background-image: url('{{ asset('assets/media/avatars/blank.png') }}')">
-
-                                                        <div class="image-input-wrapper w-125px h-125px"
-                                                             id="avatarPreview"
-                                                             style="background-image: url('{{ $avatarUrl }}')">
-                                                        </div>
-
-                                                        <label
-                                                            class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                            data-kt-image-input-action="change"
-                                                            data-bs-toggle="tooltip"
-                                                            title="Change avatar">
-                                                            <i class="bi bi-pencil-fill fs-7"></i>
-                                                            <input type="file" name="avatar" id="avatar"
-                                                                   accept="image/*"/>
-                                                            <input type="hidden" name="avatar_remove"/>
-                                                        </label>
-
-                                                        <span
-                                                            class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                            data-kt-image-input-action="cancel"
-                                                            data-bs-toggle="tooltip"
-                                                            title="Cancel">
-                                                            <i class="bi bi-x fs-2"></i>
-                                                        </span>
-
-                                                        <span
-                                                            class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                            data-kt-image-input-action="remove"
-                                                            data-bs-toggle="tooltip"
-                                                            title="Remove">
-                                                            <i class="bi bi-x fs-2"></i>
-                                                        </span>
-                                                    </div>
-                                                    <div class="form-text">Allowed file types: jpg, jpeg, png, gif. Max
-                                                        size: 5MB
-                                                    </div>
-                                                </div>
+                                    @if(auth()->user()->type === 'admin')
+                                        <div class="row mb-6">
+                                            <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
+                                            <div class="col-lg-8">
+                                                <select name="event_id" id="event_id"
+                                                        class="form-select form-select-solid form-select-lg"
+                                                        data-control="select2"
+                                                        data-placeholder="Select an Event"
+                                                        data-hide-search="true">
+                                                    <option value="" disabled selected>Select Event</option>
+                                                    @foreach($events as $event)
+                                                        <option value="{{ $event->id }}"
+                                                            {{ old('event_id', $user->event_id ?? '') == $event->id ? 'selected' : '' }}>
+                                                            {{ $event->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                             </div>
+                                        </div>
+                                    @else
+                                        <input type="hidden" name="event_id" value="{{ auth()->user()->event_id }}">
+                                    @endif
 
-                                        @elseif($fieldName == 'email')
-                                            {{-- Email Field --}}
-                                            <div class="row mb-6">
-                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
-                                                    {{ $label }}
-                                                </label>
-                                                <div class="col-lg-8">
-                                                    <input type="email"
-                                                           name="email"
-                                                           value="{{ $value }}"
-                                                           class="form-control form-control-lg form-control-solid"
-                                                           placeholder="Enter email address"/>
-                                                </div>
-                                            </div>
-
-                                        @elseif(in_array($fieldName, ['mobile_number', 'alternative_mobile_number']))
-                                            {{-- Mobile Number Fields --}}
-                                            <div class="row mb-6">
-                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
-                                                    {{ $label }}
-                                                </label>
-                                                <div class="col-lg-8">
-                                                    <input type="tel"
-                                                           name="{{ $dbFieldName }}"
-                                                           value="{{ $value }}"
-                                                           inputmode="numeric"
-                                                           pattern="[0-9]*"
-                                                           class="form-control form-control-lg form-control-solid mobile-number-input"
-                                                           placeholder="Enter mobile number"/>
-                                                </div>
-                                            </div>
-
-                                        @elseif($fieldName == 'password')
-                                            {{-- Password Field --}}
-                                            <div class="row mb-6">
-                                                <label
-                                                    class="col-lg-4 col-form-label {{ isset($user) ? '' : $isRequired }} fw-bold fs-6">
-                                                    {{ $label }}
-                                                    @if(isset($user))
-                                                        <span class="text-muted fs-7 fw-normal ms-1">(Leave blank to keep current)</span>
-                                                    @endif
-                                                </label>
-                                                <div class="col-lg-8">
-                                                    <input type="password"
-                                                           name="password"
-                                                           class="form-control form-control-lg form-control-solid"
-                                                           placeholder="{{ isset($user) ? 'Leave blank to keep current' : 'Enter password' }}"
-                                                           autocomplete="new-password"/>
-                                                </div>
-                                            </div>
-
-                                        @elseif($fieldName == 'address')
-                                            {{-- Address Textarea --}}
-                                            <div class="row mb-6">
-                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
-                                                    {{ $label }}
-                                                </label>
-                                                <div class="col-lg-8">
-                                                    <textarea name="address"
-                                                              class="form-control form-control-lg form-control-solid"
-                                                              rows="3"
-                                                              placeholder="Enter address">{{ $value }}</textarea>
-                                                </div>
-                                            </div>
-
-                                        @elseif($fieldName == 'country')
-                                            {{-- Country Dropdown --}}
-                                            <div class="row mb-6">
-                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
-                                                    {{ $label }}
-                                                </label>
-                                                <div class="col-lg-8">
-                                                    <select name="country" id="country"
-                                                            class="form-select form-select-lg form-select-solid">
-                                                        <option value="">Select Country</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                        @elseif($fieldName == 'state')
-                                            {{-- State Dropdown --}}
-                                            <div class="row mb-6">
-                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
-                                                    {{ $label }}
-                                                </label>
-                                                <div class="col-lg-8">
-                                                    <select name="state" id="state"
-                                                            class="form-select form-select-lg form-select-solid">
-                                                        <option value="">Select State</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                        @elseif($fieldName == 'city')
-                                            {{-- City Dropdown --}}
-                                            <div class="row mb-6">
-                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
-                                                    {{ $label }}
-                                                </label>
-                                                <div class="col-lg-8">
-                                                    <select name="city" id="city"
-                                                            class="form-select form-select-lg form-select-solid">
-                                                        <option value="">Select City</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        @else
-                                            {{-- Default Text Input --}}
-                                            <div class="row mb-6">
-                                                <label class="col-lg-4 col-form-label {{ $isRequired }} fw-bold fs-6">
-                                                    {{ $label }}
-                                                </label>
-                                                <div class="col-lg-8">
-                                                    <input type="text"
-                                                           name="{{ $dbFieldName }}"
-                                                           value="{{ $value }}"
-                                                           class="form-control form-control-lg form-control-solid"
-                                                           placeholder="Enter {{ strtolower($label) }}"/>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    @endforeach
+                                    <div id="dynamic_fields_wrapper">
+                                        @include('admin.users._dynamic_fields', [
+                                            'active_fields' => $active_fields,
+                                            'user'          => $user ?? null
+                                        ])
+                                    </div>
                                 </div>
 
                                 <div class="card-footer d-flex justify-content-end py-6 px-9">
@@ -255,98 +94,259 @@
     </div>
 @endsection
 
+
 @push('scripts')
     <script>
         "use strict";
 
         KTUtil.onDOMContentLoaded(function () {
 
-
             const form = document.querySelector('#kt_user_form');
             const submit_btn = document.querySelector('#kt_user_submit');
-            const avatar_input = document.querySelector('#avatar');
             const avatar_removed_input = document.querySelector('#avatar_removed');
-            const has_existing_avatar = document.querySelector('#has_existing_avatar').value === '1';
-            const is_edit_mode = {{ isset($user) ? 'true' : 'false' }};
 
-            let avatar_was_removed = false;
-            let new_avatar_selected = false;
+            const COUNTRIES_URL = "{{ route('admin.users.countries') }}";
+            const STATES_URL = '/get-states';
+            const CITIES_URL = '/get-cities';
+            const EVENT_FIELDS_URL = "{{ url('admin/get-event-fields') }}";
+            const DEFAULT_COUNTRY = 'India';
+            const DEFAULT_STATE = 'Gujarat';
 
-            if (avatar_removed_input) {
+            const SOURCE_URLS = {
+                countries: COUNTRIES_URL,
+                states: STATES_URL,
+                cities: CITIES_URL,
+            };
 
-                document.querySelectorAll('[data-kt-image-input-action="remove"]').forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        avatar_was_removed = true;
-                        new_avatar_selected = false;
-                        avatar_removed_input.value = '1';
+            let validator = null;
 
-                        setTimeout(() => {
-                            if (validator) validator.revalidateField('avatar');
-                        }, 100);
-                    });
+            function load_dropdown($el, source, parentId, oldValue) {
+                if (!$el.length) return;
+                let url = SOURCE_URLS[source];
+                if (!url) return;
+                if (parentId) url += '/' + parentId;
+
+                const placeholder = $el.find('option:first').text();
+                $el.html(`<option value="">${placeholder}</option>`);
+
+                $.get(url, function (items) {
+                    $el.append(items.map(function (item) {
+                        return `<option value="${item.name}" data-id="${item.id}">${item.name}</option>`;
+                    }));
+                    if (oldValue) $el.val(oldValue);
+                    if ($el.val()) trigger_dependents($el);
+                });
+            }
+
+            function trigger_dependents($parent) {
+                const parentName = $parent.attr('id');
+                const parentId = $parent.find(':selected').data('id');
+                $('[data-depends-on="' + parentName + '"]').each(function () {
+                    const $child = $(this);
+                    const source = $child.data('source');
+                    const oldValue = $child.data('old-value') || '';
+                    load_dropdown($child, source, parentId, oldValue);
+                });
+            }
+
+            function boot_geo() {
+
+                $('[data-source]').each(function () {
+                    const $el = $(this);
+                    const source = $el.data('source');
+                    const dependsOn = $el.data('depends-on');
+                    if (!dependsOn) {
+                        load_dropdown($el, source, null, $el.data('old-value') || '');
+                    }
                 });
 
-                document.querySelectorAll('[data-kt-image-input-action="cancel"]').forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        avatar_was_removed = false;
-                        new_avatar_selected = false;
-                        avatar_removed_input.value = '0';
-                    });
-                });
+                const $stateDropdown = $('[data-source="states"]');
+                if ($stateDropdown.length && !$('#dynamic_fields_wrapper select[name="country"]').length) {
+                    const countryName = $('[name="country"]').val();
+                    if (countryName) {
+                        $.get(COUNTRIES_URL, function (countries) {
+                            const country = countries.find(c => c.name === countryName);
+                            if (country) {
+                                load_dropdown($stateDropdown, 'states', country.id, $stateDropdown.data('old-value') || '');
+                            }
+                        });
+                    }
+                }
 
-                if (avatar_input) {
-                    avatar_input.addEventListener('change', function () {
-                        if (this.files && this.files.length > 0) {
-                            new_avatar_selected = true;
-                            avatar_was_removed = false;
-                            avatar_removed_input.value = '0';
-                        }
-                    });
+                const $cityDropdown = $('[data-source="cities"]');
+                if ($cityDropdown.length && !$('#dynamic_fields_wrapper select[name="state"]').length) {
+                    const stateName = $('[name="state"]').val();
+                    if (stateName) {
+                        $.get(COUNTRIES_URL, function (countries) {
+                            const countryName = $('[name="country"]').val() || DEFAULT_COUNTRY;
+                            const country = countries.find(c => c.name === countryName);
+                            if (!country) return;
+
+                            $.get(STATES_URL + '/' + country.id, function (states) {
+                                const state = states.find(s => s.name === stateName);
+                                if (state) {
+                                    load_dropdown($cityDropdown, 'cities', state.id, $cityDropdown.data('old-value') || '');
+                                }
+                            });
+                        });
+                    }
                 }
             }
 
-            const validation_fields = {};
+            $(document).on('change', '[data-source]', function () {
+                const $parent = $(this);
+                const parentName = $parent.attr('id');
+                const parentId = $parent.find(':selected').data('id');
 
-            @foreach($active_fields as $field)
-                @php
-                    $field_name = $field->field_name;
-                    $field_mapping = [
-                        'mobile_number' => 'mobile',
-                        'alternative_mobile_number' => 'alternative_mobile',
-                    ];
-                    $db_field_name = $field_mapping[$field_name] ?? $field_name;
-                @endphp
-
-                @if($field_name == 'email')
-                validation_fields['email'] = {
-                validators: {
-                    @if($field->is_required)
-                    notEmpty: {message: 'Email is required'},
-                    @endif
-                    emailAddress: {message: 'Enter valid email'}
-                }
-            };
-            @elseif($field->is_required)
-                validation_fields['{{ $db_field_name }}'] = {
-                validators: {
-                    notEmpty: {message: '{{ $field->label }} is required'}
-                }
-            };
-            @endif
-            @endforeach
-
-            const validator = FormValidation.formValidation(form, {
-                fields: validation_fields,
-                plugins: {
-                    trigger: new FormValidation.plugins.Trigger(),
-                    bootstrap: new FormValidation.plugins.Bootstrap5({
-                        rowSelector: '.row'
-                    })
-                }
+                $('[data-depends-on="' + parentName + '"]').each(function () {
+                    const $child = $(this);
+                    const source = $child.data('source');
+                    const placeholder = $child.find('option:first').text();
+                    $child.html(`<option value="">${placeholder}</option>`);
+                    if (parentId) load_dropdown($child, source, parentId, '');
+                });
             });
+
+            function build_validation() {
+                const fields = {};
+
+                $('#dynamic_fields_wrapper [name]').each(function () {
+                    const el = this;
+                    const name = el.name.replace(/\[\]$/, '');
+                    const type = el.type || el.tagName.toLowerCase();
+                    const $row = $(el).closest('.row');
+                    const label = $row.find('label').first().text().trim().replace(/\(.*?\)/g, '').trim();
+                    const required = $row.find('label').first().hasClass('required');
+
+                    if (['hidden', 'submit', 'button', 'file'].includes(type)) return;
+
+                    if (name === 'password') {
+                        @if(!isset($user))
+                            fields['password'] = {
+                            validators: {notEmpty: {message: 'Password is required'}}
+                        };
+                        @endif
+                            return;
+                    }
+
+                    if (name === 'email') {
+                        const v = {emailAddress: {message: 'Enter a valid email address'}};
+                        if (required) v.notEmpty = {message: 'Email is required'};
+                        fields['email'] = {validators: v};
+                        return;
+                    }
+
+                    if (type === 'tel' || $(el).hasClass('mobile-number-input')) {
+                        const v = {digits: {message: 'Only numbers are allowed'}};
+                        if (required) v.notEmpty = {message: (label || 'This field') + ' is required'};
+                        fields[name] = {validators: v};
+                        return;
+                    }
+
+                    if (required && !fields[name]) {
+                        fields[name] = {
+                            validators: {
+                                notEmpty: {message: (label || 'This field') + ' is required'}
+                            }
+                        };
+                    }
+                });
+
+                if (validator) {
+                    try {
+                        validator.destroy();
+                    } catch (e) {
+                    }
+                    validator = null;
+                }
+
+                if (form.fv) {
+                    try {
+                        form.fv.destroy();
+                    } catch (e) {
+                    }
+                    delete form.fv;
+                }
+
+                setTimeout(function () {
+                    validator = FormValidation.formValidation(form, {
+                        fields: fields,
+                        plugins: {
+                            trigger: new FormValidation.plugins.Trigger(),
+                            bootstrap: new FormValidation.plugins.Bootstrap5({rowSelector: '.row'})
+                        }
+                    });
+                }, 100);
+            }
+
+            $('#event_id').on('change', function () {
+                const eventId = $(this).val();
+
+                if (!eventId) {
+                    $('#dynamic_fields_wrapper').html('');
+                    if (validator) {
+                        try {
+                            validator.destroy();
+                        } catch (e) {
+                        }
+                        validator = null;
+                    }
+                    if (form.fv) {
+                        try {
+                            form.fv.destroy();
+                        } catch (e) {
+                        }
+                        delete form.fv;
+                    }
+                    return;
+                }
+
+                if (validator) {
+                    try {
+                        validator.destroy();
+                    } catch (e) {
+                    }
+                    validator = null;
+                }
+                if (form.fv) {
+                    try {
+                        form.fv.destroy();
+                    } catch (e) {
+                    }
+                    delete form.fv;
+                }
+
+                $('#dynamic_fields_wrapper').html(`
+        <div class="text-center py-5">
+            <span class="spinner-border spinner-border-sm me-2"></span> Loading fields...
+        </div>
+    `);
+
+                $.get(`${EVENT_FIELDS_URL}/${eventId}`, function (html) {
+                    $('#dynamic_fields_wrapper').html(html);
+                    boot_geo();
+                    build_validation();
+                });
+            });
+
+            if (avatar_removed_input) {
+                $(document).on('click', '[data-kt-image-input-action="remove"]', function () {
+                    avatar_removed_input.value = '1';
+                });
+                $(document).on('click', '[data-kt-image-input-action="cancel"]', function () {
+                    avatar_removed_input.value = '0';
+                });
+                $(document).on('change', '#avatar', function () {
+                    if (this.files && this.files.length > 0) avatar_removed_input.value = '0';
+                });
+            }
 
             submit_btn.addEventListener('click', function (e) {
                 e.preventDefault();
+                if (!validator) {
+                    form.submit();
+                    return;
+                }
 
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
@@ -357,78 +357,10 @@
                 });
             });
 
-
-            window.old_country = "{{ old('country', $user->country ?? '') }}";
-            window.old_state = "{{ old('state', $user->state ?? '') }}";
-            window.old_city = "{{ old('city', $user->city ?? '') }}";
-
-            $.get("{{ route('admin.users.countries') }}", function (countries) {
-
-                $('#country').append(
-                    countries.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
-                );
-
-                if (window.old_country) {
-                    $('#country').val(window.old_country);
-                }
-
-                const selected_country = countries.find(c => c.name === window.old_country);
-
-                if (selected_country) {
-                    load_states(selected_country.id);
-                }
-            });
-
-            function load_states(country_id) {
-
-                $.get(`/get-states/${country_id}`, function (states) {
-
-                    $('#state').html('<option value="">Select State</option>').append(
-                        states.map(s => `<option value="${s.name}" data-id="${s.id}">${s.name}</option>`)
-                    );
-
-                    if (window.old_state) {
-                        $('#state').val(window.old_state);
-                    }
-
-                    const selected_state = states.find(s => s.name === window.old_state);
-
-                    if (selected_state) {
-                        load_cities(selected_state.id);
-                    }
-                });
+            if ($('#dynamic_fields_wrapper [name]').length) {
+                boot_geo();
+                build_validation();
             }
-
-            function load_cities(state_id) {
-
-                $.get(`/get-cities/${state_id}`, function (cities) {
-
-                    $('#city').html('<option value="">Select City</option>').append(
-                        cities.map(c => `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`)
-                    );
-
-                    if (window.old_city) {
-                        $('#city').val(window.old_city);
-                    }
-                });
-            }
-
-            $('#country').on('change', function () {
-                const country_id = $(this).find(':selected').data('id');
-
-                $('#state').html('<option value="">Select State</option>');
-                $('#city').html('<option value="">Select City</option>');
-
-                if (country_id) load_states(country_id);
-            });
-
-            $('#state').on('change', function () {
-                const state_id = $(this).find(':selected').data('id');
-
-                $('#city').html('<option value="">Select City</option>');
-
-                if (state_id) load_cities(state_id);
-            });
 
         });
     </script>

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Models\User;
 
 
@@ -14,9 +15,15 @@ class Feedback extends Model
         'rating',
         'comment',
     ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Events::class);
     }
 
 }

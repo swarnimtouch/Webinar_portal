@@ -23,7 +23,7 @@ class HomeController
     {
 
         $banners = Banner::active()->ordered()->get();
-
+        
         $contents = Content::get()
             ->keyBy('slug');
 

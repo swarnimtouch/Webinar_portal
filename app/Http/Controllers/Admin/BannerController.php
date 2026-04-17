@@ -39,7 +39,7 @@ class BannerController extends Controller
                 'required',
                 Rule::in(['image', 'video']),
             ],
-            'event_id' => 'required|exists:events,id',
+            'event_id' => 'nullable|exists:events,id',
 
             'image_file' => [
                 Rule::requiredIf(fn() => !$id && $request->type === 'image'),
@@ -144,7 +144,12 @@ class BannerController extends Controller
 
     public function datatable(Request $request)
     {
+        $user = auth()->user();
+
         $query = Banner::with('event');
+        if ($user->type === 'sub_admin') {
+            $query->where('event_id', $user->event_id);
+        }
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -188,7 +193,7 @@ class BannerController extends Controller
             return [
                 'id' => $banner->id,
                 'title' => $banner->title,
-                'event' => $banner->event->name ?? '-',
+                'event' => $banner->event->name ?? 'N/A',
                 'media_url' => $banner->media_url,
                 'created_at' => $banner->created_at->format('d M Y'),
                 'status' => $banner->status,

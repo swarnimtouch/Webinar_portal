@@ -77,8 +77,14 @@ class ChatLogController extends Controller
      */
     public function datatable(Request $request)
     {
-        $query = Messages::with(['sender', 'group']);
+        $user = auth()->user();
 
+        $query = Messages::with(['sender', 'group']);
+        if ($user->type === 'sub_admin') {
+            $query->whereHas('sender', function ($q) use ($user) {
+                $q->where('event_id', $user->event_id);
+            });
+        }
         if ($request->filled('search')) {
             $search = $request->search;
 
@@ -140,6 +146,7 @@ class ChatLogController extends Controller
                 'id' => $chatMessage->id,
                 'group_name' => optional($chatMessage->group)->name ?? 'N/A',
                 'sender_name' => optional($chatMessage->sender)->name ?? 'N/A',
+                'event' => $chatMessage->sender?->event->name ?? 'N/A',
                 'message' => $chatMessage->message,
                 'seen_by' => $seenUserNames,
 
