@@ -113,7 +113,7 @@
                             </a>
                         @endif
                         @if($active_certificate)
-                            <a href="{{ route('admin.certificate.generate', ['certificateId' => $active_certificate->id, 'userId' => auth()->id()]) }}"
+                            <a href="{{ route('certificate.generate', ['certificateId' => $active_certificate->id, 'userId' => auth()->id(),'slug'=>request()->route('slug')]) }}"
                                class="action-box">
                                 <i class="fa-solid fa-certificate"></i>
                                 <span>Certificate</span>

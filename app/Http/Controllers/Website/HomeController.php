@@ -8,7 +8,6 @@ use App\Models\City;
 use App\Models\Content;
 use App\Models\Country;
 use App\Models\DynamicFields;
-use App\Models\Events;
 use App\Models\Speakers;
 use App\Models\State;
 use App\Models\User;
@@ -16,7 +15,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class HomeController
 {
@@ -104,7 +102,6 @@ class HomeController
         ], 200);
     }
 
-
     public function register(Request $request)
     {
         $event = app('event');
@@ -165,8 +162,6 @@ class HomeController
             'message' => 'Registration successful'
         ]);
     }
-
-
 
     public function countries()
     {

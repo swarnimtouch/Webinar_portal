@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class CertificateController
 {
-    public function generate($certificateId, $userId)
+    public function generate($slug,$certificateId, $userId)
     {
         $certificate = Certificate::findOrFail($certificateId);
         $user = User::findOrFail($userId);

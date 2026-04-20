@@ -26,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/poll/vote', [DashboardController::class, 'submitPoll'])->name('poll.vote');
     Route::get('/chat/messages', [ChatController::class, 'fetchMessages'])->name('chat.messages');
     Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
-    Route::get('certificate/generate/{certificateId}/{userId}', [CertificateController::class, 'generate'])->name('admin.certificate.generate');
+    Route::get('certificate/generate/{certificateId}/{userId}', [CertificateController::class, 'generate'])->name('certificate.generate');
 });
 
 Route::get('/{slug}', [ContentController::class, 'show']);
