@@ -112,7 +112,8 @@
 
             function reload_dependent($parent) {
                 const parentName = $parent.attr('id');
-                const parentVal = $parent.find(':selected').val();
+                const parentVal = $parent.find(':selected').val(); // this is the name now
+                const parentLabel = $parent.find(':selected').text().trim();
 
                 const eventId = $('#event_id').val()
                     || $('input[name="event_id"]').val()
@@ -124,18 +125,17 @@
                     const placeholder = $child.find('option:first').text();
                     $child.html(`<option value="">${placeholder}</option>`);
 
-                    if (!eventId) return;
+                    if (!eventId || !parentVal) return;
 
                     $.get(EVENT_FIELDS_URL + '/' + eventId, {
                         parent_field: parentName,
-                        parent_value: parentVal
+                        parent_value: parentVal  // sending name
                     }, function (html) {
                         const $newSelect = $(html).find('select[name="' + fieldName + '"]');
                         if ($newSelect.length) {
                             $child.replaceWith($newSelect);
                             build_validation();
                         }
-
                     });
                 });
             }
