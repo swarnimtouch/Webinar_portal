@@ -33,12 +33,12 @@ class ChatLogController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Chat message deleted successfully'
+                'message' => 'Chat Log deleted successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting chat message'
+                'message' => 'Error deleting chat Log'
             ], 500);
         }
     }
@@ -54,7 +54,7 @@ class ChatLogController extends Controller
             if (empty($ids)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No chat messages selected'
+                    'message' => 'No chat Log selected'
                 ], 400);
             }
 
@@ -62,12 +62,12 @@ class ChatLogController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Chat messages deleted successfully'
+                'message' => 'Chat Log deleted successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting chat messages'
+                'message' => 'Error deleting chat Log'
             ], 500);
         }
     }

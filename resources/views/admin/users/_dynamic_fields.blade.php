@@ -166,12 +166,14 @@
                         @endif>
                         <option value="">Select {{ $label }}</option>
                         @foreach($source_items as $item)
-                            <option value="{{ $item->{$source_val} }}"
-                                    data-id="{{ $item->id }}"
-                                {{ $value == $item->{$source_val} ? 'selected' : '' }}>
+                            <option value="{{ $item->{$source_lbl} }}"
+                                    data-id="{{ $item->{$source_val} }}"
+                                {{ $value == $item->{$source_lbl} ? 'selected' : '' }}>
                                 {{ $item->{$source_lbl} }}
                             </option>
+
                         @endforeach
+
                     </select>
                     @break
 

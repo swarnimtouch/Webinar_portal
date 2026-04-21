@@ -65,7 +65,7 @@ class ContentController extends Controller
 
         return redirect()
             ->route('admin.content')
-            ->with('success', 'Content updated successfully!');
+            ->with('success', 'Content Save successfully!');
     }
 
     public function datatable(Request $request)
