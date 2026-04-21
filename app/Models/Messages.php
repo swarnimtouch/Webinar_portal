@@ -40,7 +40,7 @@ class Messages extends Model
 
     public function group()
     {
-        return $this->belongsTo(Thread::class, 'group_id');
+        return $this->belongsTo(Thread::class, 'thread_id');
     }
 
     /**
