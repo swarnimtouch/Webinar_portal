@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Poll extends Model
 {
@@ -44,12 +45,23 @@ class Poll extends Model
 
     public function votes()
     {
-        return $this->hasMany(UserQuizAnswer::class);
+        return $this->hasMany(UserPollAnswer::class);
+    }
+
+    public function poll_answers()
+    {
+        return $this->hasMany(PollAnswer::class);
     }
 
     public function event()
     {
         return $this->belongsTo(Events::class);
+    }
+
+    public function scopeCurrentEvent($query)
+    {
+        $event = app('event');
+        return $query->where('event_id', $event->id ?? 0);
     }
 
 }

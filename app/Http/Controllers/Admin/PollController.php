@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\PollBroadcast;
 use App\Models\Events;
 use App\Models\Poll;
+use App\Models\PollAnswer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
@@ -84,9 +86,18 @@ class PollController
         $poll->answers = json_encode($answers);
         $poll->status = $request->status;
         $poll->is_hidden = $request->has('is_hidden') ? 1 : 0;
-        $poll->save();
-
-
+        if ($poll->save()) {
+            if (!empty($answers)) {
+                $poll->poll_answers()->delete();
+                $formattedAnswers = collect($answers)->map(function ($answer) {
+                    return ['answer' => $answer];
+                })->toArray();
+                $poll->poll_answers()->createMany($formattedAnswers);
+            }
+            if ($poll->is_hidden == 0) {
+                broadcast(new PollBroadcast($poll, $poll->event->slug))->toOthers();
+            }
+        }
         return redirect()
             ->route('admin.poll')
             ->with('success', 'Poll Saved Successfully');
