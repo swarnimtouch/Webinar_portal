@@ -125,4 +125,55 @@ class FeedbackController
         ]);
     }
 
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $isAdmin = $user->type === 'admin';
+        $search = $request->get('search');
+
+        $query = Feedback::with(['user', 'event'])
+            ->when(!$isAdmin, function ($q) use ($user) {
+                $q->where('event_id', $user->event_id);
+            })
+            ->when($search, function ($q) use ($search) {
+                $q->whereHas('user', function ($uq) use ($search) {
+                    $uq->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                })->orWhere('comment', 'like', "%{$search}%");
+            })
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $headers = $isAdmin
+            ? ['Event', 'Name', 'Email', 'Rating', 'Comment', 'Date']
+            : ['Name', 'Email', 'Rating', 'Comment', 'Date'];
+
+        $rows = [];
+        $rows[] = implode(',', $headers);
+
+        $esc = fn($val) => '"' . str_replace('"', '""', $val) . '"';
+
+        foreach ($query as $feedback) {
+            $eventName = optional($feedback->event)->name ?? 'N/A';
+            $userName = optional($feedback->user)->name ?? 'N/A';
+            $userEmail = optional($feedback->user)->email ?? 'N/A';
+            $rating = $feedback->rating ?? 'N/A';
+            $comment = $feedback->comment ?? 'N/A';
+            $date = $feedback->created_at?->format('d M Y') ?? 'N/A';
+
+            $row = $isAdmin
+                ? [$esc($eventName), $esc($userName), $esc($userEmail), $esc($rating), $esc($comment), $esc($date)]
+                : [$esc($userName), $esc($userEmail), $esc($rating), $esc($comment), $esc($date)];
+
+            $rows[] = implode(',', $row);
+        }
+
+        $csv = implode("\n", $rows);
+        $filename = 'feedbacks_export_' . now()->format('Y-m-d') . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
 }

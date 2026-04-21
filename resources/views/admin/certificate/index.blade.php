@@ -163,12 +163,17 @@
                             </div>`
                     },
 
+                    
                     {
                         data: 'background_image',
-                        orderable: false,
-                        render: img => img
-                            ? `<img src="${img}" alt="Certificate" class="rounded" style="height:45px; width:70px; object-fit:cover;">`
-                            : `<span class="badge badge-light-warning">No Image</span>`
+                        render: (data, type, row) =>
+                            row.background_image
+                                ? `<a href="${row.background_image}" class="image-link">
+                               <img src="${row.background_image}" width="50" height="50"
+                                    style="object-fit:contain;border-radius:4px;background:#f5f8fa;"
+                                    alt="Brand">
+                           </a>`
+                                : '<span class="text-muted">—</span>'
                     },
                     ...(isAdmin ? [{data: 'event'}] : []),
 
@@ -366,6 +371,9 @@
         document.querySelector('[data-kt-user-table-filter="filter"]')
             .addEventListener('click', () => certificateTable.draw());
 
-        KTUtil.onDOMContentLoaded(() => initCertificateTable());
+        KTUtil.onDOMContentLoaded(() => {
+            initCertificateTable()
+            $('#certificateTable').on('draw.dt', () => $('.image-link').viewbox());
+        });
     </script>
 @endpush

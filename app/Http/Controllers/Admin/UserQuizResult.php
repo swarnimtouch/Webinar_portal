@@ -116,4 +116,64 @@ class UserQuizResult
             'data' => $data,
         ]);
     }
+
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $isAdmin = $user->type === 'admin';
+        $search = $request->get('search');
+
+        $query = UserQuizAnswer::with(['user.event', 'poll'])
+            ->when(!$isAdmin, function ($q) use ($user) {
+                $q->whereHas('poll', function ($pq) use ($user) {
+                    $pq->where('event_id', $user->event_id);
+                });
+            })
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($q) use ($search) {
+                    $q->whereHas('user', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
+                        ->orWhereHas('poll', function ($pq) use ($search) {
+                            $pq->where('question', 'like', "%{$search}%");
+                        })
+                        ->orWhere('answer', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $headers = $isAdmin
+            ? ['Event', 'User', 'Email', 'Question', 'Answer', 'Date']
+            : ['User', 'Email', 'Question', 'Answer', 'Date'];
+
+        $rows = [];
+        $rows[] = implode(',', $headers);
+
+        $esc = fn($val) => '"' . str_replace('"', '""', $val) . '"';
+
+        foreach ($query as $answer) {
+            $eventName = optional($answer->user?->event)->name ?? 'N/A';
+            $userName = optional($answer->user)->name ?? 'N/A';
+            $userEmail = optional($answer->user)->email ?? 'N/A';
+            $question = optional($answer->poll)->question ?? 'N/A';
+            $ans = $answer->answer ?? 'N/A';
+            $date = $answer->created_at?->format('d M Y') ?? 'N/A';
+
+            $row = $isAdmin
+                ? [$esc($eventName), $esc($userName), $esc($userEmail), $esc($question), $esc($ans), $esc($date)]
+                : [$esc($userName), $esc($userEmail), $esc($question), $esc($ans), $esc($date)];
+
+            $rows[] = implode(',', $row);
+        }
+
+        $csv = implode("\n", $rows);
+        $filename = 'user_quiz_results_export_' . now()->format('Y-m-d') . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
 }

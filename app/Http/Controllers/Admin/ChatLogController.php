@@ -79,7 +79,7 @@ class ChatLogController extends Controller
     {
         $user = auth()->user();
 
-        $query = Messages::with(['sender', 'group']);
+        $query = Messages::with(['sender', 'group.event']);
         if ($user->type === 'sub_admin') {
             $query->whereHas('sender', function ($q) use ($user) {
                 $q->where('event_id', $user->event_id);
@@ -146,7 +146,7 @@ class ChatLogController extends Controller
                 'id' => $chatMessage->id,
                 'group_name' => optional($chatMessage->group)->name ?? 'N/A',
                 'sender_name' => optional($chatMessage->sender)->name ?? 'N/A',
-                'event' => $chatMessage->sender?->event->name ?? 'N/A',
+                'event' => optional($chatMessage->group?->event)->name ?? 'N/A',
                 'message' => $chatMessage->message,
                 'seen_by' => $seenUserNames,
 
@@ -160,6 +160,75 @@ class ChatLogController extends Controller
             'recordsTotal' => $total,
             'recordsFiltered' => $total,
             'data' => $data,
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $isAdmin = $user->type === 'admin';
+        $search = $request->get('search');
+        $groupId = $request->get('group_id');
+
+        $query = Messages::with(['sender', 'group.event'])
+            ->when(!$isAdmin, function ($q) use ($user) {
+                $q->whereHas('sender', function ($sq) use ($user) {
+                    $sq->where('event_id', $user->event_id);
+                });
+            })
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($q) use ($search) {
+                    $q->where('message', 'like', "%{$search}%")
+                        ->orWhereHas('sender', function ($sq) use ($search) {
+                            $sq->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('group', function ($gq) use ($search) {
+                            $gq->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($groupId, function ($q) use ($groupId) {
+                $q->where('group_id', $groupId);
+            })
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $headers = $isAdmin
+            ? ['Event', 'Group', 'Sender', 'Message', 'Seen By', 'Date']
+            : ['Group', 'Sender', 'Message', 'Seen By', 'Date'];
+
+        $rows = [];
+        $rows[] = implode(',', $headers);
+
+        $esc = fn($val) => '"' . str_replace('"', '""', $val) . '"';
+
+        foreach ($query as $msg) {
+            $seenUserNames = 'Not seen';
+            if (!empty($msg->seen_by)) {
+                $seenUserIds = array_keys($msg->seen_by);
+                $seenUserNames = User::whereIn('id', $seenUserIds)->pluck('name')->implode(', ');
+            }
+
+            $eventName = optional($msg->group?->event)->name ?? 'N/A';
+            $groupName = optional($msg->group)->name ?? 'N/A';
+            $senderName = optional($msg->sender)->name ?? 'N/A';
+            $message = $msg->message ?? 'N/A';
+            $date = $msg->created_at?->format('d M Y') ?? 'N/A';
+
+            $row = $isAdmin
+                ? [$esc($eventName), $esc($groupName), $esc($senderName), $esc($message), $esc($seenUserNames), $esc($date)]
+                : [$esc($groupName), $esc($senderName), $esc($message), $esc($seenUserNames), $esc($date)];
+
+            $rows[] = implode(',', $row);
+        }
+
+        $csv = implode("\n", $rows);
+        $filename = 'chat_messages_export_' . now()->format('Y-m-d') . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }
 }

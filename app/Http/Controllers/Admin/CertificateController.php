@@ -31,16 +31,13 @@ class CertificateController
         $certificate = $id ? Certificate::findOrFail($id) : new Certificate();
 
         $events = Events::get();
-        $title = $certificate->exists ? __('Edit Certificate') : __('Add Certificate');
 
         return view('admin.certificate.add_edit', [
             'certificate' => $certificate,
-            'title' => $title,
+            'title' => __('Certificate'),
             'events' => $events,
-            'breadcrumb' => breadcrumb([
-                __('Certificate') => route('admin.certificate'),
-                $title => ''
-            ])
+            'breadcrumb' => breadcrumb([__('Certificate') => route('admin.certificate'), ($id ? 'Edit' : 'Add' . ' Certificate') => '']),
+
         ]);
     }
 

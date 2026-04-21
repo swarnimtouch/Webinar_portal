@@ -18,4 +18,9 @@ class Thread extends Model
     protected $casts = [
         'members' => 'array',
     ];
+
+    public function event()
+    {
+        return $this->belongsTo(Events::class, 'event_id');
+    }
 }

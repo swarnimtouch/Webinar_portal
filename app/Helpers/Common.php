@@ -97,11 +97,11 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.user.index', 'admin.user.add_edit_form']
             ],
             [
-                'route' => route('admin.dynamic-fields'),
+                'route' => route('admin.dynamic_fields'),
                 'name' => 'Dynamic Fields',
                 'icon' => 'bi bi-sliders',
                 'child' => [],
-                'all_routes' => ['admin.dynamic-fields', 'admin.dynamic-fields.store']
+                'all_routes' => ['admin.dynamic_fields', 'admin.dynamic_fields.save']
             ],
             [
                 'route' => route('admin.user_attendance'),
@@ -146,7 +146,7 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.certificate', 'admin.certificate.add_edit_form']
             ],
             [
-                'route' => route('admin.certificate-log'),
+                'route' => route('admin.certificate_log'),
                 'name' => 'Certificate Log',
                 'icon' => 'bi-journal-text',
                 'child' => [],
@@ -214,11 +214,11 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.user.index', 'admin.user.add_edit_form']
             ],
             [
-                'route' => route('admin.dynamic-fields'),
+                'route' => route('admin.dynamic_fields'),
                 'name' => 'Dynamic Fields',
                 'icon' => 'bi bi-sliders',
                 'child' => [],
-                'all_routes' => ['admin.dynamic-fields', 'admin.dynamic-fields.store']
+                'all_routes' => ['admin.dynamic_fields', 'admin.dynamic_fields.save']
             ],
             [
                 'route' => route('admin.user_attendance'),
@@ -263,11 +263,11 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.certificate', 'admin.certificate.add_edit_form']
             ],
             [
-                'route' => route('admin.certificate-log'),
+                'route' => route('admin.certificate_log'),
                 'name' => 'Certificate Log',
                 'icon' => 'bi-journal-text',
                 'child' => [],
-                'all_routes' => ['admin.certificate-log']
+                'all_routes' => ['admin.certificate_log']
             ],
             [
                 'route' => '#',

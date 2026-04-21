@@ -104,107 +104,36 @@
             const form = document.querySelector('#kt_user_form');
             const submit_btn = document.querySelector('#kt_user_submit');
             const avatar_removed_input = document.querySelector('#avatar_removed');
-
-            const COUNTRIES_URL = "{{ route('admin.users.countries') }}";
-            const STATES_URL = '/get-states';
-            const CITIES_URL = '/get-cities';
             const EVENT_FIELDS_URL = "{{ url('admin/get-event-fields') }}";
-            const DEFAULT_COUNTRY = 'India';
-            const DEFAULT_STATE = 'Gujarat';
-
-            const SOURCE_URLS = {
-                countries: COUNTRIES_URL,
-                states: STATES_URL,
-                cities: CITIES_URL,
-            };
+            const CURRENT_EVENT_ID = "{{ isset($user) ? $user->event_id : '' }}";
 
             let validator = null;
 
-            function load_dropdown($el, source, parentId, oldValue) {
-                if (!$el.length) return;
-                let url = SOURCE_URLS[source];
-                if (!url) return;
-                if (parentId) url += '/' + parentId;
-
-                const placeholder = $el.find('option:first').text();
-                $el.html(`<option value="">${placeholder}</option>`);
-
-                $.get(url, function (items) {
-                    $el.append(items.map(function (item) {
-                        return `<option value="${item.name}" data-id="${item.id}">${item.name}</option>`;
-                    }));
-                    if (oldValue) $el.val(oldValue);
-                    if ($el.val()) trigger_dependents($el);
-                });
-            }
-
-            function trigger_dependents($parent) {
+            function reload_dependent($parent) {
                 const parentName = $parent.attr('id');
-                const parentId = $parent.find(':selected').data('id');
-                $('[data-depends-on="' + parentName + '"]').each(function () {
-                    const $child = $(this);
-                    const source = $child.data('source');
-                    const oldValue = $child.data('old-value') || '';
-                    load_dropdown($child, source, parentId, oldValue);
-                });
-            }
-
-            function boot_geo() {
-
-                $('[data-source]').each(function () {
-                    const $el = $(this);
-                    const source = $el.data('source');
-                    const dependsOn = $el.data('depends-on');
-                    if (!dependsOn) {
-                        load_dropdown($el, source, null, $el.data('old-value') || '');
-                    }
-                });
-
-                const $stateDropdown = $('[data-source="states"]');
-                if ($stateDropdown.length && !$('#dynamic_fields_wrapper select[name="country"]').length) {
-                    const countryName = $('[name="country"]').val();
-                    if (countryName) {
-                        $.get(COUNTRIES_URL, function (countries) {
-                            const country = countries.find(c => c.name === countryName);
-                            if (country) {
-                                load_dropdown($stateDropdown, 'states', country.id, $stateDropdown.data('old-value') || '');
-                            }
-                        });
-                    }
-                }
-
-                const $cityDropdown = $('[data-source="cities"]');
-                if ($cityDropdown.length && !$('#dynamic_fields_wrapper select[name="state"]').length) {
-                    const stateName = $('[name="state"]').val();
-                    if (stateName) {
-                        $.get(COUNTRIES_URL, function (countries) {
-                            const countryName = $('[name="country"]').val() || DEFAULT_COUNTRY;
-                            const country = countries.find(c => c.name === countryName);
-                            if (!country) return;
-
-                            $.get(STATES_URL + '/' + country.id, function (states) {
-                                const state = states.find(s => s.name === stateName);
-                                if (state) {
-                                    load_dropdown($cityDropdown, 'cities', state.id, $cityDropdown.data('old-value') || '');
-                                }
-                            });
-                        });
-                    }
-                }
-            }
-
-            $(document).on('change', '[data-source]', function () {
-                const $parent = $(this);
-                const parentName = $parent.attr('id');
-                const parentId = $parent.find(':selected').data('id');
+                const parentVal = $parent.find(':selected').val();
+                const eventId = $('#event_id').val() || CURRENT_EVENT_ID;
 
                 $('[data-depends-on="' + parentName + '"]').each(function () {
                     const $child = $(this);
-                    const source = $child.data('source');
+                    const fieldName = $child.attr('name');
                     const placeholder = $child.find('option:first').text();
                     $child.html(`<option value="">${placeholder}</option>`);
-                    if (parentId) load_dropdown($child, source, parentId, '');
+
+                    if (!eventId) return;
+
+                    $.get(EVENT_FIELDS_URL + '/' + eventId, {
+                        parent_field: parentName,
+                        parent_value: parentVal
+                    }, function (html) {
+                        const $newSelect = $(html).find('select[name="' + fieldName + '"]');
+                        if ($newSelect.length) $child.replaceWith($newSelect);
+                    });
                 });
+            }
+
+            $(document).on('change', 'select[data-source]', function () {
+                reload_dependent($(this));
             });
 
             function build_validation() {
@@ -222,9 +151,7 @@
 
                     if (name === 'password') {
                         @if(!isset($user))
-                            fields['password'] = {
-                            validators: {notEmpty: {message: 'Password is required'}}
-                        };
+                            fields['password'] = {validators: {notEmpty: {message: 'Password is required'}}};
                         @endif
                             return;
                     }
@@ -237,18 +164,17 @@
                     }
 
                     if (type === 'tel' || $(el).hasClass('mobile-number-input')) {
-                        const v = {digits: {message: 'Only numbers are allowed'}};
+                        const v = {
+                            digits: {message: 'Only numbers are allowed'},
+                            stringLength: {min: 10, max: 10, message: 'Mobile number must be 10 digits'}
+                        };
                         if (required) v.notEmpty = {message: (label || 'This field') + ' is required'};
                         fields[name] = {validators: v};
                         return;
                     }
 
                     if (required && !fields[name]) {
-                        fields[name] = {
-                            validators: {
-                                notEmpty: {message: (label || 'This field') + ' is required'}
-                            }
-                        };
+                        fields[name] = {validators: {notEmpty: {message: (label || 'This field') + ' is required'}}};
                     }
                 });
 
@@ -259,7 +185,6 @@
                     }
                     validator = null;
                 }
-
                 if (form.fv) {
                     try {
                         form.fv.destroy();
@@ -282,25 +207,6 @@
             $('#event_id').on('change', function () {
                 const eventId = $(this).val();
 
-                if (!eventId) {
-                    $('#dynamic_fields_wrapper').html('');
-                    if (validator) {
-                        try {
-                            validator.destroy();
-                        } catch (e) {
-                        }
-                        validator = null;
-                    }
-                    if (form.fv) {
-                        try {
-                            form.fv.destroy();
-                        } catch (e) {
-                        }
-                        delete form.fv;
-                    }
-                    return;
-                }
-
                 if (validator) {
                     try {
                         validator.destroy();
@@ -316,15 +222,19 @@
                     delete form.fv;
                 }
 
-                $('#dynamic_fields_wrapper').html(`
-        <div class="text-center py-5">
-            <span class="spinner-border spinner-border-sm me-2"></span> Loading fields...
-        </div>
-    `);
+                if (!eventId) {
+                    $('#dynamic_fields_wrapper').html('');
+                    return;
+                }
 
-                $.get(`${EVENT_FIELDS_URL}/${eventId}`, function (html) {
+                $('#dynamic_fields_wrapper').html(`
+            <div class="text-center py-5">
+                <span class="spinner-border spinner-border-sm me-2"></span> Loading fields...
+            </div>
+        `);
+
+                $.get(EVENT_FIELDS_URL + '/' + eventId, function (html) {
                     $('#dynamic_fields_wrapper').html(html);
-                    boot_geo();
                     build_validation();
                 });
             });
@@ -347,7 +257,6 @@
                     form.submit();
                     return;
                 }
-
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
                         submit_btn.setAttribute('data-kt-indicator', 'on');
@@ -358,7 +267,6 @@
             });
 
             if ($('#dynamic_fields_wrapper [name]').length) {
-                boot_geo();
                 build_validation();
             }
 

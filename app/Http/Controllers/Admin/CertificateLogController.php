@@ -13,7 +13,7 @@ class CertificateLogController
         return view('admin.certificate_log.index', [
             'title' => __('Certificate Log'),
             'breadcrumb' => breadcrumb([
-                __('Certificate Log') => route('admin.certificate-log')
+                __('Certificate Log') => route('admin.certificate_log')
             ])
         ]);
     }
@@ -146,6 +146,68 @@ class CertificateLogController
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $isAdmin = $user->type === 'admin';
+        $search = $request->get('search');
+
+        $query = CertificateLogs::query()
+            ->with([
+                'user',
+                'certificate.event',
+
+            ])
+            ->when(!$isAdmin, function ($q) use ($user) {
+                $q->whereHas('certificate', function ($cq) use ($user) {
+                    $cq->where('event_id', $user->event_id);
+                });
+            })
+            ->when($search, function ($q) use ($search) {
+                $q->whereHas('user', function ($uq) use ($search) {
+                    $uq->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                })->orWhereHas('certificate', function ($cq) use ($search) {
+                    $cq->where('name', 'like', "%{$search}%");
+                });
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        $rows = [];
+        $headers = $isAdmin
+            ? ['Event', 'User', 'Email', 'Certificate', 'File', 'Downloaded At']
+            : ['User', 'Email', 'Certificate', 'File', 'Downloaded At'];
+
+        $rows[] = implode(',', $headers);
+
+        $esc = fn($val) => '"' . str_replace('"', '""', $val) . '"';
+
+        foreach ($query as $log) {
+            $filePath = $log->file_path ? url("storage/{$log->file_path}") : 'No File';
+            $eventName = optional($log->certificate?->event)->name ?? 'N/A';
+
+            $userName = optional($log->user)->name ?? 'N/A';
+            $userEmail = optional($log->user)->email ?? 'N/A';
+            $certName = optional($log->certificate)->name ?? 'N/A';
+            $downloadedAt = $log->created_at?->format('Y-m-d H:i:s') ?? 'N/A';
+
+            $row = $isAdmin
+                ? [$esc($eventName), $esc($userName), $esc($userEmail), $esc($certName), $esc($filePath), $esc($downloadedAt)]
+                : [$esc($userName), $esc($userEmail), $esc($certName), $esc($filePath), $esc($downloadedAt)];
+
+            $rows[] = implode(',', $row);
+        }
+
+        $csv = implode("\n", $rows);
+        $filename = 'certificate_downloads_export_' . now()->format('Y-m-d') . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }
 }
