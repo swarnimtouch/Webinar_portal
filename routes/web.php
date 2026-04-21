@@ -1,10 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
 
-Route::get('/', function (){
+
+Broadcast::routes(['middleware' => ['web', 'event', 'auth:web']]);
+Route::get('/', function () {
     return "Welcome To Webinar Portal";
 });
-Route::get('admin', function (){
+
+Route::get('admin', function () {
     return redirect()->route('admin.login');
 });

@@ -2,73 +2,113 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Events\ChatMessage;
+use App\Events\UserRaisedHand;
 use App\Models\Messages;
-use App\Models\User;
+use App\Models\Thread;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ChatController
 {
-    /**
-     * Get latest chat messages (polling)
-     */
-    public function fetchMessages(Request $request)
+    private mixed $event = null;
+
+    public function __construct()
     {
-        $groupId = 1;
-        $userId = Auth::id();
-
-        $messages = Messages::with('sender')
-            ->where('group_id', $groupId)
-            ->orderBy('id', 'asc')
-            ->limit(50)
-            ->get();
-
-
-        foreach ($messages as $message) {
-
-            if ($message->sender_id == $userId) {
-                continue;
-            }
-
-            $seenBy = $message->seen_by ?? [];
-
-            if (!array_key_exists($userId, $seenBy)) {
-                $seenBy[$userId] = now()->toDateTimeString();
-
-                $message->update([
-                    'seen_by' => $seenBy
-                ]);
-            }
-        }
-
-        return response()->json(
-            $messages->map(function ($msg) {
-                return [
-                    'id' => $msg->id,
-                    'user' => optional($msg->sender)->name ?? 'Guest',
-                    'message' => $msg->message,
-                ];
-            })
-        );
+        $this->event = app('event');
     }
 
-
-    /**
-     * Send chat message
-     */
-    public function sendMessage(Request $request)
+    public function getMessages(Request $request, string $slug)
     {
+        $thread = Thread::where('event_id', $this->event->id)->first();
+        $messages = collect([]);
 
-        $request->validate([
-            'message' => 'required|string|max:1000'
-        ]);
+        if ($thread) {
+            $messages = Messages::with('sender')
+                ->where('thread_id', $thread->id)
+                ->latest()
+                ->take(50)
+                ->get()
+                ->reverse()
+                ->map(fn($m) => [
+                    'id' => $m->id,
+                    'message' => $m->message,
+                    'userName' => $m->sender->name,
+                    'userId' => $m->sender_id,
+                    'timestamp' => $m->created_at->format('H:i'),
+                ]);
+        }
 
-        Messages::create([
-            'group_id' => 1,
-            'sender_id' => Auth::id(),
+        return response()->json(['messages' => array_values($messages->toArray())]);
+    }
+
+    public function sendMessage(Request $request, string $slug)
+    {
+        $request->validate(['message' => 'required|string|max:1000']);
+
+        $thread = Thread::where('event_id', $this->event->id)->first();
+
+        if (!$thread) {
+            $thread = new Thread();
+            $thread->event_id = $this->event->id;
+            $thread->name = $this->event->name . ' - ' . $slug;
+            $thread->created_by = Auth::guard('web')->id();
+            $thread->members = json_encode([Auth::guard('web')->id()]);
+            $thread->save();
+        } else {
+            $existing = json_decode($thread->members, true) ?? [];
+            $thread->members = json_encode(array_unique(array_merge($existing, [Auth::guard('web')->id()])));
+            $thread->save();
+        }
+
+        $msg = Messages::create([
+            'thread_id' => $thread->id,
+            'sender_id' => Auth::guard('web')->id(),
             'message' => $request->message,
         ]);
 
-        return response()->json(['success' => true]);
+        broadcast(new ChatMessage(
+            message: $msg->message,
+            userName: Auth::guard('web')->user()->name,
+            userId: Auth::guard('web')->id(),
+            timestamp: $msg->created_at->format('H:i'),
+            slug: $slug
+        ))->toOthers();
+
+        return response()->json([
+            'status' => true,
+            'message' => [
+                'id' => $msg->id,
+                'message' => $msg->message,
+                'userName' => Auth::guard('web')->user()->name,
+                'userId' => Auth::guard('web')->id(),
+                'timestamp' => $msg->created_at->format('H:i'),
+            ],
+        ]);
+    }
+
+    public function raiseHand(Request $request, string $slug)
+    {
+        $userId = Auth::id();
+        $cacheKey = "hand_raised_{$slug}_{$userId}";
+        $current = Cache::get($cacheKey, false);
+        $raised = !$current;
+        Cache::put($cacheKey, $raised, now()->addHours(2));
+
+        broadcast(new UserRaisedHand(
+            userId: $userId,
+            userName: Auth::user()->name,
+            raised: $raised,
+            slug: $slug
+        ));
+
+        return response()->json(['status' => true, 'raised' => $raised]);
+    }
+
+    public function handStatus(string $slug)
+    {
+        $cacheKey = "hand_raised_{$slug}_" . Auth::id();
+        return response()->json(['raised' => Cache::get($cacheKey, false)]);
     }
 }

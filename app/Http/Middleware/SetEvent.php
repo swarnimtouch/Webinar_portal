@@ -16,14 +16,12 @@ class SetEvent
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $slug = $request->route('slug');
+        $slug = $request->route('slug')
+            ?? $request->header('X-Event-Slug');
 
         if ($slug) {
             $event = Events::where('slug', $slug)->firstOrFail();
             app()->instance('event', $event);
-            config([
-                'session.cookie' => 'webinar_session_' . $slug,
-            ]);
         }
 
         return $next($request);
