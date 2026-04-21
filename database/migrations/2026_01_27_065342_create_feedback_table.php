@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('feedback', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->string('rating');
             $table->string('comment')->nullable();
             $table->timestamps();
