@@ -106,7 +106,7 @@ class SiteSettingsController extends Controller
                 $setting->update(['value' => $value]);
             }
 
-            return redirect()->back()->with('success', 'Settings updated successfully!');
+            return redirect()->back()->with('success', 'Settings Save successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();

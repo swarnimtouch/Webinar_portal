@@ -261,7 +261,7 @@
                                             <option value="">Select {{ $field->label }}</option>
                                             @foreach($source as $key=>$value)
                                                 <option
-                                                    value="@php echo $value->{$source_value} @endphp">@php echo $value->{$source_label} @endphp</option>
+                                                    value="@php echo $value->{$source_label} @endphp">@php echo $value->{$source_label} @endphp</option>
                                             @endforeach
                                         </select>
                                         @break('select')

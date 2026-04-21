@@ -116,13 +116,14 @@
                                         $parentTable       = $parentFieldConfig
                                             ? (json_decode($parentFieldConfig->input_value, true)['source'] ?? null)
                                             : null;
-                                        $parentSourceVal   = $parentFieldConfig
-                                            ? (json_decode($parentFieldConfig->input_value, true)['value'] ?? 'id')
-                                            : 'id';
+                                        $parentSourceLbl   = $parentFieldConfig
+                                            ? (json_decode($parentFieldConfig->input_value, true)['label'] ?? 'name')
+                                            : 'name';
 
                                         if ($parentTable) {
+                                            // parentValue is name, find its id first
                                             $parentRow = \Illuminate\Support\Facades\DB::table($parentTable)
-                                                ->where($parentSourceVal, $parentValue)
+                                                ->where($parentSourceLbl, $parentValue)
                                                 ->first();
                                             if ($parentRow) {
                                                 $fkCol = $fkMap[$parentTable] ?? (rtrim($parentTable, 's') . '_id');
@@ -155,6 +156,7 @@
                             }
                         }
                     @endphp
+
                     <select name="{{ $field_name }}" id="{{ $field_name }}"
                             class="form-select form-select-lg form-select-solid"
                             data-source="{{ $source_table }}"
@@ -166,9 +168,9 @@
                         @endif>
                         <option value="">Select {{ $label }}</option>
                         @foreach($source_items as $item)
-                            <option value="{{ $item->{$source_val} }}"
-                                    data-id="{{ $item->id }}"
-                                {{ $value == $item->{$source_val} ? 'selected' : '' }}>
+                            <option value="{{ $item->{$source_lbl} }}" {{-- name as value --}}
+                            data-id="{{ $item->id }}"
+                                {{ $value == $item->{$source_lbl} ? 'selected' : '' }}>  {{-- compare name with name --}}
                                 {{ $item->{$source_lbl} }}
                             </option>
                         @endforeach

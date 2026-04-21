@@ -111,7 +111,7 @@ class FeedbackController
                 'user_email' => optional($feedback->user)->email ?? 'N/A',
                 'event' => $feedback->event->name ?? 'N/A',
                 'rating' => $feedback->rating,
-                'comment' => $feedback->comment ?? '-',
+                'comment' => $feedback->comment ?? 'N/A',
                 'created_at' => $feedback->created_at->format('d M Y'),
                 'actions' => '',
             ];

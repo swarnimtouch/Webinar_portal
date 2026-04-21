@@ -107,12 +107,17 @@
             const EVENT_FIELDS_URL = "{{ url('admin/get-event-fields') }}";
             const CURRENT_EVENT_ID = "{{ isset($user) ? $user->event_id : '' }}";
 
+
             let validator = null;
 
             function reload_dependent($parent) {
                 const parentName = $parent.attr('id');
-                const parentVal = $parent.find(':selected').val();
-                const eventId = $('#event_id').val() || CURRENT_EVENT_ID;
+                const parentVal = $parent.find(':selected').val(); // this is the name now
+                const parentLabel = $parent.find(':selected').text().trim();
+
+                const eventId = $('#event_id').val()
+                    || $('input[name="event_id"]').val()
+                    || CURRENT_EVENT_ID;
 
                 $('[data-depends-on="' + parentName + '"]').each(function () {
                     const $child = $(this);
@@ -120,17 +125,21 @@
                     const placeholder = $child.find('option:first').text();
                     $child.html(`<option value="">${placeholder}</option>`);
 
-                    if (!eventId) return;
+                    if (!eventId || !parentVal) return;
 
                     $.get(EVENT_FIELDS_URL + '/' + eventId, {
                         parent_field: parentName,
-                        parent_value: parentVal
+                        parent_value: parentVal  // sending name
                     }, function (html) {
                         const $newSelect = $(html).find('select[name="' + fieldName + '"]');
-                        if ($newSelect.length) $child.replaceWith($newSelect);
+                        if ($newSelect.length) {
+                            $child.replaceWith($newSelect);
+                            build_validation();
+                        }
                     });
                 });
             }
+
 
             $(document).on('change', 'select[data-source]', function () {
                 reload_dependent($(this));
@@ -161,6 +170,11 @@
                         if (required) v.notEmpty = {message: 'Email is required'};
                         fields['email'] = {validators: v};
                         return;
+                    }
+                    if (el.tagName === 'SELECT' && el.hasAttribute('data-depends-on')) {
+                        const hasRealOptions = Array.from(el.options)
+                            .some(o => o.value !== '');
+                        if (!hasRealOptions) return;
                     }
 
                     if (type === 'tel' || $(el).hasClass('mobile-number-input')) {

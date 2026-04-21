@@ -128,7 +128,7 @@ class SpeakersController extends Controller
         return response()->json([
             'success' => true,
             'status' => $speaker->status,
-            'message' => 'Status updated successfully!'
+            'message' => 'Status updated successfully'
         ]);
     }
 
@@ -140,6 +140,9 @@ class SpeakersController extends Controller
 
         if ($user->type === 'sub_admin') {
             $query->where('event_id', $user->event_id);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         if ($request->has('search') && !empty($request->search)) {
