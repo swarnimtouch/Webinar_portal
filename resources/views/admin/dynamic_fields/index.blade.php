@@ -1,60 +1,52 @@
 @extends('layouts.admin')
 
-
 @section('content')
-    <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
-        <!--begin::Post-->
         <div class="post d-flex flex-column-fluid" id="kt_post">
-            <!--begin::Container-->
             <div id="kt_content_container" class="container-xxl">
-
-                <!--begin::Card-->
                 <div class="card">
-                    <!--begin::Card header-->
                     <div class="card-header border-0 pt-6">
-                        <!--begin::Card title-->
                         <div class="card-title">
-                            <!--begin::Search-->
+                            @if(auth()->user()->type === 'admin')
+                                <select id="event-selector" class="form-select form-select-solid w-200px me-4">
+                                    <option value="">Select Event</option>
+                                    @foreach($events as $event)
+                                        <option value="{{ $event->id }}"
+                                            {{ $selectedEventId == $event->id ? 'selected' : '' }}>
+                                            {{ $event->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
+
                             <div class="d-flex align-items-center position-relative my-1">
                                 <span class="svg-icon svg-icon-1 position-absolute ms-6">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                         viewBox="0 0 24 24" fill="none">
-                                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546"
-                                              height="2" rx="1" transform="rotate(45 17.0365 15.1223)"
-                                              fill="black"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         fill="none">
+                                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1"
+                                              transform="rotate(45 17.0365 15.1223)" fill="black"/>
                                         <path
                                             d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
                                             fill="black"/>
                                     </svg>
                                 </span>
-                                <!--end::Svg Icon-->
                                 <input type="text" data-kt-user-table-filter="search"
                                        class="form-control form-control-solid w-250px ps-14"
                                        placeholder="Search fields"/>
                             </div>
-                            <!--end::Search-->
                         </div>
-                        <!--begin::Card title-->
-                        <!--begin::Card toolbar-->
-                        <div class="card-toolbar">
-                            <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end">
-                                <!-- Toolbar empty - button moved to footer -->
-                            </div>
-                            <!--end::Toolbar-->
-                        </div>
-                        <!--end::Card toolbar-->
-                    </div>
-                    <!--end::Card header-->
-                    <!--begin::Card body-->
-                    <div class="card-body pt-0">
-                        <form id="fields-form" method="POST" action="{{ route('admin.dynamic-fields.save') }}">
-                            @csrf
 
+                        <div class="card-toolbar">
+                            <div class="d-flex justify-content-end"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-body pt-0">
+                        <form id="fields-form" method="POST" action="{{ route('admin.dynamic_fields.save') }}">
+                            @csrf
+                            <input type="hidden" name="event_id" value="{{ $selectedEventId }}">
                             <input type="hidden" name="order_data" id="order-data">
 
-                            <!--begin::Table-->
                             <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_Dynamic_fields">
                                 <thead>
                                 <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
@@ -71,20 +63,16 @@
                                 <tbody class="text-gray-600 fw-bold">
                                 @forelse($fields as $field)
                                     <tr data-id="{{ $field->id }}">
-                                        <!-- Drag Handle -->
                                         <td class="drag-handle" style="cursor:move;font-size:18px">☰</td>
 
-                                        <!-- Index -->
                                         <td>
-                                            <span class="badge bg-secondary index-badge">
-                                                {{ $loop->iteration }}
-                                            </span>
+                                                <span class="badge bg-secondary index-badge">
+                                                    {{ $loop->iteration }}
+                                                </span>
                                         </td>
 
-                                        <!-- Field Name -->
                                         <td>{{ $field->field_name }}</td>
 
-                                        <!-- Label -->
                                         <td>
                                             <input type="text"
                                                    name="fields[{{ $field->id }}][label]"
@@ -92,7 +80,6 @@
                                                    class="form-control form-control-sm">
                                         </td>
 
-                                        <!-- Required -->
                                         <td>
                                             <div class="form-check form-switch">
                                                 <input type="hidden"
@@ -106,7 +93,6 @@
                                             </div>
                                         </td>
 
-                                        <!-- Status -->
                                         <td>
                                             <div class="form-check form-switch">
                                                 <input type="hidden"
@@ -120,7 +106,6 @@
                                             </div>
                                         </td>
 
-                                        <!-- Login With -->
                                         <td>
                                             @if(in_array($field->field_name, ['email', 'mobile_number']))
                                                 <div class="form-check">
@@ -135,9 +120,7 @@
                                                 </div>
                                             @elseif($field->field_name == 'password')
                                                 <div class="form-check">
-                                                    <input type="hidden"
-                                                           name="password_required"
-                                                           value="0">
+                                                    <input type="hidden" name="password_required" value="0">
                                                     <input class="form-check-input"
                                                            type="checkbox"
                                                            id="password-checkbox"
@@ -155,31 +138,29 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-5">No Dynamic Fields found</td>
+                                        <td colspan="7" class="text-center py-5">
+                                            @if(auth()->user()->type === 'admin' && !$selectedEventId)
+                                                Please select an event to view fields.
+                                            @else
+                                                No Dynamic Fields found
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforelse
                                 </tbody>
                             </table>
-                            <!--end::Table-->
                         </form>
                     </div>
-                    <!--end::Card body-->
 
-                    <!--begin::Card footer-->
                     <div class="card-footer d-flex justify-content-end py-6">
                         <button type="button" id="save-fields-btn" class="btn btn-primary">
                             Save
                         </button>
                     </div>
-                    <!--end::Card footer-->
                 </div>
-                <!--end::Card-->
             </div>
-            <!--end::Container-->
         </div>
-        <!--end::Post-->
     </div>
-    <!--end::Content-->
 @endsection
 
 @push('scripts')
@@ -193,6 +174,8 @@
             var datatable;
 
             var initUserTable = function () {
+                if ($(table).find('tbody tr td[colspan]').length) return;
+
                 datatable = $(table).DataTable({
                     searchDelay: 500,
                     processing: true,
@@ -200,12 +183,7 @@
                     stateSave: false,
                     paging: false,
                     info: false,
-                    columnDefs: [
-                        {
-                            orderable: false,
-                            targets: '_all'
-                        }
-                    ]
+                    columnDefs: [{orderable: false, targets: '_all'}]
                 });
             }
 
@@ -220,10 +198,7 @@
 
             return {
                 init: function () {
-                    if (!table) {
-                        return;
-                    }
-
+                    if (!table) return;
                     initUserTable();
                     handleSearchDatatable();
                 }
@@ -233,21 +208,17 @@
         function initSortable() {
             function updateIndexes() {
                 let order = [];
-
                 $("#kt_table_Dynamic_fields tbody tr").each(function (index) {
                     $(this).find('.index-badge').text(index + 1);
-
                     const rowId = $(this).data('id');
                     if (rowId) {
-                        order.push({
-                            id: rowId,
-                            index_no: index + 1
-                        });
+                        order.push({id: rowId, index_no: index + 1});
                     }
                 });
-
                 $('#order-data').val(JSON.stringify(order));
             }
+
+            if ($("#kt_table_Dynamic_fields tbody tr td[colspan]").length) return;
 
             $("#kt_table_Dynamic_fields tbody").sortable({
                 handle: ".drag-handle",
@@ -289,26 +260,33 @@
                         contentType: false,
                         success: function (response) {
                             saveBtn.disabled = false;
-                            saveBtn.innerHTML = '<span class="svg-icon svg-icon-2"></span>Save';
-
+                            saveBtn.innerHTML = 'Save';
                             toastr.success(response.message || "Changes saved successfully!");
-
                         },
                         error: function (xhr) {
                             saveBtn.disabled = false;
-                            saveBtn.innerHTML = '<span class="svg-icon svg-icon-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M17.5 11H6.5C4 11 2 9 2 6.5C2 4 4 2 6.5 2H17.5C20 2 22 4 22 6.5C22 9 20 11 17.5 11ZM15 6.5C15 7.9 16.1 9 17.5 9C18.9 9 20 7.9 20 6.5C20 5.1 18.9 4 17.5 4C16.1 4 15 5.1 15 6.5Z" fill="black"/><path opacity="0.3" d="M17.5 22H6.5C4 22 2 20 2 17.5C2 15 4 13 6.5 13H17.5C20 13 22 15 22 17.5C22 20 20 22 17.5 22ZM4 17.5C4 18.9 5.1 20 6.5 20C7.9 20 9 18.9 9 17.5C9 16.1 7.9 15 6.5 15C5.1 15 4 16.1 4 17.5Z" fill="black"/></svg></span>Save Changes';
-
+                            saveBtn.innerHTML = 'Save';
                             Swal.fire({
                                 text: xhr.responseJSON?.message || "Error saving changes. Please try again.",
                                 icon: "error",
                                 buttonsStyling: false,
                                 confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn fw-bold btn-primary",
-                                }
+                                customClass: {confirmButton: "btn fw-bold btn-primary"}
                             });
                         }
                     });
+                });
+            }
+        }
+
+        function initEventSelector() {
+            const eventSelector = document.getElementById('event-selector');
+            if (eventSelector) {
+                eventSelector.addEventListener('change', function () {
+                    const eventId = this.value;
+                    if (eventId) {
+                        window.location.href = '{{ route('admin.dynamic_fields') }}?event_id=' + eventId;
+                    }
                 });
             }
         }
@@ -317,7 +295,7 @@
             KTDaynamicFieldList.init();
             initSortable();
             initSaveButton();
+            initEventSelector();
         });
     </script>
-
 @endpush

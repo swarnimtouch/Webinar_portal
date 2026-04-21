@@ -217,58 +217,44 @@
 
             var handleExport = function () {
                 const exportBtn = document.getElementById('export-btn');
+                if (!exportBtn) return;
 
-                if (exportBtn) {
-                    exportBtn.addEventListener('click', function () {
-                        const originalHTML = exportBtn.innerHTML;
-                        exportBtn.disabled = true;
-                        exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
+                exportBtn.addEventListener('click', function () {
+                    const originalHTML = exportBtn.innerHTML;
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
 
-                        let csv = 'User Name,User Email,Rating,Comment,Date\n';
+                    const url = new URL('{{ route("admin.feedback.export") }}', window.location.origin);
+                    const searchValue = $('[data-kt-feedback-table-filter="search"]').val();
+                    if (searchValue) url.searchParams.set('search', searchValue);
 
-                        const rows = document.querySelectorAll('#kt_table_feedbacks tbody tr');
-                        rows.forEach(row => {
-                            const cells = row.querySelectorAll('td');
-                            if (cells.length > 1) {
-                                let rowData = [];
-                                for (let i = 1; i < cells.length - 1; i++) {
-                                    let text = cells[i].innerText.trim().replace(/\n/g, ' ');
-                                    if (i === 3) {
-                                        const ratingMatch = text.match(/\((\d+)\)/);
-                                        text = ratingMatch ? ratingMatch[1] : text;
-                                    }
-                                    rowData.push(`"${text}"`);
-                                }
-                                csv += rowData.join(',') + '\n';
-                            }
-                        });
+                    fetch(url.toString(), {
+                        method: 'GET',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'}
+                    })
+                        .then(res => {
+                            if (!res.ok) throw new Error();
+                            return res.blob();
+                        })
+                        .then(blob => {
+                            const link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.setAttribute('download', 'feedbacks_export_' + new Date().toISOString().slice(0, 10) + '.csv');
+                            link.style.visibility = 'hidden';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
 
-                        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-                        const url = window.URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.setAttribute('href', url);
-                        link.setAttribute('download', 'feedbacks_export_' + new Date().toISOString().slice(0, 10) + '.csv');
-                        link.style.visibility = 'hidden';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-
-                        setTimeout(() => {
                             exportBtn.disabled = false;
                             exportBtn.innerHTML = originalHTML;
-
-                            Swal.fire({
-                                text: "Feedbacks exported successfully!",
-                                icon: "success",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn fw-bold btn-primary",
-                                }
-                            });
-                        }, 500);
-                    });
-                }
+                            toastr.success('Feedbacks exported successfully!');
+                        })
+                        .catch(() => {
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = originalHTML;
+                            toastr.error('Export failed. Please try again.');
+                        });
+                });
             }
 
             document

@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\DynamicFields;
+use App\Models\Events;
 use Illuminate\Http\Request;
 
 class DynamicFieldsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
         $authUser = auth()->user();
 
@@ -18,30 +16,39 @@ class DynamicFieldsController extends Controller
             $fields = DynamicFields::where('event_id', $authUser->event_id)
                 ->orderBy('index_no')
                 ->get();
+            $selectedEventId = $authUser->event_id;
+            $events = collect();
         } else {
-            $fields = DynamicFields::orderBy('index_no')->get();
+            $events = Events::orderBy('name')->get();
+            $selectedEventId = $request->get('event_id');
+
+
+            $fields = $selectedEventId
+                ? DynamicFields::where('event_id', $selectedEventId)
+                    ->orderBy('index_no')
+                    ->get()
+                : collect();
         }
 
         return view('admin.dynamic_fields.index', [
             'fields' => $fields,
+            'events' => $events,
+            'selectedEventId' => $selectedEventId,
             'maxIndex' => $fields->count(),
             'title' => __('Dynamic Fields'),
             'breadcrumb' => breadcrumb([
-                __('Dynamic Fields') => route('admin.dynamic-fields')
+                __('Dynamic Fields') => route('admin.dynamic_fields')
             ])
         ]);
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function save(Request $request)
     {
         try {
+            $authUser = auth()->user();
+
             if ($request->filled('order_data')) {
                 $orderData = json_decode($request->order_data, true);
-
                 foreach ($orderData as $item) {
                     DynamicFields::where('id', $item['id'])
                         ->update(['index_no' => $item['index_no']]);
@@ -58,7 +65,12 @@ class DynamicFieldsController extends Controller
                 }
             }
 
-            DynamicFields::whereIn('field_name', ['email', 'mobile_number', 'password'])
+            $eventId = $request->filled('event_id')
+                ? $request->event_id
+                : $authUser->event_id;
+
+            DynamicFields::where('event_id', $eventId)
+                ->whereIn('field_name', ['email', 'mobile_number', 'password'])
                 ->update(['login_with' => 0]);
 
             if ($request->filled('login_with')) {
@@ -68,13 +80,14 @@ class DynamicFieldsController extends Controller
 
             if ($request->filled('password_required') && $request->password_required == 1) {
                 DynamicFields::where('field_name', 'password')
+                    ->where('event_id', $eventId)
                     ->update(['login_with' => 1]);
             }
 
-            return redirect()->back()->with('success', 'Fields updated successfully!');
+            return response()->json(['message' => 'Fields updated successfully!']);
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
         }
     }
 }

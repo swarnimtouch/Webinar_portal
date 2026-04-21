@@ -122,7 +122,7 @@
                 serverSide: true,
                 searching: false,
                 ajax: {
-                    url: '{{ route("admin.certificate-log.datatable") }}',
+                    url: '{{ route("admin.certificate_log.datatable") }}',
                     data: d => {
                         d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
                     }
@@ -242,7 +242,7 @@
                 }).then(result => {
                     if (!result.isConfirmed) return;
 
-                    fetch('{{ route("admin.certificate-log.deleteMultiple") }}', {
+                    fetch('{{ route("admin.certificate_log.deleteMultiple") }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -254,15 +254,15 @@
                             if (!res.ok) throw new Error();
                             return res.json();
                         })
-                        .then(() => {
+                        .then(data => {
+                            toastr.success(data.message || "Selected certificates deleted successfully");
 
-                            toastr.success("Selected records deleted successfully");
 
                             downloadTable.draw(false);
                             toggleBulkToolbar();
                         })
-                        .catch(() => {
-                            toastr.error("Failed to delete records");
+                        .catch(err => {
+                            toastr.error(err.message || "Failed to delete certificates");
                         });
                 });
             });
@@ -276,52 +276,39 @@
                     exportBtn.disabled = true;
                     exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
 
-                    let csv = 'User,Email,Certificate,File,Downloaded At\n';
+                    const searchValue = document.querySelector('[data-kt-user-table-filter="search"]').value;
 
-                    const rows = document.querySelectorAll('#kt_table_certificate_downloads tbody tr');
-                    rows.forEach(row => {
-                        const cells = row.querySelectorAll('td');
-                        if (cells.length > 1) {
-                            let rowData = [];
+                    const url = new URL('{{ route("admin.certificate_log.export") }}', window.location.origin);
+                    if (searchValue) url.searchParams.set('search', searchValue);
 
-                            const userLines = cells[1].innerText.trim().split('\n');
-                            rowData.push(`"${(userLines[0] || '').replace(/"/g, '""')}"`);
-                            rowData.push(`"${(userLines[1] || '').replace(/"/g, '""')}"`);
+                    fetch(url.toString(), {
+                        method: 'GET',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'}
+                    })
+                        .then(res => {
+                            if (!res.ok) throw new Error('Export failed');
+                            return res.blob();
+                        })
+                        .then(blob => {
+                            const link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.setAttribute('download', 'certificate_downloads_export_' + new Date().toISOString().slice(0, 10) + '.csv');
+                            link.style.visibility = 'hidden';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
 
-                            rowData.push(`"${cells[2].innerText.trim().replace(/"/g, '""')}"`);
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = originalHTML;
 
-                            const fileLink = cells[3].querySelector('a');
-                            rowData.push(`"${fileLink ? fileLink.href : 'No File'}"`);
+                            toastr.success('Certificate downloads exported successfully!');
 
-                            rowData.push(`"${cells[4].innerText.trim().replace(/"/g, '""')}"`);
-
-
-                            csv += rowData.join(',') + '\n';
-                        }
-                    });
-
-                    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.setAttribute('href', url);
-                    link.setAttribute('download', 'certificate_downloads_export_' + new Date().toISOString().slice(0, 10) + '.csv');
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-
-                    setTimeout(() => {
-                        exportBtn.disabled = false;
-                        exportBtn.innerHTML = originalHTML;
-
-                        Swal.fire({
-                            text: "Certificate downloads exported successfully!",
-                            icon: "success",
-                            buttonsStyling: false,
-                            confirmButtonText: "Ok, got it!",
-                            customClass: {confirmButton: "btn fw-bold btn-primary"}
+                        })
+                        .catch(() => {
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = originalHTML;
+                            toastr.error('Export failed. Please try again.');
                         });
-                    }, 500);
                 });
             }
         };
@@ -343,14 +330,14 @@
                 if (!r.isConfirmed) return;
 
                 $.ajax({
-                    url: '{{ route("admin.certificate-log.delete", ":id") }}'.replace(':id', id),
+                    url: '{{ route("admin.certificate_log.delete", ":id") }}'.replace(':id', id),
                     method: 'DELETE',
                     data: {_token: '{{ csrf_token() }}'},
-                    success: () => {
-                        toastr.success('Record deleted');
+                    success: (data) => {
+                        toastr.success(data.message);
                         downloadTable.draw(false);
                     },
-                    error: () => toastr.error('Failed to delete record')
+                    error: xhr => toastr.error(xhr.responseJSON?.message ?? 'Delete failed.')
                 });
             });
         });

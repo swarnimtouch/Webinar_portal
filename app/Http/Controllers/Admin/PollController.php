@@ -32,16 +32,12 @@ class PollController
 
         $events = Events::get();
 
-        $title = $poll->exists ? __('Edit Poll') : __('Add Poll');
 
         return view('admin.poll.add_edit', [
             'poll' => $poll,
             'events' => $events,
-            'title' => $title,
-            'breadcrumb' => breadcrumb([
-                __('Poll') => route('admin.poll'),
-                $title => ''
-            ])
+            'title' => __('Poll'),
+            'breadcrumb' => breadcrumb([__('Poll') => route('admin.poll'), ($id ? 'Edit' : 'Add' . ' Poll') => '']),
         ]);
     }
 

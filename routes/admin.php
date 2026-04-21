@@ -85,6 +85,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::post('/user/delete-multiple', 'deleteMultiple')->name('user.deleteMultiple');
         Route::get('users/datatable', 'datatable')->name('user.datatable');
+        Route::get('users/export', 'export')->name('user.export');
 
         Route::get('/get-countries', 'countries')->name('users.countries');
         Route::get('/get-states/{country}', 'states')->name('users.states');
@@ -168,8 +169,8 @@ Route::middleware(['auth:admin'])->group(function () {
     | Misc Modules
     */
     Route::controller(DynamicFieldsController::class)->group(function () {
-        Route::get('dynamic-fields', 'index')->name('dynamic-fields');
-        Route::post('dynamic-fields/save', 'save')->name('dynamic-fields.save');
+        Route::get('dynamic_fields', 'index')->name('dynamic_fields');
+        Route::post('dynamic_fields/save', 'save')->name('dynamic_fields.save');
     });
 
     Route::controller(EventSettingController::class)->group(function () {
@@ -182,6 +183,7 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::delete('attendance/delete/{id}', 'delete')->name('user_attendance.delete');
         Route::post('attendance/delete-multiple', 'deleteMultiple')->name('user_attendance.deleteMultiple');
         Route::get('attendance/datatable', 'datatable')->name('user_attendance.datatable');
+        Route::get('attendance/export', 'export')->name('user_attendance.export');
     });
 
     Route::controller(FeedbackController::class)->group(function () {
@@ -189,6 +191,8 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::delete('feedback/delete/{id}', 'delete')->name('feedback.delete');
         Route::post('feedback/delete-multiple', 'deleteMultiple')->name('feedback.deleteMultiple');
         Route::get('feedback/datatable', 'datatable')->name('feedback.datatable');
+        Route::get('feedback/export', 'export')->name('feedback.export');
+
     });
 
     Route::controller(PollController::class)->group(function () {
@@ -207,13 +211,15 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::delete('user_quiz_result/delete/{id}', 'delete')->name('user_quiz_result.delete');
         Route::post('user_quiz_result/delete-multiple', 'deleteMultiple')->name('user_quiz_result.deleteMultiple');
         Route::get('user_quiz_result/datatable', 'datatable')->name('user_quiz_result.datatable');
+        Route::get('user_quiz_result/export', 'export')->name('user_quiz_result.export');
     });
 
     Route::controller(ChatLogController::class)->group(function () {
-        Route::get('chatlog', 'index')->name('chat_log');
-        Route::delete('chatlog/delete/{id}', 'delete')->name('chat_log.delete');
-        Route::post('chatlog/delete-multiple', 'deleteMultiple')->name('chat_log.deleteMultiple');
-        Route::get('chatlog/datatable', 'datatable')->name('chat_log.datatable');
+        Route::get('chat_log', 'index')->name('chat_log');
+        Route::delete('chat_log/delete/{id}', 'delete')->name('chat_log.delete');
+        Route::post('chat_log/delete-multiple', 'deleteMultiple')->name('chat_log.deleteMultiple');
+        Route::get('chat_log/datatable', 'datatable')->name('chat_log.datatable');
+        Route::get('chat_log/export', 'export')->name('chat_log.export');
     });
 
     Route::controller(CertificateController::class)->group(function () {
@@ -228,10 +234,11 @@ Route::middleware(['auth:admin'])->group(function () {
     });
 
     Route::controller(CertificateLogController::class)->group(function () {
-        Route::get('certificate-log', 'index')->name('certificate-log');
-        Route::delete('certificate-log/delete/{id}', 'delete')->name('certificate-log.delete');
-        Route::post('certificate-log/delete-multiple', 'deleteMultiple')->name('certificate-log.deleteMultiple');
-        Route::get('certificate-log/datatable', 'datatable')->name('certificate-log.datatable');
+        Route::get('certificate-log', 'index')->name('certificate_log');
+        Route::delete('certificate-log/delete/{id}', 'delete')->name('certificate_log.delete');
+        Route::post('certificate-log/delete-multiple', 'deleteMultiple')->name('certificate_log.deleteMultiple');
+        Route::get('certificate-log/datatable', 'datatable')->name('certificate_log.datatable');
+        Route::get('certificate-log/export', 'export')->name('certificate_log.export');
     });
 
 

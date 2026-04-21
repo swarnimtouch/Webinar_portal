@@ -19,26 +19,18 @@ class UserController extends Controller
     {
         $authUser = auth()->user();
 
-        if ($authUser->type === 'sub_admin') {
-            $dynamicFields = DynamicFields::where('status', 'active')
-                ->where('event_id', $authUser->event_id)
-                ->orderBy('index_no')
-                ->get();
-        } else {
-            $dynamicFields = DynamicFields::where('status', 'active')
-                ->orderBy('index_no')
-                ->get()
-                ->unique('field_name');
-        }
+        $dynamicFields = DynamicFields::where('status', 'active')
+            ->when($authUser->type === 'sub_admin', fn($q) => $q->where('event_id', $authUser->event_id))
+            ->orderBy('index_no')
+            ->get()
+            ->when($authUser->type !== 'sub_admin', fn($c) => $c->unique('field_name'));
 
         $usersColumns = Schema::getColumnListing('users');
         $excludeColumns = ['password'];
 
         $validDynamicFields = $dynamicFields->filter(function ($field) use ($usersColumns, $excludeColumns) {
-            if (in_array($field->field_name, $excludeColumns)) {
-                return false;
-            }
-            return in_array($field->field_name, $usersColumns);
+            return !in_array($field->field_name, $excludeColumns)
+                && in_array($field->field_name, $usersColumns);
         })->values();
 
         $users = User::where('type', 'doctor')->get();
@@ -53,26 +45,26 @@ class UserController extends Controller
 
     public function addEditForm($id = null)
     {
-        $user = $id ? User::findOrFail($id) : null;
         $authUser = auth()->user();
+        $user = $id ? User::findOrFail($id) : null;
         $events = Events::get();
 
-        $fieldsQuery = DynamicFields::join('attributes', 'dynamic_fields.attribute_id', '=', 'attributes.id')
-            ->select('dynamic_fields.*', 'attributes.type as attr_type')
-            ->where('dynamic_fields.status', 'active')
-            ->orderBy('dynamic_fields.index_no');
+        $fieldsQuery = DynamicFields::with('attribute_data')
+            ->active()
+            ->orderBy('index_no');
 
-        if ($authUser->type === 'sub_admin') {
-            $activeFields = $fieldsQuery
-                ->where('dynamic_fields.event_id', $authUser->event_id)
-                ->get();
-        } else {
-            $activeFields = ($id && $user->event_id)
-                ? $fieldsQuery
-                    ->where('dynamic_fields.event_id', $user->event_id)
-                    ->get()
-                : collect();
-        }
+        $activeFields = match (true) {
+            $authUser->type === 'sub_admin' => $fieldsQuery
+                ->where('event_id', $authUser->event_id)
+                ->get(),
+
+            $authUser->type !== 'sub_admin' && $id && $user?->event_id => $fieldsQuery
+                ->where('event_id', $user->event_id)
+                ->get()
+                ->unique('field_name'),
+
+            default => collect(),
+        };
 
         return view('admin.users.add_edit', [
             'user' => $user,
@@ -90,20 +82,23 @@ class UserController extends Controller
 
     public function save(Request $request, $id = null)
     {
-
         $user = $id ? User::findOrFail($id) : null;
-        $activeFields = DynamicFields::where('status', 'active')->get();
+
+        $eventId = $request->event_id ?? auth()->user()->event_id;
+
+        $activeFields = DynamicFields::where('status', 'active')
+            ->where('event_id', $eventId)
+            ->get();
+
+        $fieldMapping = [
+            'mobile_number' => 'mobile',
+        ];
 
         $rules = [];
         $messages = [];
 
         foreach ($activeFields as $field) {
             $fieldName = $field->field_name;
-
-            $fieldMapping = [
-                'mobile_number' => 'mobile',
-            ];
-
             $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
 
             if ($field->is_required) {
@@ -115,10 +110,11 @@ class UserController extends Controller
                     if ($id && $request->avatar_removed == '1' && !$request->hasFile('avatar')) {
                         $rules['avatar'] = 'required|image|mimes:jpg,jpeg,png,gif|max:5120';
                     } else {
-                        $rules['avatar'] = $id ? 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120'
+                        $rules['avatar'] = $id
+                            ? 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120'
                             : 'required|image|mimes:jpg,jpeg,png,gif|max:5120';
                     }
-                } elseif (in_array($fieldName, ['mobile_number', 'alternative_mobile_number'])) {
+                } elseif ($fieldName === 'mobile_number') {
                     $rules[$dbFieldName] = 'required|digits:10';
                 } else {
                     $rules[$dbFieldName] = 'required';
@@ -128,59 +124,58 @@ class UserController extends Controller
                     $rules[$dbFieldName] = 'nullable|email|unique:users,email' . ($id ? ",$id" : '');
                 } elseif ($fieldName === 'avatar' && $request->hasFile('avatar')) {
                     $rules['avatar'] = 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120';
-                } elseif (in_array($fieldName, ['mobile_number', 'alternative_mobile_number']) && $request->has($dbFieldName)) {
+                } elseif ($fieldName === 'mobile_number' && $request->has($dbFieldName)) {
                     $rules[$dbFieldName] = 'nullable|digits:10';
                 }
             }
-            $rules['event_id'] = 'nullable';
+
             $messages[$dbFieldName . '.required'] = $field->label . ' is required';
         }
 
+        $rules['event_id'] = 'nullable';
+
         $request->validate($rules, $messages);
 
-        $userData = [];
+        $data = $request->except(['_token', '_method', 'avatar_removed', 'has_existing_avatar']);
 
-        foreach ($activeFields as $field) {
-            $fieldName = $field->field_name;
-
-            $fieldMapping = [
-                'mobile_number' => 'mobile',
-            ];
-
-            $dbFieldName = $fieldMapping[$fieldName] ?? $fieldName;
-
-            if ($fieldName === 'avatar') {
-                if ($id && $request->avatar_removed == '1') {
-                    if ($user->avatar) {
-                        Storage::disk('public')->delete($user->avatar);
-                    }
-                    $userData['avatar'] = null;
-                }
-
-                if ($request->hasFile('avatar')) {
-                    if ($user?->avatar) {
-                        Storage::disk('public')->delete($user->avatar);
-                    }
-                    $userData['avatar'] = $request->file('avatar')->store('avatars', 'public');
-                }
-            } elseif ($fieldName === 'password') {
-                if ($request->filled('password')) {
-                    $userData['password'] = Hash::make($request->password);
-                }
-            } else {
-                if ($request->has($dbFieldName)) {
-                    $userData[$dbFieldName] = $request->$dbFieldName;
-                }
-            }
+        if (isset($data['mobile_number'])) {
+            $data['mobile'] = $data['mobile_number'];
+            unset($data['mobile_number']);
         }
-        $userData['name'] = $request->first_name . $request->last_name;
-        $userData['event_id'] = $request->event_id;
-        $userData['type'] = 'doctor';
+
+        if (!empty($data['first_name']) || !empty($data['last_name'])) {
+            $data['name'] = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
+        }
+
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
+
+        unset($data['avatar']);
+
+        if ($id && $request->avatar_removed == '1') {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $data['avatar'] = null;
+        }
+
+        if ($request->hasFile('avatar')) {
+            if ($user?->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        $data['type'] = 'doctor';
+        $data['event_id'] = $eventId;
 
         if ($user) {
-            $user->update($userData);
+            $user->update($data);
         } else {
-            User::create($userData);
+            User::create($data);
         }
 
         return redirect()->route('admin.user.index')->with('success', 'User Saved Successfully.');
@@ -239,18 +234,18 @@ class UserController extends Controller
             $activeFields = DynamicFields::where('status', 'active')
                 ->orderBy('index_no')
                 ->get()
-                ->unique('field_name'); // <-- Fix duplicate columns
+                ->unique('field_name');
         }
 
         $userTableColumns = \Schema::getColumnListing('users');
 
         $validDynamicFields = $activeFields->filter(function ($field) use ($userTableColumns) {
             return in_array($field->field_name, $userTableColumns);
-        })->values(); // <-- re-index
+        })->values();
 
         $select = ['id', 'event_id'];
         foreach ($validDynamicFields as $field) {
-            if (!in_array($field->field_name, $select)) { // prevent duplicate select columns
+            if (!in_array($field->field_name, $select)) {
                 $select[] = $field->field_name;
             }
         }
@@ -315,22 +310,96 @@ class UserController extends Controller
 
     }
 
-    public function getEventFields($eventId)
+    public function getEventFields(Request $request, $eventId)
     {
-        $fields = DynamicFields::with('attributeInput')
+        $activeFields = DynamicFields::with('attribute_data')
+            ->active()
             ->where('event_id', $eventId)
-            ->where('status', 'active')
             ->orderBy('index_no')
-            ->get()
-            ->map(function ($field) {
-                $field->attr_type = $field->attributeInput->type ?? 'text';
-                return $field;
-            });
+            ->get();
 
-        // ✅ Sirf yeh line badlo
         return view('admin.users._dynamic_fields', [
-            'active_fields' => $fields,
-            'user' => null
-        ])->render();
+            'active_fields' => $activeFields,
+            'user' => null,
+            'parent_field' => $request->input('parent_field'),
+            'parent_value' => $request->input('parent_value'),
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $authUser = auth()->user();
+        $isAdmin = $authUser->type === 'admin';
+        $search = $request->get('search');
+
+        if ($isAdmin) {
+            $activeFields = DynamicFields::where('status', 'active')
+                ->where('field_name', '!=', 'password')
+                ->orderBy('index_no')
+                ->get()
+                ->unique('field_name');
+        } else {
+            $activeFields = DynamicFields::where('status', 'active')
+                ->where('field_name', '!=', 'password')
+                ->where('event_id', $authUser->event_id)
+                ->orderBy('index_no')
+                ->get();
+        }
+
+        $userTableColumns = Schema::getColumnListing('users');
+        $validDynamicFields = $activeFields->filter(fn($f) => in_array($f->field_name, $userTableColumns))->values();
+
+        $select = ['id', 'event_id'];
+        foreach ($validDynamicFields as $field) {
+            if (!in_array($field->field_name, $select)) {
+                $select[] = $field->field_name;
+            }
+        }
+
+        $query = User::with('event')
+            ->select($select)
+            ->where('type', 'doctor')
+            ->when(!$isAdmin, fn($q) => $q->where('event_id', $authUser->event_id))
+            ->when($search, function ($q) use ($validDynamicFields, $search) {
+                $q->where(function ($inner) use ($validDynamicFields, $search) {
+                    foreach ($validDynamicFields as $field) {
+                        $inner->orWhere($field->field_name, 'LIKE', "%{$search}%");
+                    }
+                });
+            })
+            ->get();
+
+        $dynamicHeaders = $validDynamicFields->pluck('label')->toArray();
+
+        $headers = $isAdmin
+            ? array_merge(['Event'], $dynamicHeaders)
+            : $dynamicHeaders;
+
+        $rows = [];
+        $rows[] = implode(',', $headers);
+
+        $esc = fn($val) => '"' . str_replace('"', '""', (string)($val ?? '')) . '"';
+
+        foreach ($query as $user) {
+            $row = [];
+
+            if ($isAdmin) {
+                $row[] = $esc($user->event?->name ?? 'N/A');
+            }
+
+            foreach ($validDynamicFields as $field) {
+                $row[] = $esc($user->{$field->field_name} ?? 'N/A');
+            }
+
+            $rows[] = implode(',', $row);
+        }
+
+        $csv = implode("\n", $rows);
+        $filename = 'users_export_' . now()->format('Y-m-d') . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
     }
 }

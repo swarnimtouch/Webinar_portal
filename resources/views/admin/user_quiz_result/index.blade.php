@@ -209,6 +209,47 @@
                 deleteQuizResult($(this).data('id'));
             });
 
+            function handleExport() {
+                const exportBtn = document.getElementById('export-btn');
+                if (!exportBtn) return;
+
+                exportBtn.addEventListener('click', function () {
+                    const originalHTML = exportBtn.innerHTML;
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
+
+                    const url = new URL('{{ route("admin.user_quiz_result.export") }}', window.location.origin);
+                    const searchValue = $('[data-kt-user-quiz-result-table-filter="search"]').val();
+                    if (searchValue) url.searchParams.set('search', searchValue);
+
+                    fetch(url.toString(), {
+                        method: 'GET',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'}
+                    })
+                        .then(res => {
+                            if (!res.ok) throw new Error();
+                            return res.blob();
+                        })
+                        .then(blob => {
+                            const link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.setAttribute('download', 'user_quiz_results_export_' + new Date().toISOString().slice(0, 10) + '.csv');
+                            link.style.visibility = 'hidden';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = originalHTML;
+                            toastr.success('Quiz results exported successfully!');
+                        })
+                        .catch(() => {
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = originalHTML;
+                            toastr.error('Export failed. Please try again.');
+                        });
+                });
+            }
 
             document
                 .querySelector('[data-kt-user-quiz-result-table-select="delete_selected"]')

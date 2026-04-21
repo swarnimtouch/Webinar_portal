@@ -380,45 +380,40 @@
                     exportBtn.disabled = true;
                     exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
 
-                    let csv = 'Group,Sender,Message,Seen By,Date\n';
+                    const searchValue = document.querySelector('[data-kt-chat-message-table-filter="search"]').value;
+                    const groupValue = document.querySelector('[data-kt-chat-message-table-filter="group"]')?.value ?? '';
 
-                    const rows = document.querySelectorAll('#kt_table_chat_messages tbody tr');
-                    rows.forEach(row => {
-                        const cells = row.querySelectorAll('td');
-                        if (cells.length > 1) {
-                            let rowData = [];
-                            for (let i = 1; i < cells.length - 1; i++) {
-                                let text = cells[i].innerText.trim().replace(/\n/g, ' ');
-                                rowData.push(`"${text}"`);
-                            }
-                            csv += rowData.join(',') + '\n';
-                        }
-                    });
+                    const url = new URL('{{ route("admin.chat_log.export") }}', window.location.origin);
+                    url.searchParams.set('export', '1');
+                    if (searchValue) url.searchParams.set('search', searchValue);
+                    if (groupValue) url.searchParams.set('group', groupValue);
 
-                    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.setAttribute('href', url);
-                    link.setAttribute('download', 'chat_messages_export_' + new Date().toISOString().slice(0, 10) + '.csv');
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    fetch(url.toString(), {
+                        method: 'GET',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'}
+                    })
+                        .then(res => {
+                            if (!res.ok) throw new Error('Export failed');
+                            return res.blob();
+                        })
+                        .then(blob => {
+                            const link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.setAttribute('download', 'chat_messages_export_' + new Date().toISOString().slice(0, 10) + '.csv');
+                            link.style.visibility = 'hidden';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
 
-                    setTimeout(() => {
-                        exportBtn.disabled = false;
-                        exportBtn.innerHTML = originalHTML;
-
-                        Swal.fire({
-                            text: "Messages exported successfully!",
-                            icon: "success",
-                            buttonsStyling: false,
-                            confirmButtonText: "Ok, got it!",
-                            customClass: {
-                                confirmButton: "btn fw-bold btn-primary",
-                            }
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = originalHTML;
+                            toastr.success('Messages exported successfully!');
+                        })
+                        .catch(() => {
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = originalHTML;
+                            toastr.error('Export failed. Please try again.');
                         });
-                    }, 500);
                 });
             }
         };
