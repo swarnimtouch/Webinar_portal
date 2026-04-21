@@ -177,15 +177,19 @@
         window.csrfToken = "{{ csrf_token() }}";
         window.eventSlug = "{{ request()->route('slug') }}";
         window.trackingEnabled = {{ $is_log_attendance }};
-        window.chatMessagesUrl = "{{ route('chat.messages',             ['slug' => request()->route('slug')]) }}";
-        window.chatSendUrl = "{{ route('chat.send',                 ['slug' => request()->route('slug')]) }}";
-        window.raiseHandUrl = "{{ route('raise.hand',               ['slug' => request()->route('slug')]) }}";
-        window.handStatusUrl = "{{ route('hand.status',              ['slug' => request()->route('slug')]) }}";
-        window.pollUrl = "{{ route('poll',                      ['slug' => request()->route('slug')]) }}";
-        window.pollVoteUrl = "{{ route('poll.vote',                 ['slug' => request()->route('slug')]) }}";
-        window.feedbackStoreUrl = "{{ route('feedback.save',             ['slug' => request()->route('slug')]) }}";
-        window.attendanceJoinUrl = "{{ route('attendance.join',           ['slug' => request()->route('slug')]) }}";
-        window.attendanceLeaveUrl = "{{ route('attendance.leave',          ['slug' => request()->route('slug')]) }}";
+        window.chatMessagesUrl = "{{ route('chat.messages',['slug' => request()->route('slug')]) }}";
+        window.chatSendUrl = "{{ route('chat.send',['slug' => request()->route('slug')]) }}";
+        window.raiseHandUrl = "{{ route('raise.hand',['slug' => request()->route('slug')]) }}";
+        window.handStatusUrl = "{{ route('hand.status',['slug' => request()->route('slug')]) }}";
+        window.pollUrl = "{{ route('poll',['slug' => request()->route('slug')]) }}";
+        window.pollVoteUrl = "{{ route('poll.vote',['slug' => request()->route('slug')]) }}";
+        window.feedbackStoreUrl = "{{ route('feedback.save',['slug' => request()->route('slug')]) }}";
+        window.attendanceJoinUrl = "{{ route('attendance.join',['slug' => request()->route('slug')]) }}";
+        window.attendanceLeaveUrl = "{{ route('attendance.leave',['slug' => request()->route('slug')]) }}";
+        window.initialFeedback = @json([
+            'rating' => $feedback->rating ?? null,
+            'comment' => $feedback->comment ?? null,
+        ]);
 
         $(function () {
 
@@ -226,18 +230,18 @@
 
                 function attendanceBeacon(url) {
                     const payload = new Blob(
-                        [JSON.stringify({ _token: window.csrfToken })],
-                        { type: 'application/json' }
+                        [JSON.stringify({_token: window.csrfToken})],
+                        {type: 'application/json'}
                     );
                     navigator.sendBeacon(url, payload);
                 }
 
                 function attendanceJoin() {
                     $.ajax({
-                        url:     window.attendanceJoinUrl,
-                        method:  'POST',
+                        url: window.attendanceJoinUrl,
+                        method: 'POST',
                         headers: csrf(),
-                        data:    JSON.stringify({}),
+                        data: JSON.stringify({}),
                     });
                 }
 
@@ -266,7 +270,9 @@
             presenceChannel
 
                 .here(function (users) {
-                    users.forEach(u => { onlineUsers[u.id] = u; });
+                    users.forEach(u => {
+                        onlineUsers[u.id] = u;
+                    });
                     renderParticipants();
 
                     if (window.trackingEnabled) attendanceJoin();
@@ -580,13 +586,15 @@
                 $question.text(poll.question).show();
                 $options.show();
 
-                const answers = typeof poll.options === 'string' ? JSON.parse(poll.options) : (poll.options || []);
-                const totalVotes = poll.answers_count || 0;
+                const answers = typeof poll.poll_answers === 'string' ? JSON.parse(poll.poll_answers) : (poll.poll_answers || []);
+                const totalVotes = poll.votes_count || 0;
 
                 answers.forEach(function (opt) {
-                    const optText = typeof opt === 'object' ? opt.text : opt;
-                    const count = typeof opt === 'object' ? (opt.count || 0) : 0;
+                    const optText = typeof opt === 'object' ? opt.answer : opt;
+                    const optId = typeof opt === 'object' ? opt.id : opt;
+                    const count = typeof opt === 'object' ? (opt.user_voted_count || 0) : 0;
                     const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+
                     const isSelected = voted && voted.answer === optText;
 
                     if (voted) {
@@ -602,7 +610,7 @@
                     </div>`);
                     } else {
                         $options.append(`
-                    <button class="poll-option-btn" data-poll="${poll.id}" data-answer="${escHtml(optText)}">
+                    <button class="poll-option-btn" data-poll="${poll.id}" data-answer-id="${optId}" data-answer="${escHtml(optText)}">
                         ${escHtml(optText)}
                     </button>`);
                     }
@@ -621,11 +629,12 @@
             $(document).on('click', '.poll-option-btn', function () {
                 const pollId = $(this).data('poll');
                 const answer = $(this).data('answer');
+                const answerId = $(this).data('answer-id');
                 $.ajax({
                     url: window.pollVoteUrl,
                     method: 'POST',
                     headers: csrf(),
-                    data: JSON.stringify({poll_id: pollId, answer: answer}),
+                    data: JSON.stringify({poll_id: pollId, answer: answer, answer_id: answerId}),
                     success: function (res) {
                         if (res.status) {
                             toastr.success('Vote submitted!');
@@ -639,37 +648,111 @@
                     },
                 });
             });
+            echo.channel(`webinar.${slug}.poll`)
+                .listen('.poll.updated', function (data) {
+                    renderPoll(data.poll, null);
+                    loadPoll();
+                });
 
             loadPoll();
 
             let selectedRating = 0;
+            let feedbackSubmitted = false;
+
+            function feedbackLabel(rating) {
+                return ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating] || 'Select stars to rate';
+            }
+
+            function paintFeedbackStars() {
+                $('.star').each(function () {
+                    $(this)
+                        .toggleClass('active', parseInt($(this).data('value')) <= selectedRating)
+                        .toggleClass('is-locked', feedbackSubmitted);
+                });
+            }
+
+            function setFeedbackSubmittedState(isSubmitted, feedback = {}) {
+                feedbackSubmitted = isSubmitted;
+
+                if (feedback.rating) {
+                    selectedRating = parseInt(feedback.rating);
+                }
+
+                if (typeof feedback.comment !== 'undefined') {
+                    $('#feedbackText').val(feedback.comment || '');
+                }
+
+                paintFeedbackStars();
+                $('#feedbackRatingText').text(feedbackLabel(selectedRating));
+
+                $('#feedbackText').prop('disabled', isSubmitted);
+                $('#submitFeedbackBtn')
+                    .prop('disabled', isSubmitted)
+                    .text(isSubmitted ? 'Feedback Submitted' : 'Submit Feedback');
+
+                $('#feedbackSubtitle').text(
+                    isSubmitted
+                        ? 'Your response has been saved for this session.'
+                        : 'Share a quick rating and comment about this webinar.'
+                );
+
+                $('#feedbackSuccessState').toggle(isSubmitted);
+                $('#feedbackSuccessText').text(
+                    isSubmitted && (feedback.comment || '').trim()
+                        ? 'Your rating and comments have been recorded.'
+                        : 'Your rating has been recorded.'
+                );
+            }
 
             $(document).on('click', '.star', function () {
+                if (feedbackSubmitted) {
+                    return;
+                }
+
                 selectedRating = parseInt($(this).data('value'));
-                $('.star').each(function () {
-                    $(this).toggleClass('active', parseInt($(this).data('value')) <= selectedRating);
-                });
-                $('.rating-text').text(['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][selectedRating]);
+                paintFeedbackStars();
+                $('#feedbackRatingText').text(feedbackLabel(selectedRating));
             });
 
             $('#submitFeedbackBtn').on('click', function () {
+                if (feedbackSubmitted) {
+                    return;
+                }
+
                 if (!selectedRating) {
                     toastr.warning('Please select a rating');
                     return;
                 }
+
+                const $button = $(this);
+                $button.prop('disabled', true).text('Submitting...');
+
                 $.ajax({
                     url: window.feedbackStoreUrl,
                     method: 'POST',
                     headers: csrf(),
                     data: JSON.stringify({rating: selectedRating, comment: $('#feedbackText').val()}),
                     success: function (res) {
-                        if (res.status) toastr.success('Feedback submitted. Thank you!');
+                        if (res.status) {
+                            setFeedbackSubmittedState(true, res.feedback || {
+                                rating: selectedRating,
+                                comment: $('#feedbackText').val(),
+                            });
+                            toastr.success('Feedback submitted. Thank you!');
+                        } else {
+                            $button.prop('disabled', false).text('Submit Feedback');
+                        }
                     },
                     error: function () {
+                        $button.prop('disabled', false).text('Submit Feedback');
                         toastr.error('Failed to submit feedback');
                     },
                 });
             });
+
+            if (window.initialFeedback?.rating) {
+                setFeedbackSubmittedState(true, window.initialFeedback);
+            }
 
 
             $('#mobileChatBtn').on('click', function () {

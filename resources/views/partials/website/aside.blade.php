@@ -65,17 +65,31 @@
 
             <div class="tab-content" id="feedback" style="display:none">
                 <div class="feedback-container">
-                    <h3>Rate this Session</h3>
-                    <div class="star-rating-widget">
+                    <div class="feedback-header">
+                        <h3>Rate this Session</h3>
+                        <p class="feedback-subtitle" id="feedbackSubtitle">Share a quick rating and comment about this webinar.</p>
+                    </div>
+                    <div class="star-rating-widget" id="feedbackStars">
                         <i class="fa-solid fa-star star" data-value="1"></i>
                         <i class="fa-solid fa-star star" data-value="2"></i>
                         <i class="fa-solid fa-star star" data-value="3"></i>
                         <i class="fa-solid fa-star star" data-value="4"></i>
                         <i class="fa-solid fa-star star" data-value="5"></i>
                     </div>
-                    <p class="rating-text">Select stars to rate</p>
-                    <textarea id="feedbackText" placeholder="Write your feedback here..."></textarea>
-                    <button id="submitFeedbackBtn" class="btn-primary-full">Submit Feedback</button>
+                    <p class="rating-text" id="feedbackRatingText">Select stars to rate</p>
+                    <textarea id="feedbackText" placeholder="Write your feedback here..." maxlength="1000"></textarea>
+                    <div class="feedback-actions">
+                        <button id="submitFeedbackBtn" class="btn-primary-full">Submit Feedback</button>
+                    </div>
+                    <div class="feedback-success-state" id="feedbackSuccessState" style="display:none">
+                        <div class="feedback-success-icon">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div class="feedback-success-copy">
+                            <strong id="feedbackSuccessTitle">Feedback saved</strong>
+                            <p id="feedbackSuccessText">Thanks for sharing your thoughts.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 

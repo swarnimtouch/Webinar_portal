@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Certificate extends Model
 {
@@ -32,5 +33,16 @@ class Certificate extends Model
     public function event()
     {
         return $this->belongsTo(Events::class);
+    }
+
+    public function scopeCurrentEvent($query)
+    {
+        $event = app('event');
+        return $query->where('event_id', $event->id ?? 0);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use App\Models\UserQuizAnswer;
+use App\Models\UserPollAnswer;
 
 class UserQuizResult
 {
@@ -20,12 +20,12 @@ class UserQuizResult
     public function delete($id)
     {
         try {
-            $userQuizAnswer = UserQuizAnswer::findOrFail($id);
+            $userQuizAnswer = UserPollAnswer::findOrFail($id);
             $userQuizAnswer->delete();
 
-            return response()->json(['success' => true, 'message' => 'UserQuizAnswer deleted successfully']);
+            return response()->json(['success' => true, 'message' => 'User Poll Answer deleted successfully']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error deleting UserQuizAnswer'], 500);
+            return response()->json(['success' => false, 'message' => 'Error deleting User Poll Answer'], 500);
         }
     }
 
@@ -35,14 +35,14 @@ class UserQuizResult
             $ids = $request->input('ids', []);
 
             if (empty($ids)) {
-                return response()->json(['success' => false, 'message' => 'No UserQuizAnswer selected'], 400);
+                return response()->json(['success' => false, 'message' => 'No User Poll Answer selected'], 400);
             }
 
-            UserQuizAnswer::whereIn('id', $ids)->delete();
+            UserPollAnswer::whereIn('id', $ids)->delete();
 
-            return response()->json(['success' => true, 'message' => 'UserQuizAnswer deleted successfully']);
+            return response()->json(['success' => true, 'message' => 'User Poll Answer deleted successfully']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error deleting UserQuizAnswer'], 500);
+            return response()->json(['success' => false, 'message' => 'Error deleting User Poll Answer'], 500);
         }
     }
 
@@ -50,7 +50,7 @@ class UserQuizResult
     {
         $user = auth()->user();
 
-        $query = UserQuizAnswer::with('user', 'poll');
+        $query = UserPollAnswer::with('user', 'poll');
         if ($user->type === 'sub_admin') {
             $query->whereHas('poll', function ($q) use ($user) {
                 $q->where('event_id', $user->event_id);
@@ -123,7 +123,7 @@ class UserQuizResult
         $isAdmin = $user->type === 'admin';
         $search = $request->get('search');
 
-        $query = UserQuizAnswer::with(['user.event', 'poll'])
+        $query = UserPollAnswer::with(['user.event', 'poll'])
             ->when(!$isAdmin, function ($q) use ($user) {
                 $q->whereHas('poll', function ($pq) use ($user) {
                     $pq->where('event_id', $user->event_id);

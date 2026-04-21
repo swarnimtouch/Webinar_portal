@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Website;
 
 use App\Models\Certificate;
 use App\Models\Feedback;
-use App\Models\HomeSetting;
 use App\Models\Poll;
 use App\Models\UserAttendance;
-use App\Models\UserQuizAnswer;
+use App\Models\UserPollAnswer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,13 +23,17 @@ class DashboardController
 
     public function dashboard()
     {
-        $polls = Poll::activeVisibleLatest()->get();
-        $activeCertificate = Certificate::where('status', 'active')->first();
+        $polls = Poll::activeVisibleLatest()->CurrentEvent()->get();
+        $activeCertificate = Certificate::CurrentEvent()->Active()->first();
+        $feedback = Feedback::where('user_id', Auth::guard('web')->id())
+            ->where('event_id', $this->event->id ?? null)
+            ->first();
 
         return view('website.dashboard', [
             'polls' => $polls,
             'active_certificate' => $activeCertificate,
-            'is_log_attendance'=>$this->event->is_log_attendance??false,
+            'feedback' => $feedback,
+            'is_log_attendance' => $this->event->is_log_attendance ?? false,
             'title' => __('Dashboard'),
         ]);
     }
@@ -72,6 +75,7 @@ class DashboardController
             return response()->json(['success' => false], 500);
         }
     }
+
     public function attendanceLeave(Request $request, string $slug)
     {
         try {
@@ -105,27 +109,40 @@ class DashboardController
             'comment' => 'nullable|string',
         ]);
 
-        $feedback = Feedback::firstOrNew(['user_id' => auth()->id()]);
+        $feedback = Feedback::firstOrNew([
+            'user_id' => auth()->guard('web')->id(),
+            'event_id' => $this->event->id ?? null,
+        ]);
         $feedback->rating = $request->rating;
         $feedback->comment = $request->filled('comment') ? $request->comment : null;
         $feedback->save();
 
-        return response()->json(['status' => true, 'message' => 'Feedback saved successfully']);
+        return response()->json([
+            'status' => true,
+            'message' => 'Feedback saved successfully',
+            'feedback' => [
+                'rating' => $feedback->rating,
+                'comment' => $feedback->comment,
+            ],
+        ]);
     }
 
     public function getPoll()
     {
         $poll = Poll::where('status', 'active')
+            ->withCount('votes')
+            ->with(['poll_answers' => function ($query) {
+                $query->withCount('user_voted');
+            }])
             ->where('is_hidden', 0)
             ->latest()
             ->first();
-
         if (!$poll) {
             return response()->json(['poll' => null]);
         }
 
-        $vote = UserQuizAnswer::where('poll_id', $poll->id)
-            ->where('user_id', Auth::id())
+        $vote = UserPollAnswer::where('poll_id', $poll->id)
+            ->where('user_id', Auth::guard('web')->id())
             ->first();
 
         return response()->json(['poll' => $poll, 'voted' => $vote]);
@@ -135,10 +152,11 @@ class DashboardController
     {
         $request->validate([
             'poll_id' => 'required|exists:polls,id',
-            'answer' => 'required|string',
+            'answer_id' => 'required|exists:poll_answers,id',
+            'answer' => 'required',
         ]);
 
-        $alreadyVoted = UserQuizAnswer::where('poll_id', $request->poll_id)
+        $alreadyVoted = UserPollAnswer::where('poll_id', $request->poll_id)
             ->where('user_id', Auth::id())
             ->exists();
 
@@ -146,10 +164,11 @@ class DashboardController
             return response()->json(['status' => false, 'message' => 'You have already voted'], 409);
         }
 
-        UserQuizAnswer::create([
+        UserPollAnswer::create([
             'poll_id' => $request->poll_id,
             'user_id' => Auth::id(),
             'answer' => $request->answer,
+            'answer_id' => $request->answer_id,
         ]);
 
         return response()->json(['status' => true, 'message' => 'Vote submitted successfully']);
