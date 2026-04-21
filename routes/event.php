@@ -24,8 +24,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/feedback/save', [DashboardController::class, 'feedbackSave'])->name('feedback.save');
     Route::get('/poll', [DashboardController::class, 'getPoll'])->name('poll');
     Route::post('/poll/vote', [DashboardController::class, 'submitPoll'])->name('poll.vote');
-    Route::get('/chat/messages', [ChatController::class, 'fetchMessages'])->name('chat.messages');
-    Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::get('/chat/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
+    Route::post('/chat/send',    [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/raise-hand',   [ChatController::class, 'raiseHand'])->name('raise.hand');
+    Route::get('/hand-status',   [ChatController::class, 'handStatus'])->name('hand.status');
+    Route::post('/attendance/join',   [DashboardController::class, 'attendanceJoin'])->name('attendance.join');
+    Route::post('/attendance/leave',  [DashboardController::class, 'attendanceLeave'])->name('attendance.leave');
     Route::get('certificate/generate/{certificateId}/{userId}', [CertificateController::class, 'generate'])->name('certificate.generate');
 });
 

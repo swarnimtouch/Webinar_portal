@@ -2,178 +2,99 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Models\Certificate;
 use App\Models\Feedback;
-use App\Models\Poll;
-use App\Models\UserQuizAnswer;
 use App\Models\HomeSetting;
+use App\Models\Poll;
 use App\Models\UserAttendance;
+use App\Models\UserQuizAnswer;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
-use App\Models\Certificate;
 
 class DashboardController
 {
+    private $event = null;
+
+    public function __construct()
+    {
+        $this->event = app('event');
+    }
+
     public function dashboard()
     {
         $polls = Poll::activeVisibleLatest()->get();
         $activeCertificate = Certificate::where('status', 'active')->first();
+
         return view('website.dashboard', [
             'polls' => $polls,
             'active_certificate' => $activeCertificate,
+            'is_log_attendance'=>$this->event->is_log_attendance??false,
             'title' => __('Dashboard'),
         ]);
     }
 
-    public function updateSessionTime(Request $request)
+    public function attendanceJoin(Request $request, string $slug)
     {
         try {
-            $userId = Auth::id();
+
+            if ($this->event->is_log_attendance !== 1) {
+                return response()->json(['success' => false], 400);
+            }
+
+            if (!$this->checkAttendanceConditions()) {
+                return response()->json(['success' => false, 'message' => 'Outside event window'], 400);
+            }
+
+            $userId = Auth::guard('web')->id();
             $now = Carbon::now();
-
-            $homeSetting = HomeSetting::first();
-
-            if (!$homeSetting || !$homeSetting->user_attendance) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Attendance tracking is not enabled',
-                ], 400);
-            }
-
-            if (!$this->checkAttendanceConditions($homeSetting)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Attendance conditions not met',
-                ], 400);
-            }
 
             $attendance = UserAttendance::where('user_id', $userId)
                 ->whereDate('joined_at', $now->toDateString())
                 ->first();
 
             if (!$attendance) {
-                $attendance = UserAttendance::create([
+                UserAttendance::create([
                     'user_id' => $userId,
                     'joined_at' => $now,
                     'last_ping_at' => $now,
                     'session_time' => 0,
                 ]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Attendance created',
-                    'session_time' => 0,
-                ]);
+            } else {
+                $attendance->update(['last_ping_at' => $now]);
             }
 
-            $lastPing = Carbon::parse($attendance->last_ping_at);
-            $timeDiff = $lastPing->diffInSeconds($now);
-
-            if ($timeDiff < 120) {
-                $attendance->increment('session_time', $timeDiff);
-            }
-
-            $attendance->update([
-                'last_ping_at' => $now,
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'session_time' => $attendance->session_time,
-                'time_diff' => $timeDiff,
-            ]);
+            return response()->json(['success' => true]);
 
         } catch (\Exception $e) {
-            Log::error('Attendance Update Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            Log::error('Attendance Join: ' . $e->getMessage());
+            return response()->json(['success' => false], 500);
         }
     }
-
-    private function checkAttendanceConditions($homeSetting)
+    public function attendanceLeave(Request $request, string $slug)
     {
-        $now = Carbon::now('Asia/Kolkata');
+        try {
+            $userId = Auth::id();
+            $now = Carbon::now();
 
-        $activeFromDate = $homeSetting->active_from_date
-            ? Carbon::parse($homeSetting->active_from_date, 'Asia/Kolkata')
-            : null;
+            $attendance = UserAttendance::where('user_id', $userId)
+                ->whereDate('joined_at', $now->toDateString())
+                ->first();
 
-        $activeToDate = $homeSetting->active_to_date
-            ? Carbon::parse($homeSetting->active_to_date, 'Asia/Kolkata')
-            : null;
-
-        if ($activeFromDate && $activeToDate) {
-            if ($now->lt($activeFromDate) || $now->gt($activeToDate)) {
-                Log::info('Attendance: Not in active period', [
-                    'now' => $now->toDateTimeString(),
-                    'from' => $activeFromDate->toDateTimeString(),
-                    'to' => $activeToDate->toDateTimeString(),
-                ]);
-                return false;
+            if ($attendance && $attendance->last_ping_at) {
+                $diff = Carbon::parse($attendance->last_ping_at)->diffInSeconds($now);
+                if ($diff > 0 && $diff < 7200) {
+                    $attendance->increment('session_time', $diff);
+                }
+                $attendance->update(['last_ping_at' => $now]);
             }
-        }
 
-        $eventStartTime = $homeSetting->event_start_time
-            ? Carbon::parse($homeSetting->event_start_time, 'Asia/Kolkata')
-            : null;
+            return response()->json(['success' => true]);
 
-        $eventEndTime = $homeSetting->event_end_time
-            ? Carbon::parse($homeSetting->event_end_time, 'Asia/Kolkata')
-            : null;
-
-        if ($eventStartTime && $eventEndTime) {
-            $todayStart = Carbon::today('Asia/Kolkata')
-                ->setHour($eventStartTime->hour)
-                ->setMinute($eventStartTime->minute)
-                ->setSecond(0);
-
-            $todayEnd = Carbon::today('Asia/Kolkata')
-                ->setHour($eventEndTime->hour)
-                ->setMinute($eventEndTime->minute)
-                ->setSecond(0);
-
-            if ($now->lt($todayStart) || $now->gt($todayEnd)) {
-                Log::info('Attendance: Not in event time', [
-                    'now' => $now->toDateTimeString(),
-                    'start' => $todayStart->toDateTimeString(),
-                    'end' => $todayEnd->toDateTimeString(),
-                ]);
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function trackUserAttendance($homeSetting)
-    {
-        if (!$this->checkAttendanceConditions($homeSetting)) {
-            return;
-        }
-
-        $userId = Auth::id();
-        $now = Carbon::now();
-
-        $attendance = UserAttendance::where('user_id', $userId)
-            ->whereDate('joined_at', $now->toDateString())
-            ->first();
-
-        if (!$attendance) {
-            UserAttendance::create([
-                'user_id' => $userId,
-                'joined_at' => $now,
-                'last_ping_at' => $now,
-                'session_time' => 0,
-            ]);
-            Log::info('Attendance: New record created for user ' . $userId);
-        } else {
-            $attendance->update([
-                'last_ping_at' => $now,
-            ]);
-            Log::info('Attendance: Updated for user ' . $userId);
+        } catch (\Exception $e) {
+            Log::error('Attendance Leave: ' . $e->getMessage());
+            return response()->json(['success' => false], 500);
         }
     }
 
@@ -184,19 +105,12 @@ class DashboardController
             'comment' => 'nullable|string',
         ]);
 
-        $userId = auth()->id();
-
-        $feedback = Feedback::firstOrNew(['user_id' => $userId]);
-
+        $feedback = Feedback::firstOrNew(['user_id' => auth()->id()]);
         $feedback->rating = $request->rating;
         $feedback->comment = $request->filled('comment') ? $request->comment : null;
-
         $feedback->save();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Feedback saved successfully',
-        ]);
+        return response()->json(['status' => true, 'message' => 'Feedback saved successfully']);
     }
 
     public function getPoll()
@@ -214,10 +128,7 @@ class DashboardController
             ->where('user_id', Auth::id())
             ->first();
 
-        return response()->json([
-            'poll' => $poll,
-            'voted' => $vote,
-        ]);
+        return response()->json(['poll' => $poll, 'voted' => $vote]);
     }
 
     public function submitPoll(Request $request)
@@ -232,10 +143,7 @@ class DashboardController
             ->exists();
 
         if ($alreadyVoted) {
-            return response()->json([
-                'status' => false,
-                'message' => 'You have already voted',
-            ], 409);
+            return response()->json(['status' => false, 'message' => 'You have already voted'], 409);
         }
 
         UserQuizAnswer::create([
@@ -244,9 +152,27 @@ class DashboardController
             'answer' => $request->answer,
         ]);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Vote submitted successfully',
-        ]);
+        return response()->json(['status' => true, 'message' => 'Vote submitted successfully']);
+    }
+
+    private function checkAttendanceConditions(): bool
+    {
+        $now = Carbon::now('Asia/Kolkata');
+
+        $from = $this->event->active_user_from ? Carbon::parse($this->event->active_user_from, 'Asia/Kolkata') : null;
+        $to = $this->event->active_user_to ? Carbon::parse($this->event->active_user_to, 'Asia/Kolkata') : null;
+
+        if ($from && $to && ($now->lt($from) || $now->gt($to))) return false;
+
+        $start = $this->event->start_time ? Carbon::parse($this->event->start_time, 'Asia/Kolkata') : null;
+        $end = $this->event->end_time ? Carbon::parse($this->event->end_time, 'Asia/Kolkata') : null;
+
+        if ($start && $end) {
+            $todayStart = Carbon::today('Asia/Kolkata')->setHour($start->hour)->setMinute($start->minute)->setSecond(0);
+            $todayEnd = Carbon::today('Asia/Kolkata')->setHour($end->hour)->setMinute($end->minute)->setSecond(0);
+            if ($now->lt($todayStart) || $now->gt($todayEnd)) return false;
+        }
+
+        return true;
     }
 }

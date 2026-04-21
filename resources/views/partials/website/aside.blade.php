@@ -17,54 +17,53 @@
         <div class="sidebar-scrollable-content">
             <div class="tab-content" id="chat">
                 <div class="chat-messages" id="chatMessages">
+                    <div class="chat-skeleton" id="chatSkeleton">
+                        <div class="skeleton-row">
+                            <div class="skeleton-avatar"></div>
+                            <div class="skeleton-bubble" style="width:55%"></div>
+                        </div>
+                        <div class="skeleton-row right">
+                            <div class="skeleton-avatar"></div>
+                            <div class="skeleton-bubble" style="width:40%"></div>
+                        </div>
+                        <div class="skeleton-row">
+                            <div class="skeleton-avatar"></div>
+                            <div class="skeleton-bubble" style="width:65%"></div>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="chat-typing" id="chatTyping">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span id="typingText">Someone is typing…</span>
                 </div>
             </div>
-            <div class="tab-content" id="qa">
-                <div class="qa-list">
-                    <div class="qa-item">
-                        <img src="{{asset('website/images/user.png')}}" alt="David Kim" class="chat-avatar">
-                        <div class="qa-content">
-                            <span class="username">David Kim</span>
-                            <p>What are the primary ethical considerations when deploying these models at scale?</p>
-                            <div class="qa-meta">
-                                <button class="upvote-btn"><i class="fa-solid fa-arrow-up"></i> Upvote (12)</button>
-                                <span>2 minutes ago</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="qa-item">
-                        <img src="{{asset('website/images/user.png')}}" alt="Emily Rogers" class="chat-avatar">
-                        <div class="qa-content">
-                            <span class="username">Emily Rogers</span>
-                            <p>How does the cost of training compare to fine-tuning existing foundation models?</p>
-                            <div class="qa-meta">
-                                <button class="upvote-btn"><i class="fa-solid fa-arrow-up"></i> Upvote (8)</button>
-                                <span>5 minutes ago</span>
-                            </div>
-                        </div>
+
+            <div class="tab-content" id="qa" style="display:none">
+                <div class="qa-list" id="qaList">
+                </div>
+                <div class="qna-input-area">
+                    <div class="chat-input-wrapper">
+                        <input type="text" id="qnaInput" placeholder="Ask a question…" maxlength="500">
+                        <button class="chat-send-btn" id="submitQnaBtn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-            <div class="tab-content" id="polls">
+
+            <div class="tab-content" id="polls" style="display:none">
                 <div class="poll-container" id="pollBox">
-                    <p class="poll-question" id="pollQuestion">
-                        <!-- Question loaded from DB -->
-                    </p>
-
-                    <div class="poll-options" id="pollOptions">
-                        <!-- Options loaded dynamically -->
-                    </div>
-                    <p class="poll-message" id="pollMessage">
-                        Poll is not active right now.
-                    </p>
-
-                    <p class="poll-footer" id="pollFooter">
-                        <!-- Optional footer -->
-                    </p>
+                    <p class="poll-question" id="pollQuestion"></p>
+                    <div class="poll-options" id="pollOptions"></div>
+                    <p class="poll-message" id="pollMessage">Poll is not active right now.</p>
+                    <p class="poll-footer" id="pollFooter"></p>
                 </div>
             </div>
-            <div class="tab-content" id="feedback">
+
+            <div class="tab-content" id="feedback" style="display:none">
                 <div class="feedback-container">
                     <h3>Rate this Session</h3>
                     <div class="star-rating-widget">
@@ -75,26 +74,30 @@
                         <i class="fa-solid fa-star star" data-value="5"></i>
                     </div>
                     <p class="rating-text">Select stars to rate</p>
-
                     <textarea id="feedbackText" placeholder="Write your feedback here..."></textarea>
-
                     <button id="submitFeedbackBtn" class="btn-primary-full">Submit Feedback</button>
                 </div>
             </div>
-            <div class="chat-input-area">
-                <div class="input-wrapper">
-                    <input type="text" id="chatInput" placeholder="Type your message...">
-                    <button class="send-btn" id="sendChatBtn">
+
+            <div class="chat-input-area" id="chatInputArea">
+                <button class="chat-scroll-chip" id="chatScrollChip">
+                    <i class="fa-solid fa-arrow-down"></i> New messages
+                </button>
+
+                <div class="chat-input-wrapper">
+                    <input type="text" id="chatInput" placeholder="Type a message…" maxlength="500" autocomplete="off">
+                    <button class="chat-send-btn" id="sendChatBtn">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
+                <div class="chat-char-count" id="chatCharCount">0 / 500</div>
             </div>
             <div class="sidebar-extra-content">
 
                 <div class="quick-actions-panel">
                     <h3>Quick Actions</h3>
                     <div class="actions-grid">
-                        <button class="action-box">
+                        <button class="action-box" id="raiseHandActionBtn">
                             <i class="fa-solid fa-hand"></i>
                             <span>Raise Hand</span>
                         </button>
@@ -125,38 +128,40 @@
                 <div class="participants-panel">
                     <div class="participants-header">
                         <h3>Participants</h3>
-                        <span class="online-count">2,847 online</span>
+                        <span class="online-count" id="onlineCount">
+            <i class="fa-solid fa-circle" style="font-size:0.5rem;color:#22c55e"></i>
+            <span id="onlineCountNum">0</span> online
+        </span>
                     </div>
-                    <ul class="participants-list">
-                        <li class="participant-item">
-                            <img src="{{asset('assets/website/images/user.png')}}" alt="Dr. Marcus Chen"
-                                 class="participant-avatar">
-                            <div class="participant-info">
-                                <span class="name">Dr. Marcus Chen</span>
-                                <span class="role">Host</span>
-                            </div>
-                            <i class="fa-solid fa-microphone participant-icon"></i>
-                        </li>
-                        <li class="participant-item">
-                            <img src="{{asset('assets/website/images/user.png')}}" alt="James Rodriguez"
-                                 class="participant-avatar">
-                            <div class="participant-info">
-                                <span class="name">James Rodriguez</span>
-                                <span class="role">Moderator</span>
-                            </div>
-                            <i class="fa-solid fa-microphone-slash participant-icon muted"></i>
-                        </li>
-                        <li class="participant-item">
-                            <img src="{{asset('assets/website/images/user.png')}}" alt="Michael Torres"
-                                 class="participant-avatar">
-                            <div class="participant-info">
-                                <span class="name">Michael Torres</span>
-                                <span class="role">Participant</span>
-                            </div>
-                            <i class="fa-solid fa-hand participant-icon raised"></i>
+
+                    {{-- Raise Hand Button --}}
+                    <button class="raise-hand-btn" id="raiseHandBtn">
+                        <span class="hand-icon"><i class="fa-solid fa-hand"></i></span>
+                        <span class="hand-label">Raise Hand</span>
+                        <span class="hand-badge" id="handBadge" style="display:none"></span>
+                    </button>
+
+                    {{-- Hand Raised Notification Toast --}}
+                    <div class="hand-toast" id="handToast" style="display:none">
+                        <i class="fa-solid fa-hand"></i>
+                        <span id="handToastText"></span>
+                    </div>
+
+                    {{-- Online Users List --}}
+                    <ul class="participants-list" id="participantsList">
+                        <li class="participants-loading">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Connecting…
                         </li>
                     </ul>
-                    <a href="#" class="view-all-link">View all participants <i class="fa-solid fa-arrow-right"></i></a>
+
+                    <div class="hands-raised-section" id="handsRaisedSection" style="display:none">
+                        <div class="hands-raised-header">
+                            <i class="fa-solid fa-hand" style="color:#eab308"></i>
+                            Hands Raised
+                            <span class="hands-count-badge" id="handsCountBadge">0</span>
+                        </div>
+                        <ul class="hands-list" id="handsList"></ul>
+                    </div>
                 </div>
 
             </div>

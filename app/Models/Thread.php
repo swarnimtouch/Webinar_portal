@@ -9,6 +9,7 @@ class Thread extends Model
     protected $table = 'threads';
 
     protected $fillable = [
+        'event_id',
         'name',
         'created_by',
         'members'
