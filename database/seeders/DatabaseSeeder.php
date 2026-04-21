@@ -28,8 +28,6 @@ class DatabaseSeeder extends Seeder
         $this->call(General_Setting_Seeder::class);
         $this->call(ContentSeeder::class);
         $this->call(AttributeInputSeeder::class);
-        $this->call(ChatGroupSeeder::class);
-        $this->call(ChatMessageSeeder::class);
 
         $this->call([
             DaynamicFieldsSeeder::class,
