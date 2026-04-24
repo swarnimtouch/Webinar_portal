@@ -178,7 +178,7 @@ class UserController extends Controller
             User::create($data);
         }
 
-        return redirect()->route('admin.user.index')->with('success', 'User Saved Successfully.');
+        return redirect()->route('admin.user.index')->with('success', 'User Saved Successfully');
     }
 
     public function show($id)

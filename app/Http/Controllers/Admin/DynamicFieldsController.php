@@ -84,7 +84,7 @@ class DynamicFieldsController extends Controller
                     ->update(['login_with' => 1]);
             }
 
-            return response()->json(['message' => 'Fields updated successfully!']);
+            return response()->json(['message' => 'Dynamic Fields Save successfully!']);
 
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);

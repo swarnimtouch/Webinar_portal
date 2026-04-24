@@ -68,7 +68,6 @@ class UserAttendanceController extends Controller
 
         $total = $query->count();
 
-        // Sorting
         if ($request->filled('order')) {
             $columns = $request->columns;
             foreach ($request->order as $order) {
