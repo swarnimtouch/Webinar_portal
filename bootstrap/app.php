@@ -18,12 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
 
-            Route::prefix('{slug}')
+/*            Route::prefix('{slug}')
                 ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
                 ->middleware(['event','web'])
-                ->group(base_path('routes/event.php'));
+                ->group(base_path('routes/event.php'));*/
 
-            Route::domain('{slug}.doctorly.com')
+            Route::domain('{slug}.doctorly.in')
                 ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
                 ->middleware(['event','web'])
                 ->group(base_path('routes/event.php'));
