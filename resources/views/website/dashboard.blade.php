@@ -211,10 +211,10 @@
             const echo = new Echo({
                 broadcaster: 'reverb',
                 key: window.reverbKey,
-                wsHost: window.reverbHost,
-                wsPort: window.reverbPort,
-                wssPort: window.reverbPort,
-                forceTLS: window.reverbScheme === 'https',
+                wsHost: window.location.hostname,
+                wsPort: 443,
+                wssPort: 443,
+                forceTLS: true,
                 enabledTransports: ['ws', 'wss'],
                 authEndpoint: '/broadcasting/auth',
                 auth: {
