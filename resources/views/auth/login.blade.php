@@ -12,7 +12,7 @@
             <a href="#" class="mb-12">
                 <img src="{{ asset(constant('site_logo')) }}" class="h-40px"/>
                 <!-- <img alt="Logo" src="{{ asset(constant('site_logo')) }}" class="h-40px"/> -->
-                <!-- <img alt="Logo" src="{{$site_logo}}" class="h-40px"/> -->
+                
             </a>
             <!--end::Logo-->
             <!--begin::Wrapper-->
