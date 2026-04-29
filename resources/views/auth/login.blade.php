@@ -10,9 +10,9 @@
         <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">
             <!--begin::Logo-->
             <a href="#" class="mb-12">
-                <!-- <img src="{{ asset('assets/media/logos/logo.png') }}" class="h-40px" alt="Logo"/> -->
-                <!-- <img src="{{ asset(constant('site_logo')) }}" class="h-40px"/> -->
-                <img alt="Logo" src="{{ asset(constant('site_logo')) }}" class="h-40px"/>
+                
+                <img src="{{ asset(constant('site_logo')) }}" class="h-40px"/>
+                <!-- <img alt="Logo" src="{{ asset(constant('site_logo')) }}" class="h-40px"/> -->
                 
             </a>
             <!--end::Logo-->
