@@ -13,9 +13,9 @@ Route::get('admin', function () {
     return redirect()->route('admin.login');
 });
 
-Route::prefix('admin')->name('admin.')->group(function () {
+// Route::prefix('admin')->name('admin.')->group(function () {
 
-    Route::resource('category', CategoryController::class);
+//     Route::resource('category', CategoryController::class);
 
-});
+// });
 
