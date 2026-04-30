@@ -8,11 +8,15 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function index()
+     public function index()
     {
-        $categories = Category::latest()->get();
-        return view('admin.category.index', compact('categories'));
+        return "Category Page Working";
     }
+    // public function index()
+    // {
+    //     $categories = Category::latest()->get();
+    //     return view('admin.category.index', compact('categories'));
+    // }
 
     public function create()
     {
