@@ -43,6 +43,17 @@
                                         </a>
                                     </div>
                                 @endforeach
+                                @if($value['name'] == 'General Settings')
+                                            <div class="menu-item">
+                                                <a class="menu-link" href="{{ route('category.index') }}">
+                                                    <span class="menu-bullet">
+                                                        <span class="bullet bullet-dot"></span>
+                                                    </span>
+                                                    <span class="menu-title">Category</span>
+                                                </a>
+                                            </div>
+                                        @endif
+
                             </div>
                         </div>
                     @endif
