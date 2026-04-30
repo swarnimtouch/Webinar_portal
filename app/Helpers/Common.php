@@ -188,7 +188,7 @@ function getModules($user_type = 'admin'): array
                         'all_routes' => ['admin.content', 'admin.content.add_edit_form']
                     ],
 
-                                   //  ADD THIS BLOCK
+                                   
                     [
                         'route' => route('admin.category.index'),
                         'name' => 'Category',
