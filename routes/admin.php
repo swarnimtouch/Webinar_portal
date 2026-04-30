@@ -21,7 +21,8 @@ use App\Http\Controllers\Admin\{
     CertificateController,
     CertificateLogController,
     EventsController,
-    SubAdminController
+    SubAdminController,
+    CategoryController
 };
 
 /*
@@ -240,6 +241,17 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('certificate-log/datatable', 'datatable')->name('certificate_log.datatable');
         Route::get('certificate-log/export', 'export')->name('certificate_log.export');
     });
+
+    Route::controller(CategoryController::class)->group(function () {
+    Route::get('category', 'index')->name('category');
+    Route::get('category/add-edit/{id?}', 'addEditForm')->name('category.add_edit_form');
+    Route::match(['POST', 'PUT'], 'category/save/{id?}', 'save')->name('category.save');
+    Route::delete('category/delete/{id}', 'delete')->name('category.delete');
+
+    Route::post('category/delete-multiple', 'deleteMultiple')->name('category.deleteMultiple');
+    Route::post('category/toggle-status/{id}', 'toggleStatus')->name('category.toggleStatus');
+    Route::get('category/datatable', 'datatable')->name('category.datatable');
+});
 
 
 });
