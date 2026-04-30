@@ -11,3 +11,9 @@ Broadcast::routes(['middleware' => ['web', 'event', 'auth:web']]);
 Route::get('admin', function () {
     return redirect()->route('admin.login');
 });
+
+Route::prefix('admin')->group(function () {
+
+    Route::resource('category', App\Http\Controllers\Admin\CategoryController::class);
+
+});
