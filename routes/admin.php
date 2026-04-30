@@ -243,14 +243,17 @@ Route::middleware(['auth:admin'])->group(function () {
     });
 
     Route::controller(CategoryController::class)->group(function () {
-    Route::get('category', 'index')->name('category');
-    Route::get('category/add-edit/{id?}', 'addEditForm')->name('category.add_edit_form');
-    Route::match(['POST', 'PUT'], 'category/save/{id?}', 'save')->name('category.save');
-    Route::delete('category/delete/{id}', 'delete')->name('category.delete');
 
-    Route::post('category/delete-multiple', 'deleteMultiple')->name('category.deleteMultiple');
-    Route::post('category/toggle-status/{id}', 'toggleStatus')->name('category.toggleStatus');
-    Route::get('category/datatable', 'datatable')->name('category.datatable');
+    Route::get('category', 'index')->name('category.index');
+
+    Route::get('category/create', 'create')->name('category.create');
+    Route::post('category/store', 'store')->name('category.store');
+
+    Route::get('category/edit/{id}', 'edit')->name('category.edit');
+    Route::put('category/update/{id}', 'update')->name('category.update');
+
+    Route::delete('category/delete/{id}', 'destroy')->name('category.delete');
+
 });
 
 
