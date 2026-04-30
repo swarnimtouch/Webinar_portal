@@ -187,6 +187,14 @@ function getModules($user_type = 'admin'): array
                         'icon' => 'bi bi-file-text',
                         'all_routes' => ['admin.content', 'admin.content.add_edit_form']
                     ],
+
+                                   // ✅ ADD THIS BLOCK
+                    [
+                        'route' => route('admin.category.index'),
+                        'name' => 'Category',
+                        'icon' => 'bi bi-folder',
+                        'all_routes' => ['admin.category.index', 'admin.category.create', 'admin.category.edit']
+                    ],
                 ],
                 'all_routes' => [
                     'admin.settings', 'admin.banners', 'admin.banner.add_edit_form',
