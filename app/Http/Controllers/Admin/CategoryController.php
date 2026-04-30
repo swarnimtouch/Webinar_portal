@@ -27,33 +27,37 @@ class CategoryController extends Controller
 
         Category::create([
             'name' => $request->name,
-            'slug' => strtolower(str_replace(' ','-',$request->name)),
+            'slug' => \Str::slug($request->name),
         ]);
 
-        return redirect()->route('category.index')->with('success','Category Added');
+        return redirect()->route('admin.category.index')->with('success','Category Added');
     }
 
     public function edit($id)
     {
-        $category = Category::find($id);
+        $category = Category::findOrFail($id);
         return view('admin.category.edit', compact('category'));
     }
 
     public function update(Request $request, $id)
     {
-        $category = Category::find($id);
+        $request->validate([
+            'name' => 'required'
+        ]);
+
+        $category = Category::findOrFail($id);
 
         $category->update([
             'name' => $request->name,
-            'slug' => strtolower(str_replace(' ','-',$request->name)),
+            'slug' => \Str::slug($request->name),
         ]);
 
-        return redirect()->route('category.index')->with('success','Updated');
+        return redirect()->route('admin.category.index')->with('success','Updated');
     }
 
     public function destroy($id)
     {
-        Category::find($id)->delete();
+        Category::findOrFail($id)->delete();
         return back()->with('success','Deleted');
     }
 }
