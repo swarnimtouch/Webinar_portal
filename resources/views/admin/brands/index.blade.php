@@ -1,8 +1,5 @@
 @extends('layouts.admin')
-
-
 @section('content')
-
     <!--begin::Content-->
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
@@ -70,6 +67,22 @@
                                     <!--begin::Content-->
                                     <div class="px-7 py-5" data-kt-user-table-filter="form">
                                         <!--begin::Input group-->
+                                        @if(auth()->user()->type === 'admin')
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-bold">Event:</label>
+                                                <select class="form-select form-select-solid fw-bolder"
+                                                        data-kt-select2="true"
+                                                        data-placeholder="Select option" data-allow-clear="true"
+                                                        data-kt-user-table-filter="event" data-hide-search="true">
+                                                    <option value="">-- Select Event --</option>
+                                                    @foreach($brand as $brands)
+                                                        <option value="{{ $brands->event_id }}">
+                                                            {{ optional($brands->event)->name ?? 'N/A' }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
                                         <div class="mb-10">
                                             <label class="form-label fs-6 fw-bold">Status:</label>
                                             <select class="form-select form-select-solid fw-bolder"
@@ -194,6 +207,9 @@
                             data: d => {
                                 d.search = qs('[data-kt-user-table-filter="search"]').value;
                                 d.status = qs('[data-kt-user-table-filter="status"]').value;
+                                if (isAdmin) {
+                                    d.event = qs('[data-kt-user-table-filter="event"]').value;
+                                }
                             }
                         },
                         order: [[1, 'asc']],
@@ -354,11 +370,25 @@
 
                 qs('[data-kt-user-table-filter="search"]').addEventListener('keyup', () => brandTable.draw());
                 qs('[data-kt-user-table-filter="filter"]').addEventListener('click', () => brandTable.draw());
+
                 qs('[data-kt-user-table-filter="reset"]').addEventListener('click', () => {
-                    qs('[data-kt-user-table-filter="status"]').value = '';
+
+                    const statusSelect = qs('[data-kt-user-table-filter="status"]');
+                    if (statusSelect) {
+                        statusSelect.value = '';
+                        $(statusSelect).val(null).trigger('change');
+                    }
+
+                    if (isAdmin) {
+                        const eventSelect = qs('[data-kt-user-table-filter="event"]');
+                        if (eventSelect) {
+                            eventSelect.value = '';
+                            $(eventSelect).val(null).trigger('change');
+                        }
+                    }
+
                     brandTable.draw();
                 });
-
                 document.addEventListener('change', e => {
                     if (!e.target.matches('[data-kt-check="true"]')) return;
                     qsa('.row-checkbox').forEach(cb => cb.checked = e.target.checked);

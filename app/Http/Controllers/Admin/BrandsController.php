@@ -15,8 +15,9 @@ class BrandsController extends Controller
 
     public function index()
     {
-
+        $brand = Brands::with('event')->get()->unique('event_id')->values();
         return view('admin.brands.index', [
+            'brand' => $brand,
             'title' => __('Brands'),
             'breadcrumb' => breadcrumb([
                 __('Brands') => route('admin.brand')
@@ -141,7 +142,7 @@ class BrandsController extends Controller
         if ($user->type === 'sub_admin') {
             $query->where('event_id', $user->event_id);
         }
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
@@ -150,14 +151,18 @@ class BrandsController extends Controller
                     });
             });
         }
-        if ($request->has('type') && !empty($request->type)) {
+        if ($request->filled('type') && !empty($request->type)) {
             $type = $request->type;
             $query->where('type', $type);
         }
-        if ($request->has('status') && !empty($request->status)) {
+        if ($request->filled('status') && !empty($request->status)) {
             $status = $request->status;
             $query->where('status', $status);
         }
+        if ($request->filled('event')) {
+            $query->where('event_id', $request->event);
+        }
+
         $total = $query->count();
         if ($request->has('order')) {
             $columns = $request->columns;

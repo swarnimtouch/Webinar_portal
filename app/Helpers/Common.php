@@ -125,11 +125,11 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.poll', 'admin.poll.add_edit_form']
             ],
             [
-                'route' => route('admin.user_quiz_result'),
-                'name' => 'User Quiz Answers',
+                'route' => route('admin.user_poll_result'),
+                'name' => 'User Poll Answers',
                 'icon' => 'bi-patch-question',
                 'child' => [],
-                'all_routes' => ['admin.user_quiz_result']
+                'all_routes' => ['admin.user_poll_result']
             ],
             [
                 'route' => route('admin.chat_log'),
@@ -150,7 +150,7 @@ function getModules($user_type = 'admin'): array
                 'name' => 'Certificate Log',
                 'icon' => 'bi-journal-text',
                 'child' => [],
-                'all_routes' => ['admin.certificate-log']
+                'all_routes' => ['admin.certificate_log']
             ],
             [
                 'route' => '#',
@@ -242,11 +242,11 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.poll', 'admin.poll.add_edit_form']
             ],
             [
-                'route' => route('admin.user_quiz_result'),
-                'name' => 'User Quiz Answers',
+                'route' => route('admin.user_poll_result'),
+                'name' => 'User Poll Answers',
                 'icon' => 'bi-patch-question',
                 'child' => [],
-                'all_routes' => ['admin.user_quiz_result']
+                'all_routes' => ['admin.user_poll_result']
             ],
             [
                 'route' => route('admin.chat_log'),

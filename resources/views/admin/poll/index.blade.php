@@ -60,6 +60,22 @@
                                     <!--begin::Content-->
                                     <div class="px-7 py-5" data-kt-user-table-filter="form">
                                         <!--begin::Input group-->
+                                        @if(auth()->user()->type === 'admin')
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-bold">Event:</label>
+                                                <select class="form-select form-select-solid fw-bolder"
+                                                        data-kt-select2="true"
+                                                        data-placeholder="Select option" data-allow-clear="true"
+                                                        data-kt-user-table-filter="event" data-hide-search="true">
+                                                    <option value="">-- Select Event --</option>
+                                                    @foreach($poll as $polls)
+                                                        <option value="{{ $polls->event_id }}">
+                                                            {{ optional($polls->event)->name ?? 'N/A' }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
                                         <div class="mb-10">
                                             <label class="form-label fs-6 fw-bold">Status:</label>
                                             <select class="form-select form-select-solid fw-bolder"
@@ -147,7 +163,6 @@
                             </tr>
                             </thead>
                             <tbody class="fw-semibold text-gray-600">
-                            <!-- Data will be loaded via AJAX -->
                             </tbody>
                         </table>
                         <!--end::Table-->
@@ -179,12 +194,14 @@
                     data: d => {
                         d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
                         d.status = document.querySelector('[data-kt-user-table-filter="status"]').value;
+                        if (isAdmin) {
+                            const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                            if (eventEl) d.event = eventEl.value;
+                        }
                     }
                 },
                 order: [[4, 'desc']],
                 columns: [
-
-                    /* CHECKBOX */
                     {
                         data: 'id',
                         orderable: false,
@@ -193,23 +210,16 @@
                         <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
                     </div>`
                     },
-
                     ...(isAdmin ? [{data: 'event'}] : []),
-
-                    /* QUESTION */
                     {
                         data: 'question',
                         render: q => `<span class="fw-bold text-gray-800">${q}</span>`
                     },
-
-                    /* ANSWERS */
                     {
                         data: 'answers',
                         orderable: false,
                         render: answers => {
-                            if (!answers.length) {
-                                return `<span class="badge badge-light-warning">No answers</span>`;
-                            }
+                            if (!answers.length) return `<span class="badge badge-light-warning">No answers</span>`;
                             let html = `<div class="d-flex flex-column gap-1">`;
                             answers.slice(0, 2).forEach(a => {
                                 html += `<span class="badge badge-light-primary">• ${a}</span>`;
@@ -221,11 +231,7 @@
                             return html;
                         }
                     },
-
-                    /* CREATED */
                     {data: 'created_at'},
-
-                    /* STATUS TOGGLE */
                     {
                         data: 'status',
                         orderable: false,
@@ -236,28 +242,28 @@
                             type="checkbox" ${status === 'active' ? 'checked' : ''}>
                     </div>`
                     },
-
-                    /* ACTIONS */
                     {
                         data: 'id',
                         orderable: false,
                         render: id => `
-                <div>
-                                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
-                                                        <span class="svg-icon svg-icon-5 m-0">
-                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/> </svg>
-                                                            </span>
-                                                    </a>
-                                                    <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
-                                                        <div class="menu-item px-3">
-                                                            <a href="#" class="menu-link px-3 poll-delete" data-id="${id}"> Delete </a>
-                                                        </div>
-                                                        <div class="menu-item px-3">
-                                                            <a href="{{ route('admin.poll.add_edit_form') }}/${id}" class="menu-link px-3 "> Edit </a>
-                                                        </div>
-                                                    </div>
-                                            </div>`
+                    <div>
+                        <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
+                            Actions
+                            <span class="svg-icon svg-icon-5 m-0">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
+                                </svg>
+                            </span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3 poll-delete" data-id="${id}">Delete</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="{{ route('admin.poll.add_edit_form') }}/${id}" class="menu-link px-3">Edit</a>
+                            </div>
+                        </div>
+                    </div>`
                     }
                 ]
             });
@@ -265,12 +271,7 @@
 
         document.addEventListener('change', e => {
             if (!e.target.matches('[data-kt-check="true"]')) return;
-
-            const checked = e.target.checked;
-            document.querySelectorAll('.row-checkbox').forEach(cb => {
-                cb.checked = checked;
-            });
-
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
             toggleBulkToolbar();
         });
 
@@ -281,7 +282,6 @@
 
         function toggleBulkToolbar() {
             const selected = document.querySelectorAll('.row-checkbox:checked').length;
-
             const baseToolbar = document.querySelector('[data-kt-user-table-toolbar="base"]');
             const selectedToolbar = document.querySelector('[data-kt-user-table-toolbar="selected"]');
             const countEl = document.querySelector('[data-kt-user-table-select="selected_count"]');
@@ -299,16 +299,10 @@
 
         document.querySelector('[data-kt-user-table-select="delete_selected"]')
             ?.addEventListener('click', () => {
-
-                const ids = [...document.querySelectorAll('.row-checkbox:checked')]
-                    .map(cb => cb.value);
+                const ids = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.value);
 
                 if (!ids.length) {
-                    Swal.fire({
-                        text: "Please select at least one poll",
-                        icon: "info",
-                        confirmButtonText: "OK"
-                    });
+                    Swal.fire({text: "Please select at least one poll", icon: "info", confirmButtonText: "OK"});
                     return;
                 }
 
@@ -329,22 +323,15 @@
                         body: JSON.stringify({ids})
                     })
                         .then(res => {
-                            if (!res.ok) throw new Error('Request failed');
+                            if (!res.ok) throw new Error();
                             return res.json().catch(() => ({}));
                         })
                         .then(data => {
-
                             toastr.success(data.message ?? 'Selected polls deleted successfully');
-
                             pollTable.draw(false);
                             toggleBulkToolbar();
                         })
-                        .catch(error => {
-
-                            toastr.error(error.message ?? 'Failed to delete polls');
-
-                        });
-
+                        .catch(() => toastr.error('Failed to delete polls'));
                 });
             });
 
@@ -365,14 +352,13 @@
                     return;
                 }
 
-
                 $.ajax({
                     url: '{{ route("admin.poll.toggleStatus", ":id") }}'.replace(':id', id),
                     method: 'POST',
                     data: {_token: '{{ csrf_token() }}', status},
                     success: data => toastr.success(data.message),
                     error: xhr => {
-                        checkbox.checked = !checkbox.checked;
+                        cb.checked = !cb.checked;
                         toastr.error(xhr.responseJSON?.message ?? 'Error updating status.');
                     }
                 });
@@ -396,10 +382,11 @@
                     url: '{{ route("admin.poll.delete", ":id") }}'.replace(':id', id),
                     method: 'DELETE',
                     data: {_token: '{{ csrf_token() }}'},
-                    success: (data) => {
+                    success: data => {
                         toastr.success(data.message);
                         pollTable.draw(false);
-                    }
+                    },
+                    error: xhr => toastr.error(xhr.responseJSON?.message ?? 'Delete failed.')
                 });
             });
         });
@@ -409,6 +396,27 @@
 
         document.querySelector('[data-kt-user-table-filter="filter"]')
             .addEventListener('click', () => pollTable.draw());
+
+        document.querySelector('[data-kt-user-table-filter="reset"]')
+            ?.addEventListener('click', () => {
+                document.querySelector('[data-kt-user-table-filter="search"]').value = '';
+
+                const statusEl = document.querySelector('[data-kt-user-table-filter="status"]');
+                if (statusEl) {
+                    statusEl.value = '';
+                    $(statusEl).val(null).trigger('change');
+                }
+
+                if (isAdmin) {
+                    const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                    if (eventEl) {
+                        eventEl.value = '';
+                        $(eventEl).val(null).trigger('change');
+                    }
+                }
+
+                pollTable.draw();
+            });
 
         KTUtil.onDOMContentLoaded(() => initPollTable());
     </script>

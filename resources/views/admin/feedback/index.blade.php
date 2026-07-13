@@ -34,6 +34,78 @@
 
                         <!--begin::Card toolbar-->
                         <div class="card-toolbar">
+                            @if(auth()->user()->type === 'admin')
+
+                                <div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
+                                    <!--begin::Filter-->
+                                    <button type="button" class="btn btn-light-primary me-3"
+                                            data-kt-menu-trigger="click"
+                                            data-kt-menu-placement="bottom-end">
+                                    <span class="svg-icon svg-icon-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                             viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M19.0759 3H4.72777C3.95892 3 3.47768 3.83148 3.86067 4.49814L8.56967 12.6949C9.17923 13.7559 9.5 14.9582 9.5 16.1819V19.5072C9.5 20.2189 10.2223 20.7028 10.8805 20.432L13.8805 19.1977C14.2553 19.0435 14.5 18.6783 14.5 18.273V13.8372C14.5 12.8089 14.8171 11.8056 15.408 10.964L19.8943 4.57465C20.3596 3.912 19.8856 3 19.0759 3Z"
+                                                fill="black"/>
+                                        </svg>
+                                    </span>
+                                        Filter
+                                    </button>
+                                    <!--begin::Menu 1-->
+
+                                    <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                                        <!--begin::Header-->
+                                        <div class="px-7 py-5">
+                                            <div class="fs-5 text-dark fw-bolder">Filter Options</div>
+                                        </div>
+                                        <!--end::Header-->
+                                        <div class="separator border-gray-200"></div>
+                                        <!--begin::Content-->
+
+                                        <div class="px-7 py-5" data-kt-user-table-filter="form">
+                                            <!--begin::Input group-->
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-bold">Event:</label>
+                                                <select class="form-select form-select-solid fw-bolder"
+                                                        data-kt-select2="true"
+                                                        data-placeholder="Select option" data-allow-clear="true"
+                                                        data-kt-user-table-filter="event" data-hide-search="true">
+                                                    <option value="">-- Select Event --</option>
+                                                    @foreach($feedback as $feedbacks)
+                                                        <option value="{{ $feedbacks->event_id }}">
+                                                            {{ optional($feedbacks->event)->name ?? 'N/A' }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+
+                                            <!--end::Input group-->
+                                            <!--begin::Actions-->
+                                            <div class="d-flex justify-content-end">
+                                                <button type="reset"
+                                                        class="btn btn-light btn-active-light-primary fw-bold me-2 px-6"
+                                                        data-kt-menu-dismiss="true" data-kt-user-table-filter="reset">
+                                                    Reset
+                                                </button>
+                                                <button type="submit" class="btn btn-primary fw-bold px-6"
+                                                        data-kt-menu-dismiss="true" data-kt-user-table-filter="filter">
+                                                    Apply
+                                                </button>
+                                            </div>
+                                            <!--end::Actions-->
+                                        </div>
+                                        <!--end::Content-->
+                                    </div>
+
+                                    <!--end::Menu 1-->
+                                    <!--end::Filter-->
+                                    <!--begin::Add poll-->
+
+                                    <!--end::Add poll-->
+                                </div>
+                            @endif
+
                             <!--begin::Toolbar-->
                             <div class="d-flex justify-content-end" data-kt-feedback-table-toolbar="base">
                                 <!--begin::Export-->
@@ -134,6 +206,10 @@
                         url: '{{ route("admin.feedback.datatable") }}',
                         data: d => {
                             d.search = $('[data-kt-feedback-table-filter="search"]').val();
+                            if (isAdmin) {
+                                const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                                if (eventEl) d.event = eventEl.value;
+                            }
                         }
                     },
                     order: [[5, 'desc']],
@@ -142,80 +218,98 @@
                             data: 'id',
                             orderable: false,
                             searchable: false,
-                            render: id => `<div class="form-check form-check-sm form-check-custom form-check-solid">
-                                <input class="form-check-input row-checkbox" type="checkbox" value="${id}" />
-                            </div>`
+                            render: id => `
+                        <div class="form-check form-check-sm form-check-custom form-check-solid">
+                            <input class="form-check-input row-checkbox" type="checkbox" value="${id}" />
+                        </div>`
                         },
                         ...(isAdmin ? [{data: 'event'}] : []),
-
                         {
                             data: 'user_name',
-                            render: (data) => data ? data : 'N/A'
+                            render: data => data ? data : 'N/A'
                         },
                         {
                             data: 'user_email',
-                            render: (data) => data ? data : 'N/A'
+                            render: data => data ? data : 'N/A'
                         },
                         {
                             data: 'rating',
-                            render: (rating) => {
+                            render: rating => {
                                 let stars = '';
                                 for (let i = 1; i <= 5; i++) {
-                                    if (i <= rating) {
-                                        stars += '<i class="bi bi-star-fill text-warning"></i>';
-                                    } else {
-                                        stars += '<i class="bi bi-star text-muted"></i>';
-                                    }
+                                    stars += i <= rating
+                                        ? '<i class="bi bi-star-fill text-warning"></i>'
+                                        : '<i class="bi bi-star text-muted"></i>';
                                 }
                                 return `<div class="rating">${stars} <span class="ms-2">(${rating})</span></div>`;
                             }
                         },
                         {
                             data: 'comment',
-                            render: (data) => {
+                            render: data => {
                                 if (!data || data === '-') return '-';
                                 return data.length > 50
                                     ? `<span title="${data}">${data.substring(0, 50)}...</span>`
                                     : data;
                             }
                         },
-                        {
-                            data: 'created_at'
-                        },
+                        {data: 'created_at'},
                         {
                             data: 'id',
                             orderable: false,
                             searchable: false,
-                            render: id => `<div class="text-end">
-                                <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
-                                    Actions
-                                    <span class="svg-icon svg-icon-5 m-0">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
-                                        </svg>
-                                    </span>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3 delete-feedback" data-id="${id}">Delete</a>
-                                    </div>
+                            render: id => `
+                        <div class="text-end">
+                            <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
+                                Actions
+                                <span class="svg-icon svg-icon-5 m-0">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
+                                    </svg>
+                                </span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3 delete-feedback" data-id="${id}">Delete</a>
                                 </div>
                             </div>
-                                `
+                        </div>`
                         }
                     ]
                 });
             }
 
-            $('[data-kt-feedback-table-filter="search"]').on('keyup', function () {
-                feedbackTable.draw();
-            });
+            function handleSearch() {
+                $('[data-kt-feedback-table-filter="search"]').on('keyup', function () {
+                    feedbackTable.draw();
+                });
+            }
 
-            $(document).on('click', '.delete-feedback', function () {
-                deleteFeedback($(this).data('id'));
-            });
+            function handleFilterApply() {
+                document.querySelector('[data-kt-user-table-filter="filter"]')
+                    ?.addEventListener('click', () => {
+                        feedbackTable.draw();
+                    });
+            }
 
-            var handleExport = function () {
+            function handleFilterReset() {
+                document.querySelector('[data-kt-user-table-filter="reset"]')
+                    ?.addEventListener('click', () => {
+                        $('[data-kt-feedback-table-filter="search"]').val('');
+
+                        if (isAdmin) {
+                            const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                            if (eventEl) {
+                                eventEl.value = '';
+                                $(eventEl).val(null).trigger('change');
+                            }
+                        }
+
+                        feedbackTable.draw();
+                    });
+            }
+
+            function handleExport() {
                 const exportBtn = document.getElementById('export-btn');
                 if (!exportBtn) return;
 
@@ -244,7 +338,6 @@
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
-
                             exportBtn.disabled = false;
                             exportBtn.innerHTML = originalHTML;
                             toastr.success('Feedbacks exported successfully!');
@@ -257,130 +350,118 @@
                 });
             }
 
-            document
-                .querySelector('[data-kt-feedback-table-select="delete_selected"]')
-                ?.addEventListener('click', () => {
-                    const ids = qsa('.row-checkbox:checked').map(cb => cb.value);
+            function handleBulkDelete() {
+                document.querySelector('[data-kt-feedback-table-select="delete_selected"]')
+                    ?.addEventListener('click', () => {
+                        const ids = qsa('.row-checkbox:checked').map(cb => cb.value);
 
-                    if (!ids.length) {
+                        if (!ids.length) {
+                            Swal.fire({
+                                text: "Please select at least one feedback.",
+                                icon: "info",
+                                confirmButtonText: "OK"
+                            });
+                            return;
+                        }
+
                         Swal.fire({
-                            text: "Please select at least one feedback.",
-                            icon: "info",
-                            buttonsStyling: false,
-                            confirmButtonText: "OK",
-                            customClass: {
-                                confirmButton: "btn fw-bold btn-primary"
-                            }
+                            text: `Delete ${ids.length} selected feedback(s)?`,
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "Yes, delete",
+                            cancelButtonText: "Cancel"
+                        }).then(result => {
+                            if (!result.isConfirmed) return;
+
+                            fetch('{{ route("admin.feedback.deleteMultiple") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ids})
+                            })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        toastr.success(data.message || "Selected feedbacks deleted successfully");
+                                        feedbackTable.draw(false);
+                                        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+                                        document.querySelector('[data-kt-check="true"]').checked = false;
+                                    } else {
+                                        toastr.error(data.message || "Delete failed");
+                                    }
+                                })
+                                .catch(() => toastr.error("Failed to delete feedbacks."));
                         });
-                        return;
-                    }
+                    });
+            }
+
+            function handleSingleDelete() {
+                $(document).on('click', '.delete-feedback', function () {
+                    const id = $(this).data('id');
 
                     Swal.fire({
-                        text: `Delete ${ids.length} selected feedback(s)?`,
+                        text: "Are you sure you want to delete this feedback?",
                         icon: "warning",
                         showCancelButton: true,
-                        buttonsStyling: false,
-                        confirmButtonText: "Yes, delete",
-                        cancelButtonText: "Cancel",
-                        customClass: {
-                            confirmButton: "btn fw-bold btn-danger",
-                            cancelButton: "btn fw-bold btn-active-light-primary"
-                        }
+                        confirmButtonText: "Yes, delete it!"
                     }).then(result => {
                         if (!result.isConfirmed) return;
 
-                        fetch('{{ route("admin.feedback.deleteMultiple") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        $.ajax({
+                            url: '{{ route("admin.feedback.delete", ":id") }}'.replace(':id', id),
+                            method: 'DELETE',
+                            data: {_token: '{{ csrf_token() }}'},
+                            success: res => {
+                                toastr.success(res.message || "Feedback deleted successfully");
+                                feedbackTable.draw(false);
                             },
-                            body: JSON.stringify({ids})
-                        })
-                            .then(res => res.json())
-                            .then(data => {
-
-                                if (data.success) {
-
-                                    toastr.success(data.message || "Selected feedbacks deleted successfully");
-
-                                    feedbackTable.draw(false);
-
-                                    document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
-                                    document.querySelector('[data-kt-check="true"]').checked = false;
-
-                                } else {
-                                    toastr.error(data.message || "Delete failed");
-                                }
-
-                            })
-
-                            .catch(error => {
-                                toastr.error("Failed to delete feedbacks. " + (error.message || ''));
-                            });
+                            error: () => toastr.error("Failed to delete feedback")
+                        });
                     });
                 });
+            }
 
-            document.addEventListener('change', e => {
-                if (!e.target.classList.contains('row-checkbox') &&
-                    !e.target.matches('[data-kt-check="true"]')) return;
+            function handleCheckbox() {
+                document.addEventListener('change', e => {
+                    if (!e.target.classList.contains('row-checkbox') &&
+                        !e.target.matches('[data-kt-check="true"]')) return;
 
-                const selectedCount = document.querySelectorAll('.row-checkbox:checked').length;
-                const toolbarBase = document.querySelector('[data-kt-feedback-table-toolbar="base"]');
-                const toolbarSelected = document.querySelector('[data-kt-feedback-table-toolbar="selected"]');
-                const selectedCountEl = document.querySelector('[data-kt-feedback-table-select="selected_count"]');
+                    if (e.target.matches('[data-kt-check="true"]')) {
+                        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
+                    }
 
-                if (selectedCount > 0) {
-                    toolbarBase.classList.add('d-none');
-                    toolbarSelected.classList.remove('d-none');
-                    selectedCountEl.textContent = selectedCount;
-                } else {
-                    toolbarBase.classList.remove('d-none');
-                    toolbarSelected.classList.add('d-none');
-                    selectedCountEl.textContent = '';
-                }
-            });
+                    const selectedCount = document.querySelectorAll('.row-checkbox:checked').length;
+                    const toolbarBase = document.querySelector('[data-kt-feedback-table-toolbar="base"]');
+                    const toolbarSelected = document.querySelector('[data-kt-feedback-table-toolbar="selected"]');
+                    const selectedCountEl = document.querySelector('[data-kt-feedback-table-select="selected_count"]');
 
-            function deleteFeedback(id) {
-                Swal.fire({
-                    text: "Are you sure you want to delete this feedback?",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes, delete it!"
-                }).then(function (result) {
-
-                    if (!result.isConfirmed) return;
-
-                    $.ajax({
-                        url: '{{ route("admin.feedback.delete", ":id") }}'.replace(':id', id),
-                        method: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: (res) => {
-
-                            toastr.success(res.message || "Feedback deleted successfully");
-
-                            feedbackTable.draw(false);
-
-                        },
-                        error: () => {
-
-                            toastr.error("Failed to delete feedback");
-
-                        }
-                    });
+                    if (selectedCount > 0) {
+                        toolbarBase.classList.add('d-none');
+                        toolbarSelected.classList.remove('d-none');
+                        selectedCountEl.textContent = selectedCount;
+                    } else {
+                        toolbarBase.classList.remove('d-none');
+                        toolbarSelected.classList.add('d-none');
+                        selectedCountEl.textContent = '';
+                    }
                 });
             }
 
             return {
                 init: function () {
                     if (!table) return;
-
                     initFeedbackTable();
+                    handleSearch();
+                    handleFilterApply();
+                    handleFilterReset();
                     handleExport();
+                    handleBulkDelete();
+                    handleSingleDelete();
+                    handleCheckbox();
                 }
-            }
+            };
         }();
 
         KTUtil.onDOMContentLoaded(function () {

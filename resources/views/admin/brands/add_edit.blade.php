@@ -1,6 +1,4 @@
 @extends('layouts.admin')
-
-
 @section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
@@ -138,8 +136,7 @@
                                         </div>
                                         <!--end::Image input-->
 
-                                        <div class="form-text">Allowed file types: jpg, jpeg, png, gif, mp4, mov,
-                                            avi.
+                                        <div class="form-text">Allowed file types: jpg, jpeg, png, gif.
                                             Max size: 20MB
                                         </div>
 
@@ -168,7 +165,6 @@
         @endsection
 
         @push('scripts')
-            <script src="{{ asset('assets/js/custom/widgets.js')}}"></script>
             <script>
                 "use strict";
 
@@ -212,7 +208,7 @@
                                 filename: {
                                     validators: {
                                         callback: {
-                                            message: 'File is required',
+                                            message: 'Image is required',
                                             callback: function (input) {
                                                 if (!isEdit && input.value === '') return false;
                                                 if (isEdit && fileRemoved && input.value === '') return false;
@@ -223,7 +219,7 @@
                                             extension: 'jpg,jpeg,png,gif,webp,mp4,mov,avi,webm',
                                             type: 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/webm',
                                             maxSize: 20971520,
-                                            message: 'Invalid file (max 20MB)'
+                                            message: 'Invalid Image (max 20MB)'
                                         }
                                     }
                                 }

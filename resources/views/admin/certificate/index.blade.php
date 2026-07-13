@@ -44,6 +44,22 @@
                                     </div>
                                     <div class="separator border-gray-200"></div>
                                     <div class="px-7 py-5" data-kt-user-table-filter="form">
+                                        @if(auth()->user()->type === 'admin')
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-bold">Event:</label>
+                                                <select class="form-select form-select-solid fw-bolder"
+                                                        data-kt-select2="true"
+                                                        data-placeholder="Select option" data-allow-clear="true"
+                                                        data-kt-user-table-filter="event" data-hide-search="true">
+                                                    <option value="">-- Select Event --</option>
+                                                    @foreach($certificate as $certificates)
+                                                        <option value="{{ $certificates->event_id }}">
+                                                            {{ optional($certificates->event)->name ?? 'N/A' }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
                                         <div class="mb-10">
                                             <label class="form-label fs-6 fw-bold">Status:</label>
                                             <select class="form-select form-select-solid fw-bolder"
@@ -149,47 +165,45 @@
                     data: d => {
                         d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
                         d.status = document.querySelector('[data-kt-user-table-filter="status"]').value;
+                        if (isAdmin) {
+                            const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                            if (eventEl) d.event = eventEl.value;
+                        }
                     }
                 },
                 order: [[4, 'desc']],
                 columns: [
-
                     {
                         data: 'id',
                         orderable: false,
                         render: id => `
-                            <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
-                            </div>`
+                        <div class="form-check form-check-sm form-check-custom form-check-solid">
+                            <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
+                        </div>`
                     },
-
-                    
                     {
                         data: 'background_image',
                         render: (data, type, row) =>
                             row.background_image
                                 ? `<a href="${row.background_image}" class="image-link">
-                               <img src="${row.background_image}" width="50" height="50"
-                                    style="object-fit:contain;border-radius:4px;background:#f5f8fa;"
-                                    alt="Brand">
-                           </a>`
+                        <img src="${row.background_image}" width="50" height="50"
+                             style="object-fit:contain;border-radius:4px;background:#f5f8fa;" alt="Certificate">
+                        </a>`
                                 : '<span class="text-muted">—</span>'
                     },
                     ...(isAdmin ? [{data: 'event'}] : []),
-
                     {
                         data: 'name',
                         render: (name, type, row) => `
-                            <div class="d-flex flex-column">
-                                <span class="fw-bold text-gray-800">${name}</span>
-                                <small class="text-muted">
-                                    Size: ${row.font_size}px &nbsp;|&nbsp;
-                                    Color: <span style="color:${row.font_color};">■</span> ${row.font_color} &nbsp;|&nbsp;
-                                    Bold: ${row.is_bold ? 'Yes' : 'No'}
-                                </small>
-                            </div>`
+                        <div class="d-flex flex-column">
+                            <span class="fw-bold text-gray-800">${name}</span>
+                            <small class="text-muted">
+                                Size: ${row.font_size}px &nbsp;|&nbsp;
+                                Color: <span style="color:${row.font_color};">■</span> ${row.font_color} &nbsp;|&nbsp;
+                                Bold: ${row.is_bold ? 'Yes' : 'No'}
+                            </small>
+                        </div>`
                     },
-
                     {
                         data: 'font_file',
                         orderable: false,
@@ -197,42 +211,39 @@
                             ? `<span class="badge badge-light-info"><i class="bi bi-file-earmark-font me-1"></i>${font.split('/').pop()}</span>`
                             : `<span class="badge badge-light-secondary">Default</span>`
                     },
-
                     {data: 'created_at'},
-
                     {
                         data: 'status',
                         orderable: false,
                         render: (status, type, row) => `
-                            <div class="form-check form-switch">
-                                <input class="form-check-input certificate-status-toggle"
-                                    data-id="${row.id}"
-                                    type="checkbox" ${status === 'active' ? 'checked' : ''}>
-                            </div>`
+                        <div class="form-check form-switch">
+                            <input class="form-check-input certificate-status-toggle"
+                                   data-id="${row.id}"
+                                   type="checkbox" ${status === 'active' ? 'checked' : ''}>
+                        </div>`
                     },
-
                     {
                         data: 'id',
                         orderable: false,
                         render: id => `
-                            <div>
-                                <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
-                                    Actions
-                                    <span class="svg-icon svg-icon-5 m-0">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
-                                        </svg>
-                                    </span>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
-                                    <div class="menu-item px-3">
-                                        <a href="{{ route('admin.certificate.add_edit_form') }}/${id}" class="menu-link px-3">Edit</a>
-                                    </div>
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3 certificate-delete" data-id="${id}">Delete</a>
-                                    </div>
+                        <div>
+                            <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
+                                Actions
+                                <span class="svg-icon svg-icon-5 m-0">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
+                                                    </svg>
+                                                </span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                                <div class="menu-item px-3">
+                                    <a href="{{ route('admin.certificate.add_edit_form') }}/${id}" class="menu-link px-3">Edit</a>
                                 </div>
-                            </div>`
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3 certificate-delete" data-id="${id}">Delete</a>
+                                </div>
+                            </div>
+                        </div>`
                     }
                 ]
             });
@@ -297,14 +308,10 @@
                         })
                         .then(data => {
                             toastr.success(data.message || "Selected certificates deleted successfully");
-
-
                             certificateTable.draw(false);
                             toggleBulkToolbar();
                         })
-                        .catch(err => {
-                            toastr.error(err.message || "Failed to delete certificates");
-                        });
+                        .catch(() => toastr.error("Failed to delete certificates"));
                 });
             });
 
@@ -313,6 +320,7 @@
 
             const cb = e.target;
             const id = cb.dataset.id;
+            const status = cb.checked ? 'active' : 'inactive';
 
             Swal.fire({
                 text: "Change certificate status?",
@@ -329,17 +337,15 @@
                     data: {_token: '{{ csrf_token() }}', status},
                     success: data => toastr.success(data.message),
                     error: xhr => {
-                        checkbox.checked = !checkbox.checked;
+                        cb.checked = !cb.checked;
                         toastr.error(xhr.responseJSON?.message ?? 'Error updating status.');
                     }
                 });
-
             });
         });
 
         document.addEventListener('click', e => {
             if (!e.target.classList.contains('certificate-delete')) return;
-
             e.preventDefault();
             const id = e.target.dataset.id;
 
@@ -350,17 +356,15 @@
                 confirmButtonText: "Yes, delete"
             }).then(r => {
                 if (!r.isConfirmed) return;
-
                 $.ajax({
                     url: '{{ route("admin.certificate.delete", ":id") }}'.replace(':id', id),
                     method: 'DELETE',
                     data: {_token: '{{ csrf_token() }}'},
-                    success: (data) => {
+                    success: data => {
                         toastr.success(data.message);
                         certificateTable.draw(false);
                     },
                     error: xhr => toastr.error(xhr.responseJSON?.message ?? 'Delete failed.')
-
                 });
             });
         });
@@ -371,9 +375,30 @@
         document.querySelector('[data-kt-user-table-filter="filter"]')
             .addEventListener('click', () => certificateTable.draw());
 
+        document.querySelector('[data-kt-user-table-filter="reset"]')
+            .addEventListener('click', () => {
+                document.querySelector('[data-kt-user-table-filter="search"]').value = '';
+
+                const statusEl = document.querySelector('[data-kt-user-table-filter="status"]');
+                if (statusEl) {
+                    statusEl.value = '';
+                    $(statusEl).val(null).trigger('change');
+                }
+
+                if (isAdmin) {
+                    const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                    if (eventEl) {
+                        eventEl.value = '';
+                        $(eventEl).val(null).trigger('change');
+                    }
+                }
+
+                certificateTable.draw();
+            });
+
         KTUtil.onDOMContentLoaded(() => {
-            initCertificateTable()
-            $('#certificateTable').on('draw.dt', () => $('.image-link').viewbox());
+            initCertificateTable();
+            $('#kt_table_certificates').on('draw.dt', () => $('.image-link').viewbox());
         });
     </script>
 @endpush

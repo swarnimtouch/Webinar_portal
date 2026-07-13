@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\CertificateLogs;
+use App\Models\Events;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -10,8 +11,24 @@ class CertificateLogController
 {
     public function index()
     {
+        $user = auth()->user();
+
+        $eventIds = CertificateLogs::with('certificate')
+            ->get()
+            ->pluck('certificate.event_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $download = Events::whereIn('id', $eventIds)->orderBy('name')->get();
+        if ($user->type === 'sub_admin') {
+            $download = $download->where('id', $user->event_id)->values();
+        }
+
         return view('admin.certificate_log.index', [
             'title' => __('Certificate Log'),
+            'download' => $download,
+
             'breadcrumb' => breadcrumb([
                 __('Certificate Log') => route('admin.certificate_log')
             ])
@@ -100,6 +117,11 @@ class CertificateLogController
             $query->where(function ($q) use ($search) {
                 $q->whereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"))
                     ->orWhereHas('certificate', fn($c) => $c->where('name', 'like', "%{$search}%"));
+            });
+        }
+        if ($request->filled('event')) {
+            $query->whereHas('certificate', function ($q) use ($request) {
+                $q->where('event_id', $request->event);
             });
         }
 

@@ -17,7 +17,9 @@ class PollController
      */
     public function index()
     {
+        $poll = Poll::with('event')->get()->unique('event_id')->values();
         return view('admin.poll.index', [
+            'poll' => $poll,
             'title' => __('Poll'),
             'breadcrumb' => breadcrumb([
                 __('Poll') => route('admin.poll')
@@ -55,7 +57,6 @@ class PollController
             'question' => 'required|string|min:5|max:500',
             'answers' => 'required|array|min:2|max:10',
             'answers.*' => 'required|string|min:1|max:255',
-            'status' => 'required|in:active,inactive',
             'is_hidden' => 'nullable|boolean'
         ], [
             'answers.required' => 'Please provide at least 2 answers',
@@ -84,7 +85,6 @@ class PollController
         $poll->event_id = $request->event_id;
         $poll->question = $request->question;
         $poll->answers = json_encode($answers);
-        $poll->status = $request->status;
         $poll->is_hidden = $request->has('is_hidden') ? 1 : 0;
         if ($poll->save()) {
             if (!empty($answers)) {
@@ -182,7 +182,7 @@ class PollController
     public function datatable(Request $request)
     {
         $user = auth()->user();
-        $query = Poll::with('event');
+        $query = Poll::with(['event', 'poll_answers']);
         if ($user->type === 'sub_admin') {
             $query->where('event_id', $user->event_id);
         }
@@ -200,7 +200,9 @@ class PollController
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-
+        if ($request->filled('event')) {
+            $query->where('event_id', $request->event);
+        }
         $recordsTotal = Poll::count();
         $recordsFiltered = $query->count();
 
@@ -231,7 +233,7 @@ class PollController
                 'id' => $poll->id,
                 'event' => $poll->event->name ?? 'N/A',
                 'question' => $poll->question,
-                'answers' => $answers,
+                'answers' => $poll->poll_answers->pluck('answer')->toArray(),
                 'status' => $poll->status,
                 'created_at' => $poll->created_at->format('d M, Y'),
             ];

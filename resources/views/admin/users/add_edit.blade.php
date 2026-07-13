@@ -107,13 +107,107 @@
             const EVENT_FIELDS_URL = "{{ url('admin/get-event-fields') }}";
             const CURRENT_EVENT_ID = "{{ isset($user) ? $user->event_id : '' }}";
 
-
             let validator = null;
 
+            // ─── Destroy existing validator safely ───────────────────────────────────
+            function destroy_validator() {
+                if (validator) {
+                    try {
+                        validator.destroy();
+                    } catch (e) {
+                    }
+                    validator = null;
+                }
+                if (form.fv) {
+                    try {
+                        form.fv.destroy();
+                    } catch (e) {
+                    }
+                    delete form.fv;
+                }
+            }
+
+            // ─── Build FormValidation ────────────────────────────────────────────────
+            function build_validation() {
+                destroy_validator();
+
+                const fields = {};
+
+                $('#dynamic_fields_wrapper [name]').each(function () {
+                    const el = this;
+                    const name = el.name.replace(/\[\]$/, '');
+                    const type = el.type || el.tagName.toLowerCase();
+
+                    const $row = $(el).closest('.row');
+                    const $label = $row.find('label').first();
+                    const label = $label.text().trim().replace(/\(.*?\)/g, '').trim();
+                    const required = $label.hasClass('required');
+
+                    // Skip non-validatable types
+                    if (['hidden', 'submit', 'button', 'file'].includes(type)) return;
+
+                    // Password
+                    if (name === 'password') {
+                        @if(!isset($user))
+                            fields['password'] = {validators: {notEmpty: {message: 'Password is required'}}};
+                        @endif
+                            return;
+                    }
+
+                    // Email
+                    if (name === 'email') {
+                        const v = {emailAddress: {message: 'Enter a valid email address'}};
+                        if (required) v.notEmpty = {message: 'Email is required'};
+                        fields['email'] = {validators: v};
+                        return;
+                    }
+
+                    // Dependent select — skip if parent not yet chosen (no real options)
+                    if (el.tagName === 'SELECT' && el.hasAttribute('data-depends-on')) {
+                        const hasRealOptions = Array.from(el.options).some(o => o.value !== '');
+                        if (!hasRealOptions) return;
+                    }
+
+                    // Mobile / tel
+                    if (type === 'tel' || $(el).hasClass('mobile-number-input')) {
+                        const v = {
+                            digits: {message: 'Only numbers are allowed'},
+                            stringLength: {min: 10, max: 10, message: 'Mobile number must be 10 digits'}
+                        };
+                        if (required) v.notEmpty = {message: (label || 'This field') + ' is required'};
+                        fields[name] = {validators: v};
+                        return;
+                    }
+
+                    // All other required fields (text, select, textarea, radio, checkbox, date…)
+                    if (required && !fields[name]) {
+                        fields[name] = {
+                            validators: {
+                                notEmpty: {message: (label || 'This field') + ' is required'}
+                            }
+                        };
+                    }
+                });
+
+                // No fields to validate — bail out
+                if (Object.keys(fields).length === 0) return;
+
+                // ✅ Actually create the validator (this was missing before!)
+                setTimeout(function () {
+                    validator = FormValidation.formValidation(form, {
+                        fields: fields,
+                        plugins: {
+                            trigger: new FormValidation.plugins.Trigger(),
+                            bootstrap: new FormValidation.plugins.Bootstrap5({rowSelector: '.row'})
+                        }
+                    });
+                }, 100);
+            }
+
+            // ─── Reload dependent selects (state after country, city after state) ────
             function reload_dependent($parent) {
                 const parentName = $parent.attr('id');
-                const parentVal = $parent.find(':selected').val(); // this is the name now
-                const parentLabel = $parent.find(':selected').text().trim();
+                const parentVal = $parent.find(':selected').val();
 
                 const eventId = $('#event_id').val()
                     || $('input[name="event_id"]').val()
@@ -129,112 +223,27 @@
 
                     $.get(EVENT_FIELDS_URL + '/' + eventId, {
                         parent_field: parentName,
-                        parent_value: parentVal  // sending name
+                        parent_value: parentVal
                     }, function (html) {
                         const $newSelect = $(html).find('select[name="' + fieldName + '"]');
                         if ($newSelect.length) {
                             $child.replaceWith($newSelect);
-                            build_validation();
+                            build_validation(); // rebuild after child options load
                         }
                     });
                 });
             }
 
-
+            // ─── Event: parent select change ─────────────────────────────────────────
             $(document).on('change', 'select[data-source]', function () {
                 reload_dependent($(this));
+                setTimeout(build_validation, 300);
             });
 
-            function build_validation() {
-                const fields = {};
-
-                $('#dynamic_fields_wrapper [name]').each(function () {
-                    const el = this;
-                    const name = el.name.replace(/\[\]$/, '');
-                    const type = el.type || el.tagName.toLowerCase();
-                    const $row = $(el).closest('.row');
-                    const label = $row.find('label').first().text().trim().replace(/\(.*?\)/g, '').trim();
-                    const required = $row.find('label').first().hasClass('required');
-
-                    if (['hidden', 'submit', 'button', 'file'].includes(type)) return;
-
-                    if (name === 'password') {
-                        @if(!isset($user))
-                            fields['password'] = {validators: {notEmpty: {message: 'Password is required'}}};
-                        @endif
-                            return;
-                    }
-
-                    if (name === 'email') {
-                        const v = {emailAddress: {message: 'Enter a valid email address'}};
-                        if (required) v.notEmpty = {message: 'Email is required'};
-                        fields['email'] = {validators: v};
-                        return;
-                    }
-                    if (el.tagName === 'SELECT' && el.hasAttribute('data-depends-on')) {
-                        const hasRealOptions = Array.from(el.options)
-                            .some(o => o.value !== '');
-                        if (!hasRealOptions) return;
-                    }
-
-                    if (type === 'tel' || $(el).hasClass('mobile-number-input')) {
-                        const v = {
-                            digits: {message: 'Only numbers are allowed'},
-                            stringLength: {min: 10, max: 10, message: 'Mobile number must be 10 digits'}
-                        };
-                        if (required) v.notEmpty = {message: (label || 'This field') + ' is required'};
-                        fields[name] = {validators: v};
-                        return;
-                    }
-
-                    if (required && !fields[name]) {
-                        fields[name] = {validators: {notEmpty: {message: (label || 'This field') + ' is required'}}};
-                    }
-                });
-
-                if (validator) {
-                    try {
-                        validator.destroy();
-                    } catch (e) {
-                    }
-                    validator = null;
-                }
-                if (form.fv) {
-                    try {
-                        form.fv.destroy();
-                    } catch (e) {
-                    }
-                    delete form.fv;
-                }
-
-                setTimeout(function () {
-                    validator = FormValidation.formValidation(form, {
-                        fields: fields,
-                        plugins: {
-                            trigger: new FormValidation.plugins.Trigger(),
-                            bootstrap: new FormValidation.plugins.Bootstrap5({rowSelector: '.row'})
-                        }
-                    });
-                }, 100);
-            }
-
+            // ─── Event: event_id change (reload all dynamic fields) ──────────────────
             $('#event_id').on('change', function () {
                 const eventId = $(this).val();
-
-                if (validator) {
-                    try {
-                        validator.destroy();
-                    } catch (e) {
-                    }
-                    validator = null;
-                }
-                if (form.fv) {
-                    try {
-                        form.fv.destroy();
-                    } catch (e) {
-                    }
-                    delete form.fv;
-                }
+                destroy_validator();
 
                 if (!eventId) {
                     $('#dynamic_fields_wrapper').html('');
@@ -253,6 +262,7 @@
                 });
             });
 
+            // ─── Avatar remove/cancel/change ─────────────────────────────────────────
             if (avatar_removed_input) {
                 $(document).on('click', '[data-kt-image-input-action="remove"]', function () {
                     avatar_removed_input.value = '1';
@@ -265,12 +275,16 @@
                 });
             }
 
+            // ─── Submit ───────────────────────────────────────────────────────────────
             submit_btn.addEventListener('click', function (e) {
                 e.preventDefault();
+
                 if (!validator) {
+                    // No validator registered — submit directly
                     form.submit();
                     return;
                 }
+
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
                         submit_btn.setAttribute('data-kt-indicator', 'on');
@@ -280,6 +294,7 @@
                 });
             });
 
+            // ─── Init on page load (edit mode — fields already rendered) ─────────────
             if ($('#dynamic_fields_wrapper [name]').length) {
                 build_validation();
             }

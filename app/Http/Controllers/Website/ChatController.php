@@ -34,7 +34,7 @@ class ChatController
                 ->map(fn($m) => [
                     'id' => $m->id,
                     'message' => $m->message,
-                    'userName' => $m->sender->name,
+                    'userName' => $m->sender->name ?? 'Anonymous',
                     'userId' => $m->sender_id,
                     'timestamp' => $m->created_at->format('H:i'),
                 ]);

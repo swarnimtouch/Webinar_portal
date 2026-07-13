@@ -34,9 +34,10 @@ class UserController extends Controller
         })->values();
 
         $users = User::where('type', 'doctor')->get();
-
+        $user = User::with('event')->get()->unique('event_id')->values();
         return view('admin.users.index', [
             'users' => $users,
+            'user' => $user,
             'valid_dynamic_fields' => $validDynamicFields,
             'title' => __('Users'),
             'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index')])
@@ -264,7 +265,9 @@ class UserController extends Controller
                 }
             });
         }
-
+        if ($request->filled('event')) {
+            $query->where('event_id', $request->event);
+        }
         $recordsTotal = $query->count();
 
         $data = $query
