@@ -203,7 +203,7 @@
   ),
   'broadcasting' => 
   array (
-    'default' => 'reverb',
+    'default' => 'log',
     'connections' => 
     array (
       'reverb' => 
@@ -771,9 +771,9 @@
     array (
       'reverb' => 
       array (
-        'host' => '0.0.0.0',
-        'port' => 8080,
-        'path' => '',
+        'host' => '127.0.0.1',
+        'port' => '8080',
+        'path' => 'app',
         'hostname' => '127.0.0.1',
         'options' => 
         array (
