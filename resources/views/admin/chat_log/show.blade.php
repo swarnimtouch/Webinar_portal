@@ -490,6 +490,14 @@
             enabledTransports: ['ws', 'wss'],
         });
 
+        adminEcho.connector.pusher.connection.bind('connected', () => {
+            console.log('[Admin WebSocket] Connected');
+        });
+        adminEcho.connector.pusher.connection.bind('error', error => {
+            console.error('[Admin WebSocket] Connection error:', error);
+        });
+        console.log('[Admin WebSocket] Subscribing:', 'webinar.' + EVENT_SLUG + '.chat');
+
         adminEcho.channel('webinar.' + EVENT_SLUG + '.chat')
             .listen('.message.sent', function (data) {
                 console.log('[Admin Chat] Message received:', data);
