@@ -45,9 +45,9 @@ class Events extends Model
 
     public function getPublicUrlAttribute(): string
     {
-        $companySlug = $this->company?->slug ?: $this->domain;
         $baseDomain = config('app.event_base_domain', 'doctorly.in');
+        $liveSubdomain = config('app.event_live_subdomain', 'live');
 
-        return "https://{$companySlug}.{$baseDomain}/{$this->slug}";
+        return "https://{$liveSubdomain}.{$baseDomain}/{$this->slug}";
     }
 }

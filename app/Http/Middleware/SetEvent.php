@@ -20,6 +20,16 @@ class SetEvent
             ?? $request->header('X-Event-Slug');
 
         $companySlug = $request->route('company');
+        $baseDomain = strtolower(config('app.event_base_domain', 'doctorly.in'));
+        $liveHost = strtolower(config('app.event_live_subdomain', 'live') . '.' . $baseDomain);
+        $requestHost = strtolower($request->getHost());
+
+        // On the public domain, events are available only below the fixed
+        // live subdomain. Localhost/IP routes remain available for development.
+        if (($requestHost === $baseDomain || str_ends_with($requestHost, '.' . $baseDomain))
+            && $requestHost !== $liveHost) {
+            abort(404);
+        }
 
         if ($slug) {
             $event = Events::with('company')

@@ -1,4 +1,4 @@
-@if(Route::is('home', 'company.local.home', 'company.live.home'))
+@if(Route::is('home', 'company.local.home', 'event.live.home'))
     <nav class="navbar">
         <div class="logo">
             <img src="{{app('event')->logo}}"

@@ -31,11 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->middleware(['event','web'])
                 ->group(base_path('routes/event.php'));
 
-            Route::domain('{company}.' . config('app.event_base_domain', 'doctorly.in'))
+            Route::domain(config('app.event_live_subdomain', 'live') . '.' . config('app.event_base_domain', 'doctorly.in'))
                 ->prefix('{slug}')
-                ->name('company.live.')
+                ->name('event.live.')
                 ->where([
-                    'company' => '[a-z0-9\-]+',
                     'slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$',
                 ])
                 ->middleware(['event','web'])

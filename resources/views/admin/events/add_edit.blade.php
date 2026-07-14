@@ -47,10 +47,10 @@
                                         @endif
                                     </select>
                                     <div class="text-muted fs-7 mt-2" id="event_url_preview">
-                                        @if($event->exists && $event->domain)
-                                            Live URL: https://{{ $event->domain }}.{{ config('app.event_base_domain') }}/{{ $event->slug }}
+                                        @if($event->exists && $event->slug)
+                                            Live URL: https://{{ config('app.event_live_subdomain', 'live') }}.{{ config('app.event_base_domain') }}/{{ $event->slug }}
                                         @else
-                                            Enter the domain and event name to preview the live URL.
+                                            Enter the event name to preview the live URL.
                                         @endif
                                     </div>
                                     @if($event->exists)
@@ -587,6 +587,7 @@
             const companySearchUrl = @json(route('admin.events.companies.search'));
             const companyStoreUrl = @json(route('admin.events.companies.store'));
             const baseDomain = @json(config('app.event_base_domain', 'doctorly.in'));
+            const liveSubdomain = @json(config('app.event_live_subdomain', 'live'));
             const lockedEventSlug = @json($event->exists ? $event->slug : null);
             let currentCompanySearch = '';
 
@@ -596,11 +597,10 @@
 
             const updateEventUrlPreview = () => {
                 const eventSlug = lockedEventSlug || slugify($('#name').val() || '');
-                const eventDomain = ($('#domain').val() || '').trim();
                 const preview = document.getElementById('event_url_preview');
-                preview.textContent = eventDomain && eventSlug
-                    ? `Live URL: https://${eventDomain}.${baseDomain}/${eventSlug}`
-                    : 'Enter the domain and event name to preview the live URL.';
+                preview.textContent = eventSlug
+                    ? `Live URL: https://${liveSubdomain}.${baseDomain}/${eventSlug}`
+                    : 'Enter the event name to preview the live URL.';
             };
 
             const companySelect = $('#company_id').select2({

@@ -10,12 +10,12 @@ if (!function_exists('event_route')) {
         $slug = request()->route('slug');
         $routeName = $name;
         $defaults = ['slug' => $slug];
+        $currentRouteName = (string) request()->route()?->getName();
 
-        if ($company) {
-            $prefix = str_starts_with((string) request()->route()?->getName(), 'company.live.')
-                ? 'company.live.'
-                : 'company.local.';
-            $routeName = $prefix . $name;
+        if (str_starts_with($currentRouteName, 'event.live.')) {
+            $routeName = 'event.live.' . $name;
+        } elseif ($company) {
+            $routeName = 'company.local.' . $name;
             $defaults['company'] = $company;
         }
 
