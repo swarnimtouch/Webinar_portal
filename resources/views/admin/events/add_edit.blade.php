@@ -59,20 +59,17 @@
                                 </div>
                             </div>
 
+                            <input type="hidden" name="domain" id="domain"
+                                   value="{{ old('domain', $event->domain ?? $selectedCompany?->slug ?? '') }}">
+
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Domain</label>
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Live URL</label>
                                 <div class="col-lg-8">
-                                    <div class="position-relative">
-                                        <input type="text" name="domain" id="domain"
-                                               class="form-control form-control-lg form-control-solid"
-                                               value="{{ old('domain', $event->domain ?? '') }}"
-                                               placeholder="Enter Domain"/>
-                                        <div
-                                            class="position-absolute translate-middle-y top-50 end-0 me-5 text-muted fw-bold">
-                                            .{{ config('app.event_base_domain', 'doctorly.in') }}
-                                        </div>
-                                    </div>
-                                    <div class="text-muted fs-7 mt-2">Use lowercase letters, numbers and hyphens only.</div>
+                                    <input type="text" id="live_url"
+                                           class="form-control form-control-lg form-control-solid"
+                                           value="{{ $event->exists ? $event->public_url : '' }}"
+                                           placeholder="Event name enter karne par URL yahan dikhega"
+                                           readonly>
                                 </div>
                             </div>
 
@@ -598,9 +595,13 @@
             const updateEventUrlPreview = () => {
                 const eventSlug = lockedEventSlug || slugify($('#name').val() || '');
                 const preview = document.getElementById('event_url_preview');
-                preview.textContent = eventSlug
-                    ? `Live URL: https://${liveSubdomain}.${baseDomain}/${eventSlug}`
+                const liveUrl = eventSlug
+                    ? `https://${liveSubdomain}.${baseDomain}/${eventSlug}`
+                    : '';
+                preview.textContent = liveUrl
+                    ? `Live URL: ${liveUrl}`
                     : 'Enter the event name to preview the live URL.';
+                document.getElementById('live_url').value = liveUrl;
             };
 
             const companySelect = $('#company_id').select2({
