@@ -15,6 +15,7 @@ class Events extends Model
         'active_user_from' => 'datetime',
         'active_user_to' => 'datetime',
         'is_log_attendance' => 'boolean',
+        'session_agenda' => 'array',
     ];
 
     public function getFaviconAttribute($value)

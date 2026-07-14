@@ -229,6 +229,12 @@ img {
   border-top: 1px solid var(--border-color);
 }
 
+.webinar-info-container.no-about {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
 .about-webinar h3,
 .key-topics h3 {
   font-size: 1.25rem;

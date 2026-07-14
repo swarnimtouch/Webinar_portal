@@ -166,9 +166,19 @@
             <form method="POST" action="{{ event_route('login') }}" id="loginForm">
                 @csrf
                 @foreach($login_fields as $field)
+                    @php
+                        $fieldIcons = [
+                            'email' => 'fa-solid fa-envelope', 'password' => 'fa-solid fa-lock',
+                            'mobile_number' => 'fa-solid fa-phone', 'alternative_mobile_number' => 'fa-solid fa-phone',
+                            'first_name' => 'fa-solid fa-user', 'last_name' => 'fa-solid fa-user',
+                            'country' => 'fa-solid fa-earth-asia', 'state' => 'fa-solid fa-map',
+                            'city' => 'fa-solid fa-city', 'gender' => 'fa-solid fa-venus-mars',
+                        ];
+                        $loginIcon = $fieldIcons[$field->field_name] ?? 'fa-solid fa-user';
+                    @endphp
                     <div class="email-input-group">
                         <div class="icon-box">
-                            <i class="{{ $field->html_class ?? 'fa-solid fa-user' }}"></i>
+                            <i class="{{ $loginIcon }}"></i>
                         </div>
                         <input type="{{ $field->field_type }}"
                                name="{{ $field->field_name }}"
@@ -214,7 +224,15 @@
                              ? json_decode($field->input_value, true)
                              : [];
 
-                            $icon_class = $field->html_class;
+                            $fieldIcons = [
+                                'email' => 'fa-solid fa-envelope', 'password' => 'fa-solid fa-lock',
+                                'mobile_number' => 'fa-solid fa-phone', 'alternative_mobile_number' => 'fa-solid fa-phone',
+                                'first_name' => 'fa-solid fa-user', 'last_name' => 'fa-solid fa-user',
+                                'country' => 'fa-solid fa-earth-asia', 'state' => 'fa-solid fa-map',
+                                'city' => 'fa-solid fa-city', 'gender' => 'fa-solid fa-venus-mars',
+                                'address' => 'fa-solid fa-location-dot', 'date_of_birth' => 'fa-solid fa-calendar',
+                            ];
+                            $icon_class = $fieldIcons[$field->field_name] ?? 'fa-solid fa-pen';
                             $input_value = json_decode($field->input_value,true);
                             $source = [];
                             $source_value = '';

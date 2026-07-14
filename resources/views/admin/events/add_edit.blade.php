@@ -295,6 +295,57 @@
                                 </div>
                             </div>
 
+                            @php
+                                $agendaItems = old('session_agenda', $event->session_agenda ?? []);
+                                if (empty($agendaItems)) $agendaItems = [[]];
+                            @endphp
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Session Agenda</label>
+                                <div class="col-lg-8">
+                                    <div id="session-agenda-list">
+                                        @foreach($agendaItems as $agendaIndex => $agenda)
+                                            <div class="agenda-input-row border rounded p-4 mb-4" data-index="{{ $agendaIndex }}">
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <input type="text" name="session_agenda[{{ $agendaIndex }}][time]"
+                                                               value="{{ $agenda['time'] ?? '' }}" class="form-control form-control-solid"
+                                                               placeholder="Time, e.g. 2:00 PM">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <input type="text" name="session_agenda[{{ $agendaIndex }}][duration]"
+                                                               value="{{ $agenda['duration'] ?? '' }}" class="form-control form-control-solid"
+                                                               placeholder="Duration, e.g. 30 min">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <select name="session_agenda[{{ $agendaIndex }}][status]" class="form-select form-select-solid">
+                                                            <option value="upcoming" @selected(($agenda['status'] ?? 'upcoming') === 'upcoming')>Upcoming</option>
+                                                            <option value="live" @selected(($agenda['status'] ?? '') === 'live')>Live Now</option>
+                                                            <option value="completed" @selected(($agenda['status'] ?? '') === 'completed')>Completed</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <input type="text" name="session_agenda[{{ $agendaIndex }}][title]"
+                                                               value="{{ $agenda['title'] ?? '' }}" class="form-control form-control-solid"
+                                                               maxlength="255" placeholder="Agenda title">
+                                                    </div>
+                                                    <div class="col-12 d-flex gap-3">
+                                                        <input type="text" name="session_agenda[{{ $agendaIndex }}][description]"
+                                                               value="{{ $agenda['description'] ?? '' }}" class="form-control form-control-solid"
+                                                               maxlength="1000" placeholder="Agenda description">
+                                                        <button type="button" class="btn btn-icon btn-light-danger remove-agenda-btn" title="Remove">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <button type="button" id="add-agenda-btn" class="btn btn-light-primary btn-sm">
+                                        <i class="bi bi-plus-lg"></i> Add Agenda Item
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label fw-bold fs-6">Event Resources</label>
                                 <div class="col-lg-8">
@@ -972,6 +1023,26 @@
             });
 
         });
+        let agendaIndex = {{ count($agendaItems) }};
+
+        $('#add-agenda-btn').on('click', function () {
+            const index = agendaIndex++;
+            $('#session-agenda-list').append(`
+                <div class="agenda-input-row border rounded p-4 mb-4" data-index="${index}">
+                    <div class="row g-3">
+                        <div class="col-md-4"><input type="text" name="session_agenda[${index}][time]" class="form-control form-control-solid" placeholder="Time, e.g. 2:00 PM"></div>
+                        <div class="col-md-4"><input type="text" name="session_agenda[${index}][duration]" class="form-control form-control-solid" placeholder="Duration, e.g. 30 min"></div>
+                        <div class="col-md-4"><select name="session_agenda[${index}][status]" class="form-select form-select-solid"><option value="upcoming">Upcoming</option><option value="live">Live Now</option><option value="completed">Completed</option></select></div>
+                        <div class="col-12"><input type="text" name="session_agenda[${index}][title]" class="form-control form-control-solid" maxlength="255" placeholder="Agenda title"></div>
+                        <div class="col-12 d-flex gap-3"><input type="text" name="session_agenda[${index}][description]" class="form-control form-control-solid" maxlength="1000" placeholder="Agenda description"><button type="button" class="btn btn-icon btn-light-danger remove-agenda-btn" title="Remove"><i class="bi bi-trash"></i></button></div>
+                    </div>
+                </div>`);
+        });
+
+        $(document).on('click', '.remove-agenda-btn', function () {
+            $(this).closest('.agenda-input-row').remove();
+        });
+
         let editorInstance;
         ClassicEditor
             .create(document.querySelector('#editor'))

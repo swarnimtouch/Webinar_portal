@@ -9,12 +9,8 @@
             </div>
 
             <div class="webinar-details">
-                <p class="category">TECHNOLOGY & AI</p>
                 <h1>{{ app('event')->name }}</h1>
-                <p class="description">
-                    Join industry experts as we explore the cutting-edge applications of generative AI, from code
-                    generation to automated testing and beyond.
-                </p>
+
 
                 <div class="mobile-chat-button-container">
                     <button class="mobile-chat-btn" id="mobileChatBtn">
@@ -22,72 +18,62 @@
                     </button>
                 </div>
 
-                <div class="webinar-info-container">
-                    <div class="about-webinar">
-                        <h3>About This Webinar</h3>
-                        <p>{!! app('event')->description !!}</p>
-                    </div>
-                    <div class="webinar-actions">
-                        <div class="action-group-right">
-                            @if($resources->isNotEmpty())
+                @php $hasAbout = filled(strip_tags((string) app('event')->description)); @endphp
+                @if($hasAbout || $resources->isNotEmpty())
+                <div class="webinar-info-container {{ $hasAbout ? '' : 'no-about' }}">
+                    @if($hasAbout)
+                        <div class="about-webinar">
+                            <h3>About This Webinar</h3>
+                            <div>{!! app('event')->description !!}</div>
+                        </div>
+                    @endif
+                    @if($resources->isNotEmpty())
+                        <div class="webinar-actions">
+                            <div class="action-group-right">
                                 <a href="#session-resources" class="action-btn download">
                                     <i class="fa-solid fa-download"></i> Download Resources
                                 </a>
-                            @endif
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
+                @endif
 
-                <div class="session-agenda">
-                    <h3>Session Agenda</h3>
-                    <div class="agenda-list">
-                        <div class="agenda-item active">
-                            <div class="agenda-timeline"></div>
-                            <div class="agenda-details">
-                                <div class="agenda-time"><span>2:00 PM</span><span>15 min</span></div>
-                                <h4>Welcome & Introduction</h4>
-                                <p>Overview of today's session and speaker introduction</p>
-                            </div>
-                            <div class="agenda-status"><span class="status-badge live">Live Now</span></div>
-                        </div>
-                        <div class="agenda-item">
-                            <div class="agenda-timeline"></div>
-                            <div class="agenda-details">
-                                <div class="agenda-time"><span>2:15 PM</span><span>30 min</span></div>
-                                <h4>AI Landscape 2024</h4>
-                                <p>Current state of AI technology and market trends</p>
-                            </div>
-                            <div class="agenda-status"><span class="status-badge">Upcoming</span></div>
-                        </div>
-                        <div class="agenda-item">
-                            <div class="agenda-timeline"></div>
-                            <div class="agenda-details">
-                                <div class="agenda-time"><span>2:45 PM</span><span>25 min</span></div>
-                                <h4>Implementation Strategies</h4>
-                                <p>Step-by-step guide to deploying AI solutions</p>
-                            </div>
-                            <div class="agenda-status"><span class="status-badge">Upcoming</span></div>
-                        </div>
-                        <div class="agenda-item">
-                            <div class="agenda-timeline"></div>
-                            <div class="agenda-details">
-                                <div class="agenda-time"><span>3:10 PM</span><span>20 min</span></div>
-                                <h4>Case Studies</h4>
-                                <p>Real-world examples from leading organizations</p>
-                            </div>
-                            <div class="agenda-status"><span class="status-badge">Upcoming</span></div>
-                        </div>
-                        <div class="agenda-item">
-                            <div class="agenda-timeline"></div>
-                            <div class="agenda-details">
-                                <div class="agenda-time"><span>3:30 PM</span><span>30 min</span></div>
-                                <h4>Q&A Session</h4>
-                                <p>Live questions and expert answers</p>
-                            </div>
-                            <div class="agenda-status"><span class="status-badge">Upcoming</span></div>
+                @if(!empty(app('event')->session_agenda))
+                    <div class="session-agenda">
+                        <h3>Session Agenda</h3>
+                        <div class="agenda-list">
+                            @foreach(app('event')->session_agenda as $agenda)
+                                @php
+                                    $status = $agenda['status'] ?? 'upcoming';
+                                    $statusLabel = match($status) {
+                                        'live' => 'Live Now',
+                                        'completed' => 'Completed',
+                                        default => 'Upcoming',
+                                    };
+                                @endphp
+                                <div class="agenda-item {{ $status === 'live' ? 'active' : '' }}">
+                                    <div class="agenda-timeline"></div>
+                                    <div class="agenda-details">
+                                        @if(filled($agenda['time'] ?? null) || filled($agenda['duration'] ?? null))
+                                            <div class="agenda-time">
+                                                <span>{{ $agenda['time'] ?? '' }}</span>
+                                                <span>{{ $agenda['duration'] ?? '' }}</span>
+                                            </div>
+                                        @endif
+                                        <h4>{{ $agenda['title'] }}</h4>
+                                        @if(filled($agenda['description'] ?? null))
+                                            <p>{{ $agenda['description'] }}</p>
+                                        @endif
+                                    </div>
+                                    <div class="agenda-status">
+                                        <span class="status-badge {{ $status === 'live' ? 'live' : '' }}">{{ $statusLabel }}</span>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
-                </div>
+                @endif
 
                 @if($resources->isNotEmpty())
                     <div class="session-resources" id="session-resources">

@@ -63,6 +63,12 @@ class EventsController
             'publish_date' => ['required', 'date'],
             'start_time' => ['required'],
             'end_time' => ['required'],
+            'session_agenda' => ['nullable', 'array'],
+            'session_agenda.*.time' => ['nullable', 'string', 'max:50'],
+            'session_agenda.*.duration' => ['nullable', 'string', 'max:50'],
+            'session_agenda.*.title' => ['nullable', 'string', 'max:255'],
+            'session_agenda.*.description' => ['nullable', 'string', 'max:1000'],
+            'session_agenda.*.status' => ['nullable', 'in:upcoming,live,completed'],
             'resource_id' => ['nullable', 'array'],
             'resource_id.*' => ['nullable', 'integer'],
             'resource_title' => ['nullable', 'array'],
@@ -89,6 +95,15 @@ class EventsController
         $event->email = $request->email ?? null;
         $event->phone = $request->phone ?? null;
         $event->description = $request->description ?? null;
+        $event->session_agenda = collect($request->input('session_agenda', []))
+            ->filter(fn($item) => filled($item['title'] ?? null))
+            ->map(fn($item) => [
+                'time' => $item['time'] ?? '',
+                'duration' => $item['duration'] ?? '',
+                'title' => $item['title'],
+                'description' => $item['description'] ?? '',
+                'status' => $item['status'] ?? 'upcoming',
+            ])->values()->all();
 
         if ($request->hasFile('favicon')) {
             $file = $request->file('favicon');
