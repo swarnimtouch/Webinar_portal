@@ -23,18 +23,6 @@
             </a>
         </div>
 
-        <nav class="main-nav">
-            <a href="#"><i class="fa-solid fa-table-columns"></i> Dashboard</a>
-            <a href="#" class="active"><i class="fa-solid fa-video"></i> Webinars</a>
-            @if($resources->isNotEmpty())
-                <a href="#session-resources">
-                    <i class="fa-solid fa-book"></i> Resources
-                </a>
-            @else
-                <a href="#"><i class="fa-solid fa-book"></i> Resources</a>
-            @endif
-        </nav>
-
         <div class="dropdown user-menu">
             <a href="#" class="me-3">
                 <i class="fa-solid fa-bell"></i>
