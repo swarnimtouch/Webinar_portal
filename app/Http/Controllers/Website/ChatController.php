@@ -85,7 +85,7 @@ class ChatController
             'event' => $broadcastEvent->broadcastAs(),
             'payload' => get_object_vars($broadcastEvent),
         ]);
-        broadcast($broadcastEvent)->toOthers();
+        broadcast($broadcastEvent);
 
         return response()->json([
             'status' => true,
