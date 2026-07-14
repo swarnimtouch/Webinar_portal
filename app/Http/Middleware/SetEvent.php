@@ -25,10 +25,10 @@ class SetEvent
             $event = Events::with('company')
                 ->where('slug', $slug)
                 ->when($companySlug, function ($query) use ($companySlug) {
-                    $query->where(function ($eventQuery) use ($companySlug) {
-                        $eventQuery->where('domain', $companySlug)
-                            ->orWhereHas('company', fn($company) => $company->where('slug', $companySlug));
-                    });
+                    $query->whereHas(
+                        'company',
+                        fn($company) => $company->where('slug', $companySlug)
+                    );
                 })
                 ->firstOrFail();
             app()->instance('event', $event);

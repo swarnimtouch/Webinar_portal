@@ -193,12 +193,10 @@
                   autocomplete="off">
                 @csrf
                 @if(!$has_country_field && $default_country)
-                    <input type="hidden" name="country" id="country" value="{{ $default_country->name }}"
-                           data-id="{{ $default_country->id }}">
+                    <input type="hidden" id="country" data-id="{{ $default_country->id }}">
                 @endif
                 @if(!$has_state_field && $default_state)
-                    <input type="hidden" name="state" id="state" value="{{ $default_state->name }}"
-                           data-id="{{ $default_state->id }}">
+                    <input type="hidden" id="state" data-id="{{ $default_state->id }}">
                 @endif
                 <div class="row">
                     @foreach($register_fields as $field)

@@ -31,11 +31,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->middleware(['event','web'])
                 ->group(base_path('routes/event.php'));
 
-            Route::prefix('{slug}')
-                ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
-                ->middleware(['event','web'])
-                ->group(base_path('routes/event.php'));
-
             Route::domain('{company}.' . config('app.event_base_domain', 'doctorly.in'))
                 ->prefix('{slug}')
                 ->name('company.live.')
@@ -43,6 +38,13 @@ return Application::configure(basePath: dirname(__DIR__))
                     'company' => '[a-z0-9\-]+',
                     'slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$',
                 ])
+                ->middleware(['event','web'])
+                ->group(base_path('routes/event.php'));
+
+            // Keep the generic route after the company-domain route. Otherwise
+            // /{slug} can match on every host and bypass company isolation.
+            Route::prefix('{slug}')
+                ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
                 ->middleware(['event','web'])
                 ->group(base_path('routes/event.php'));
 

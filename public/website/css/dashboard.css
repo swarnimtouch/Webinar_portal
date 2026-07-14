@@ -2252,7 +2252,8 @@ img {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    border: 2px solid var(--border-color);
+    border: 2px solid var(--accent-blue);
+    background: rgba(59, 130, 246, 0.12);
     flex-shrink: 0;
     transition: border-color 0.2s, background 0.2s;
 }

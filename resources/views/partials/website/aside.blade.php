@@ -115,11 +115,6 @@
                             <i class="fa-solid fa-hand"></i>
                             <span>Raise Hand</span>
                         </button>
-                        <button class="action-box">
-                            <i class="fa-solid fa-share-from-square"></i>
-                            <span>Share Screen</span>
-                        </button>
-
                         @if($resources->isNotEmpty())
                             <a href="#session-resources" class="action-box">
                                 <i class="fa-solid fa-file-lines"></i>
