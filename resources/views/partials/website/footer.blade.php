@@ -16,7 +16,7 @@
             <h3>Quick Links</h3>
             <ul>
                 <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Content</a></li>
+                <li><a href="#">Terms & Conditions</a></li>
             </ul>
         </div>
 
