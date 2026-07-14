@@ -432,6 +432,25 @@
                 $.get(window.chatMessagesUrl, function (res) {
                     $('#chatSkeleton').hide();
                     const $box = $('#chatMessages');
+
+                    if (silent) {
+                        const existingIds = new Set(
+                            $box.find('.chat-msg-row[data-id]').map(function () {
+                                return String($(this).data('id'));
+                            }).get().filter(Boolean)
+                        );
+                        const newMessages = (res.messages || []).filter(message =>
+                            message.id && !existingIds.has(String(message.id))
+                        );
+
+                        if (newMessages.length) {
+                            $box.find('.chat-empty-state').remove();
+                            newMessages.forEach(message => $box.append(buildMessageHtml(message)));
+                            scrollChatToBottom(false);
+                        }
+                        return;
+                    }
+
                     $box.find('.chat-msg-row, .chat-date-divider, .chat-empty-state').remove();
 
                     if (!res.messages || !res.messages.length) {

@@ -285,7 +285,8 @@ class ChatLogController extends Controller
             userName: $currentUser->name,
             userId: $currentUser->id,
             timestamp: $formattedDate,
-            slug: $event->slug
+            slug: $event->slug,
+            id: $newMessage->id
         ));
 
         return response()->json([

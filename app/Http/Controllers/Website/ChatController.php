@@ -74,7 +74,8 @@ class ChatController
             userName: Auth::guard('web')->user()->name,
             userId: Auth::guard('web')->id(),
             timestamp: $msg->created_at->format('H:i'),
-            slug: $slug
+            slug: $slug,
+            id: $msg->id
         ))->toOthers();
 
         return response()->json([
