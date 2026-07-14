@@ -59,20 +59,6 @@
                                 </div>
                             </div>
 
-                            <input type="hidden" name="domain" id="domain"
-                                   value="{{ old('domain', $event->domain ?? $selectedCompany?->slug ?? '') }}">
-
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label fw-bold fs-6">Live URL</label>
-                                <div class="col-lg-8">
-                                    <input type="text" id="live_url"
-                                           class="form-control form-control-lg form-control-solid"
-                                           value="{{ $event->exists ? $event->public_url : '' }}"
-                                           placeholder="Event name enter karne par URL yahan dikhega"
-                                           readonly>
-                                </div>
-                            </div>
-
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Name</label>
                                 <div class="col-lg-8">
@@ -559,6 +545,7 @@
         }
 
         KTUtil.onDOMContentLoaded(function () {
+            let validator = null;
 
             flatpickr("#publish_date", {
                 dateFormat: "d M Y",
@@ -571,10 +558,10 @@
                     dateFormat: "d M Y H:i",
                     time_24hr: true,
                     onChange: function () {
-                        validator.revalidateField('start_time');
-                        validator.revalidateField('end_time');
-                        validator.revalidateField('active_user_from');
-                        validator.revalidateField('active_user_to');
+                        validator?.revalidateField('start_time');
+                        validator?.revalidateField('end_time');
+                        validator?.revalidateField('active_user_from');
+                        validator?.revalidateField('active_user_to');
                     }
                 });
             });
@@ -601,7 +588,6 @@
                 preview.textContent = liveUrl
                     ? `Live URL: ${liveUrl}`
                     : 'Enter the event name to preview the live URL.';
-                document.getElementById('live_url').value = liveUrl;
             };
 
             const companySelect = $('#company_id').select2({
@@ -655,9 +641,6 @@
                     return;
                 }
 
-                if (event.params.data.slug) {
-                    $('#domain').val(event.params.data.slug);
-                }
                 updateEventUrlPreview();
             }).on('select2:clear', function () {
                 updateEventUrlPreview();
@@ -700,7 +683,6 @@
                         const option = new Option(company.name, company.id, true, true);
                         option.dataset.slug = company.slug;
                         companySelect.append(option).trigger('change');
-                        $('#domain').val(company.slug);
                         bootstrap.Modal.getOrCreateInstance(document.getElementById('addCompanyModal')).hide();
                         updateEventUrlPreview();
                         toastr.success('Company added successfully.');
@@ -717,7 +699,7 @@
                     });
             });
 
-            $('#name, #domain').on('input', updateEventUrlPreview);
+            $('#name').on('input', updateEventUrlPreview);
             updateEventUrlPreview();
 
             const resourcesList = document.getElementById('event-resources-list');
@@ -848,27 +830,12 @@
             const submitBtn = document.getElementById('kt_event_submit');
             const isEdit = {{ isset($event->id) ? 'true' : 'false' }};
 
-            const validator = FormValidation.formValidation(form, {
+            validator = FormValidation.formValidation(form, {
                 fields: {
 
                     company_id: {
                         validators: {
                             notEmpty: {message: 'Company is required'}
-                        }
-                    },
-
-                    domain: {
-                        validators: {
-                            notEmpty: {message: 'Domain is required'},
-                            regexp: {
-                                regexp: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-                                message: 'Only lowercase letters, numbers and hyphens allowed'
-                            },
-                            stringLength: {
-                                min: 2,
-                                max: 50,
-                                message: 'Domain must be between 2 and 50 characters'
-                            }
                         }
                     },
 

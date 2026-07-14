@@ -41,7 +41,6 @@ class EventsController
         $event = $id ? Events::findOrFail($id) : new Events();
         $request->validate([
             'company_id' => ['required', 'integer', 'exists:companies,id'],
-            'domain' => ['required', 'string', 'max:50', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email'],
             'phone' => ['required', 'string', 'max:255'],
@@ -82,7 +81,7 @@ class EventsController
         $event->slug = generate_slug($request->name, 'events', $event->id);
 
         $event->company_id = $company->id;
-        $event->domain = $request->domain;
+        $event->domain = $company->slug;
         $event->name = $request->name ?? null;
         $event->email = $request->email ?? null;
         $event->phone = $request->phone ?? null;
