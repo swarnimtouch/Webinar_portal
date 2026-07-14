@@ -27,15 +27,7 @@
                             <div>{!! app('event')->description !!}</div>
                         </div>
                     @endif
-                    @if($resources->isNotEmpty())
-                        <div class="webinar-actions">
-                            <div class="action-group-right">
-                                <a href="#session-resources" class="action-btn download">
-                                    <i class="fa-solid fa-download"></i> Download Resources
-                                </a>
-                            </div>
-                        </div>
-                    @endif
+
                 </div>
                 @endif
 
