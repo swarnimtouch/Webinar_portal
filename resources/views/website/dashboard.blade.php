@@ -271,13 +271,16 @@
                 })
 
                 .listen('.hand.raised', function (data) {
-                    if (onlineUsers[data.user_id]) {
-                        onlineUsers[data.user_id].hand = data.raised;
+                    const userId = Number(data.user_id ?? data.userId);
+                    const userName = data.user_name ?? data.userName ?? onlineUsers[userId]?.name ?? 'User';
+
+                    if (onlineUsers[userId]) {
+                        onlineUsers[userId].hand = data.raised;
                     }
                     renderParticipants();
                     renderHandsRaised();
-                    if (data.user_id !== window.currentUser.id) {
-                        showHandToast(data.user_name, data.raised);
+                    if (userId !== window.currentUser.id) {
+                        showHandToast(userName, data.raised);
                     }
                 });
 

@@ -41,4 +41,13 @@ class UserRaisedHand implements ShouldBroadcast
     {
         return 'hand.raised';
     }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'user_id' => $this->userId,
+            'user_name' => $this->userName,
+            'raised' => $this->raised,
+        ];
+    }
 }
