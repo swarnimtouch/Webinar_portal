@@ -79,15 +79,7 @@ class EventsController
 
         $company = Company::findOrFail($request->integer('company_id'));
 
-        if (!$event->exists) {
-            $baseSlug = generate_slug($request->name) ?: Str::slug($request->name);
-            $slug = $baseSlug;
-            $suffix = 2;
-            while (Events::where('slug', $slug)->exists()) {
-                $slug = $baseSlug . '-' . $suffix++;
-            }
-            $event->slug = $slug;
-        }
+        $event->slug = generate_slug($request->name, 'events', $event->id);
 
         $event->company_id = $company->id;
         $event->domain = $request->domain;
