@@ -194,6 +194,14 @@
                 }
             });
 
+            echo.connector.pusher.connection.bind('connected', () => {
+                console.log('[Frontend WebSocket] Connected');
+            });
+            echo.connector.pusher.connection.bind('error', error => {
+                console.error('[Frontend WebSocket] Connection error:', error);
+            });
+            console.log('[Frontend WebSocket] Subscribing:', `webinar.${slug}.chat`);
+
             if (window.trackingEnabled) {
 
                 function attendanceBeacon(url) {
@@ -540,7 +548,8 @@
 
             echo.channel(`webinar.${slug}.chat`)
                 .listen('.message.sent', function (data) {
-                    if (data.userId === window.currentUser.id) return;
+                    console.log('[Frontend Chat] Message received:', data);
+                    if (data.senderType === 'user' && data.userId === window.currentUser.id) return;
                     $('#chatMessages .chat-empty-state').remove();
                     $('#chatMessages').append(buildMessageHtml(data));
                     scrollChatToBottom(false);
@@ -638,6 +647,7 @@
             });
             echo.channel(`webinar.${slug}.poll`)
                 .listen('.poll.updated', function (data) {
+                    console.log('[Frontend Poll] Update received:', data);
                     renderPoll(data.poll, null);
                     loadPoll();
                 });

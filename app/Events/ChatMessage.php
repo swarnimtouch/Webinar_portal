@@ -23,7 +23,8 @@ class ChatMessage implements ShouldBroadcastNow
         public int    $userId,
         public string $timestamp,
         public string $slug,
-        public ?int   $id = null
+        public ?int   $id = null,
+        public string $senderType = 'user'
     )
     {
     }

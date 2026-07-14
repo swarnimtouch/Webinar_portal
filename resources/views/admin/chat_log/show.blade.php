@@ -403,7 +403,7 @@
         }
 
         function buildMessageHtml(data) {
-            const isMine = data.userId === ADMIN_ID;
+            const isMine = data.senderType === 'admin' && data.userId === ADMIN_ID;
             const color = colorFromName(data.userName);
             const firstLetter = data.userName.charAt(0).toUpperCase();
             const message = escapeHtml(data.message);

@@ -9,6 +9,7 @@ use App\Models\Thread;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ChatController
 {
@@ -69,14 +70,22 @@ class ChatController
             'message' => $request->message,
         ]);
 
-        broadcast(new ChatMessage(
+        $broadcastEvent = new ChatMessage(
             message: $msg->message,
             userName: Auth::guard('web')->user()->name,
             userId: Auth::guard('web')->id(),
             timestamp: $msg->created_at->format('H:i'),
             slug: $slug,
-            id: $msg->id
-        ))->toOthers();
+            id: $msg->id,
+            senderType: 'user'
+        );
+
+        Log::info('Chat broadcast dispatching', [
+            'channel' => "webinar.{$slug}.chat",
+            'event' => $broadcastEvent->broadcastAs(),
+            'payload' => get_object_vars($broadcastEvent),
+        ]);
+        broadcast($broadcastEvent)->toOthers();
 
         return response()->json([
             'status' => true,

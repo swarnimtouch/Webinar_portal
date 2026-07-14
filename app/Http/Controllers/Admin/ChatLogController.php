@@ -9,6 +9,7 @@ use App\Models\Messages;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ChatLogController extends Controller
 {
@@ -280,14 +281,22 @@ class ChatLogController extends Controller
 
         $formattedDate = $newMessage->created_at->format('H:i A');
 
-        broadcast(new ChatMessage(
+        $broadcastEvent = new ChatMessage(
             message: $newMessage->message,
             userName: $currentUser->name,
             userId: $currentUser->id,
             timestamp: $formattedDate,
             slug: $event->slug,
-            id: $newMessage->id
-        ));
+            id: $newMessage->id,
+            senderType: 'admin'
+        );
+
+        Log::info('Chat broadcast dispatching', [
+            'channel' => "webinar.{$event->slug}.chat",
+            'event' => $broadcastEvent->broadcastAs(),
+            'payload' => get_object_vars($broadcastEvent),
+        ]);
+        broadcast($broadcastEvent);
 
         return response()->json([
             'success' => true,
