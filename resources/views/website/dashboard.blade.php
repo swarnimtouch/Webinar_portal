@@ -143,7 +143,7 @@
         };
         window.csrfToken = "{{ csrf_token() }}";
         window.eventSlug = "{{ request()->route('slug') }}";
-        window.trackingEnabled = {{ $is_log_attendance }};
+        window.trackingEnabled = @json((bool) $is_log_attendance);
         window.chatMessagesUrl = "{{ event_route('chat.messages') }}";
         window.chatSendUrl = "{{ event_route('chat.send') }}";
         window.raiseHandUrl = "{{ event_route('raise.hand') }}";
@@ -175,33 +175,8 @@
 
             const slug = window.eventSlug;
 
-            const echo = new Echo({
-                broadcaster: 'reverb',
-                key: window.reverbKey,
-                wsHost: window.reverbHost,
-                wsPort: window.reverbPort,
-                wssPort: window.reverbPort,
-                wsPath: window.reverbPath,
-                forceTLS: window.reverbScheme === 'https',
-                enabledTransports: ['ws', 'wss'],
-                authEndpoint: '/broadcasting/auth',
-                auth: {
-                    headers: {
-                        'X-CSRF-TOKEN': window.csrfToken,
-                        'Accept': 'application/json',
-                        'X-Event-Slug': slug,
-                    }
-                }
-            });
-
-            echo.connector.pusher.connection.bind('connected', () => {
-                console.log('[Frontend WebSocket] Connected');
-            });
-            echo.connector.pusher.connection.bind('error', error => {
-                console.error('[Frontend WebSocket] Connection error:', error);
-            });
-            console.log('[Frontend WebSocket] Subscribing:', `webinar.${slug}.chat`);
-
+            // Attendance must not depend on Reverb/Echo. If the websocket client
+            // fails to initialise, users should still be marked as attending.
             if (window.trackingEnabled) {
 
                 function attendanceBeacon(url) {
@@ -240,6 +215,25 @@
                 });
             }
 
+            const echo = new Echo({
+                broadcaster: 'reverb',
+                key: window.reverbKey,
+                wsHost: window.reverbHost,
+                wsPort: window.reverbPort,
+                wssPort: window.reverbPort,
+                wsPath: window.reverbPath,
+                forceTLS: window.reverbScheme === 'https',
+                enabledTransports: ['ws', 'wss'],
+                authEndpoint: '/broadcasting/auth',
+                auth: {
+                    headers: {
+                        'X-CSRF-TOKEN': window.csrfToken,
+                        'Accept': 'application/json',
+                        'X-Event-Slug': slug,
+                    }
+                }
+            });
+
             const onlineUsers = {};
             let myHandRaised = false;
 
@@ -274,9 +268,6 @@
                         renderParticipants();
                     }
 
-                    if (user.id === window.currentUser.id && window.trackingEnabled) {
-                        attendanceLeave();
-                    }
                 })
 
                 .listen('.hand.raised', function (data) {
@@ -548,7 +539,6 @@
 
             echo.channel(`webinar.${slug}.chat`)
                 .listen('.message.sent', function (data) {
-                    console.log('[Frontend Chat] Message received:', data);
                     if (data.senderType === 'user' && data.userId === window.currentUser.id) return;
                     $('#chatMessages .chat-empty-state').remove();
                     $('#chatMessages').append(buildMessageHtml(data));
@@ -647,7 +637,6 @@
             });
             echo.channel(`webinar.${slug}.poll`)
                 .listen('.poll.updated', function (data) {
-                    console.log('[Frontend Poll] Update received:', data);
                     renderPoll(data.poll, null);
                     loadPoll();
                 });

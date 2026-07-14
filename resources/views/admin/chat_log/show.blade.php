@@ -322,8 +322,6 @@
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 
     <script>
-        console.log(document.querySelectorAll('[data-participant="true"]').length);
-
         const THREAD_ID = {{ $thread->id }};
         const SEND_URL = "{{ route('admin.chat_log.send', $thread->id) }}";
         const CSRF_TOKEN = "{{ csrf_token() }}";
@@ -490,19 +488,8 @@
             enabledTransports: ['ws', 'wss'],
         });
 
-        adminEcho.connector.pusher.connection.bind('connected', () => {
-            console.log('[Admin WebSocket] Connected');
-        });
-        adminEcho.connector.pusher.connection.bind('error', error => {
-            console.error('[Admin WebSocket] Connection error:', error);
-        });
-        console.log('[Admin WebSocket] Subscribing:', 'webinar.' + EVENT_SLUG + '.chat');
-
         adminEcho.channel('webinar.' + EVENT_SLUG + '.chat')
             .listen('.message.sent', function (data) {
-                console.log('[Admin Chat] Message received:', data);
-
-
                 const msgDate = data.sentAt ? new Date(data.sentAt) : new Date();
                 const msgDateStr = toDateStr(msgDate);
 

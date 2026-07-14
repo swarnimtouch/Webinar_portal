@@ -178,7 +178,7 @@
                                data-is-required="1"/>
                     </div>
                 @endforeach
-                <button type="button" class="btn btn-gold full-width" id="btnLogin">Login</button>
+                <button type="submit" class="btn btn-gold full-width" id="btnLogin">Login</button>
             </form>
         </div>
     </div>
@@ -429,7 +429,8 @@
                     }
                 });
 
-                $("#btnLogin").on("click", function () {
+                loginForm.on("submit", function (event) {
+                    event.preventDefault();
 
                     if (!loginForm.valid()) return;
 
