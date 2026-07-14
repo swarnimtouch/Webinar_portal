@@ -69,7 +69,7 @@
                                                placeholder="Enter Domain"/>
                                         <div
                                             class="position-absolute translate-middle-y top-50 end-0 me-5 text-muted fw-bold">
-                                            .doctorly.com
+                                            .{{ config('app.event_base_domain', 'doctorly.in') }}
                                         </div>
                                     </div>
                                     <div class="text-muted fs-7 mt-2">Use lowercase letters, numbers and hyphens only.</div>
@@ -603,6 +603,9 @@
                     return;
                 }
 
+                if (event.params.data.slug) {
+                    $('#domain').val(event.params.data.slug);
+                }
                 updateEventUrlPreview();
             }).on('select2:clear', function () {
                 updateEventUrlPreview();
@@ -645,6 +648,7 @@
                         const option = new Option(company.name, company.id, true, true);
                         option.dataset.slug = company.slug;
                         companySelect.append(option).trigger('change');
+                        $('#domain').val(company.slug);
                         bootstrap.Modal.getOrCreateInstance(document.getElementById('addCompanyModal')).hide();
                         updateEventUrlPreview();
                         toastr.success('Company added successfully.');

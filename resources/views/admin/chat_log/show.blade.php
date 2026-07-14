@@ -331,9 +331,9 @@
         const ADMIN_NAME = "{{ addslashes(auth()->user()->name) }}";
         const EVENT_SLUG = "{{ $thread->event->slug ?? '' }}";
         window.reverbKey = "{{ config('broadcasting.connections.reverb.key') }}";
-        window.reverbHost = "{{ config('broadcasting.connections.reverb.options.host', request()->getHost()) }}";
-        window.reverbPort = {{ config('broadcasting.connections.reverb.options.port', 8080) }};
-        window.reverbScheme = "{{ config('broadcasting.connections.reverb.options.scheme', 'http') }}";
+        window.reverbHost = @json(config('broadcasting.connections.reverb.browser.host') ?: request()->getHost());
+        window.reverbPort = {{ (int) (config('broadcasting.connections.reverb.browser.port') ?: (request()->isSecure() ? 443 : 80)) }};
+        window.reverbScheme = @json(config('broadcasting.connections.reverb.browser.scheme') ?: (request()->isSecure() ? 'https' : 'http'));
         const msgInput = document.getElementById('admin_message_input');
         const sendBtn = document.getElementById('admin_send_btn');
         const broadcastBox = document.getElementById('broadcast_messages_container');

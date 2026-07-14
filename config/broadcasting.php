@@ -41,6 +41,13 @@ return [
                 'scheme' => env('REVERB_SCHEME', 'https'),
                 'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
             ],
+            // Public WebSocket endpoint used by visitors' browsers. Keep the
+            // server-side REVERB_HOST free to point at the local Reverb process.
+            'browser' => [
+                'host' => env('REVERB_BROWSER_HOST'),
+                'port' => env('REVERB_BROWSER_PORT'),
+                'scheme' => env('REVERB_BROWSER_SCHEME'),
+            ],
             'client_options' => [
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
             ],

@@ -143,6 +143,7 @@ class DashboardController
     public function getPoll()
     {
         $poll = Poll::where('status', 'active')
+            ->CurrentEvent()
             ->withCount('votes')
             ->with(['poll_answers' => function ($query) {
                 $query->withCount('user_voted');

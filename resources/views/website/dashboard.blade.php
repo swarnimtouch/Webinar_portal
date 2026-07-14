@@ -133,9 +133,9 @@
 
     <script>
         window.reverbKey = "{{ config('broadcasting.connections.reverb.key') }}";
-        window.reverbHost = "{{ config('broadcasting.connections.reverb.options.host', request()->getHost()) }}";
-        window.reverbPort = {{ config('broadcasting.connections.reverb.options.port', 8080) }};
-        window.reverbScheme = "{{ config('broadcasting.connections.reverb.options.scheme', 'http') }}";
+        window.reverbHost = @json(config('broadcasting.connections.reverb.browser.host') ?: request()->getHost());
+        window.reverbPort = {{ (int) (config('broadcasting.connections.reverb.browser.port') ?: (request()->isSecure() ? 443 : 80)) }};
+        window.reverbScheme = @json(config('broadcasting.connections.reverb.browser.scheme') ?: (request()->isSecure() ? 'https' : 'http'));
         window.currentUser = {
             id: {{ auth()->guard('web')->id() ?? 'null' }},
             name: "{{ auth()->guard('web')->user()->name ?? 'Guest' }}"
@@ -427,8 +427,8 @@
             </div>`;
             }
 
-            function loadChatMessages() {
-                $('#chatSkeleton').show();
+            function loadChatMessages(silent = false) {
+                if (!silent) $('#chatSkeleton').show();
                 $.get(window.chatMessagesUrl, function (res) {
                     $('#chatSkeleton').hide();
                     const $box = $('#chatMessages');
@@ -622,6 +622,15 @@
                 });
 
             loadPoll();
+
+            // Keep chat and polls usable when the WebSocket proxy is temporarily
+            // unavailable. Reverb still provides instant updates when connected.
+            window.setInterval(function () {
+                if (!document.hidden) {
+                    loadChatMessages(true);
+                    loadPoll();
+                }
+            }, 5000);
 
             let selectedRating = 0;
             let feedbackSubmitted = false;
