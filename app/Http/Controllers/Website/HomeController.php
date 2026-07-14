@@ -151,11 +151,12 @@ class HomeController
 
         $data = $request->except('_token');
 
-        if (!$fields->contains('field_name', 'country')) {
-            $data['country'] = 'India';
-        }
-        if (!$fields->contains('field_name', 'state')) {
-            $data['state'] = 'Gujarat';
+        // India/Gujarat are only dependency defaults used to populate child
+        // dropdowns. A location value is persisted only when that field is active.
+        foreach (['country', 'state', 'city'] as $locationField) {
+            if (!$fields->contains('field_name', $locationField)) {
+                unset($data[$locationField]);
+            }
         }
 
         if (isset($data['mobile_number'])) {

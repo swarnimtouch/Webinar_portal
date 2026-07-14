@@ -139,6 +139,15 @@ class UserController extends Controller
 
         $data = $request->except(['_token', '_method', 'avatar_removed', 'has_existing_avatar']);
 
+        $activeFieldNames = $activeFields->pluck('field_name');
+        foreach (['country', 'state', 'city'] as $locationField) {
+            if (!$activeFieldNames->contains($locationField)) {
+                // Also clear an old value when an existing user is moved to an
+                // event where this location field is disabled.
+                $data[$locationField] = null;
+            }
+        }
+
         if (isset($data['mobile_number'])) {
             $data['mobile'] = $data['mobile_number'];
             unset($data['mobile_number']);

@@ -258,12 +258,10 @@
 
 @if(!$has_country && ($has_state || $has_city))
     @php $defaultCountry = \Illuminate\Support\Facades\DB::table('countries')->where('name','India')->first(); @endphp
-    <input type="hidden" name="country" id="country_hidden"
-           value="India" data-id="{{ $defaultCountry->id ?? '' }}">
+    <input type="hidden" id="country_hidden" data-id="{{ $defaultCountry->id ?? '' }}">
 @endif
 
 @if(!$has_state && $has_city)
     @php $defaultState = \Illuminate\Support\Facades\DB::table('states')->where('name','Gujarat')->first(); @endphp
-    <input type="hidden" name="state" id="state_hidden"
-           value="Gujarat" data-id="{{ $defaultState->id ?? '' }}">
+    <input type="hidden" id="state_hidden" data-id="{{ $defaultState->id ?? '' }}">
 @endif
