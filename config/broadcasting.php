@@ -47,6 +47,7 @@ return [
                 'host' => env('REVERB_BROWSER_HOST'),
                 'port' => env('REVERB_BROWSER_PORT'),
                 'scheme' => env('REVERB_BROWSER_SCHEME'),
+                'path' => env('REVERB_BROWSER_PATH', '/webinar-reverb'),
             ],
             'client_options' => [
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html

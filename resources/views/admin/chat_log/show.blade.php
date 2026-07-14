@@ -334,6 +334,7 @@
         window.reverbHost = @json(config('broadcasting.connections.reverb.browser.host') ?: request()->getHost());
         window.reverbPort = {{ (int) (config('broadcasting.connections.reverb.browser.port') ?: (request()->isSecure() ? 443 : 80)) }};
         window.reverbScheme = @json(config('broadcasting.connections.reverb.browser.scheme') ?: (request()->isSecure() ? 'https' : 'http'));
+        window.reverbPath = @json(config('broadcasting.connections.reverb.browser.path', '/webinar-reverb'));
         const msgInput = document.getElementById('admin_message_input');
         const sendBtn = document.getElementById('admin_send_btn');
         const broadcastBox = document.getElementById('broadcast_messages_container');
@@ -484,6 +485,7 @@
             wsHost: window.reverbHost,
             wsPort: window.reverbPort,
             wssPort: window.reverbPort,
+            wsPath: window.reverbPath,
             forceTLS: window.reverbScheme === 'https',
             enabledTransports: ['ws', 'wss'],
         });
