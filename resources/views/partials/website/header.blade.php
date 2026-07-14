@@ -6,9 +6,15 @@
                  class="site-logo-img">
         </div>
         <div class="nav-links">
-            <a href="#">About Event</a>
-            <a href="#speakers">Speakers</a>
-            <a href="#brands">Brands</a>
+            @if(isset($contents['about-us']) && filled(strip_tags((string) $contents['about-us']->content)))
+                <a href="#about-us">About Event</a>
+            @endif
+            @if(isset($speakers) && $speakers->isNotEmpty())
+                <a href="#speakers">Speakers</a>
+            @endif
+            @if(isset($brands) && $brands->isNotEmpty())
+                <a href="#brands">Brands</a>
+            @endif
         </div>
         <button class="btn btn-gold" id="openLoginModal">Login</button>
     </nav>

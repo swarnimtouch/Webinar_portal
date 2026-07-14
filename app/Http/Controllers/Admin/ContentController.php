@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Content;
+use App\Models\Events;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ContentController extends Controller
 {
@@ -36,12 +38,16 @@ class ContentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function addEditForm($id)
+    public function addEditForm($id = null)
     {
-        $content = Content::findOrFail($id);
+        $admin = auth()->user();
+        $content = $id ? Content::query()
+            ->when($admin->type === 'sub_admin', fn($q) => $q->where('event_id', $admin->event_id))
+            ->findOrFail($id) : new Content();
 
         $response = [
             'content' => $content,
+            'events' => $admin->type === 'admin' ? Events::orderBy('name')->get() : collect(),
             'title' => __('Content'),
             'breadcrumb' => breadcrumb([__('Contents') => route('admin.content'), ($id ? 'Edit' : 'Add' . ' Content') => '']),
         ];
@@ -51,17 +57,27 @@ class ContentController extends Controller
     }
 
 
-    public function save(Request $request, $id)
+    public function save(Request $request, $id = null)
     {
+        $admin = auth()->user();
+        $eventId = $admin->type === 'sub_admin' ? $admin->event_id : $request->integer('event_id');
+
         $validated = $request->validate([
+            'event_id' => $admin->type === 'admin' ? ['required', 'exists:events,id'] : ['nullable'],
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:contents,slug,' . $id,
+            'slug' => [
+                'required', 'string', 'max:255',
+                Rule::unique('contents', 'slug')->where(fn($q) => $q->where('event_id', $eventId))->ignore($id),
+            ],
             'content' => 'required|string',
         ]);
 
-        $content = Content::findOrFail($id);
+        $content = $id ? Content::query()
+            ->when($admin->type === 'sub_admin', fn($q) => $q->where('event_id', $admin->event_id))
+            ->findOrFail($id) : new Content();
 
-        $content->update($validated);
+        $validated['event_id'] = $eventId;
+        $content->fill($validated)->save();
 
         return redirect()
             ->route('admin.content')
@@ -70,7 +86,9 @@ class ContentController extends Controller
 
     public function datatable(Request $request)
     {
-        $query = Content::query();
+        $admin = auth()->user();
+        $query = Content::with('event')
+            ->when($admin->type === 'sub_admin', fn($q) => $q->where('event_id', $admin->event_id));
 
         if ($request->has('search')) {
             $search = $request->search;

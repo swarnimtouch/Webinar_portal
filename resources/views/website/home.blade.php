@@ -45,7 +45,7 @@
                                 <i class="fa-regular fa-clock"></i>
                                 <div class="info-text">
                                 <span>
-                                    {{ \Carbon\Carbon::parse(app('event')->start_time)->format('H:i') }} Onwards
+                                    {{ \Carbon\Carbon::parse(app('event')->start_time)->format('h:i A') }} Onwards
                                 </span>
                                     <small>Reporting</small>
                                 </div>
@@ -62,64 +62,67 @@
                 @endif
             </div>
 
+            @if(isset($contents['about-us']) && filled(strip_tags((string) $contents['about-us']->content)))
             <div class="content-grid">
-                <div class="about-section">
-                    <h3>{!! $contents['about-us']->title ?? 'About Us' !!}</h3>
-                    <p>{!! $contents['about-us']->content ?? '' !!}</p>
-                </div>
-
-                <div class="sidebar">
-                    <div class="sidebar-card organizer-card-layout">
-                        <div class="org-top-row">
-                            <span class="org-label">Powered By</span>
-                            <img src="{{asset('website/images/organizer-logo.png')}}"
-                                 alt="CodeMasters Logo"
-                                 class="org-logo-small"/>
-                        </div>
-
-                        <div class="org-divider"></div>
-
-                        <div class="org-name-row">
-                            <h4>CodeMasters Foundation</h4>
-                        </div>
-
-                        <div class="org-divider"></div>
-
-                        <div class="org-social-row">
-                            <span class="org-label">Join Community</span>
-                            <div class="org-social-icons">
-                                <a href="#" class="social-btn youtube"><i class="fa-brands fa-youtube"></i></a>
-                                <a href="#" class="social-btn linkedin"><i class="fa-brands fa-linkedin-in"></i></a>
-                                <a href="#" class="social-btn instagram"><i class="fa-brands fa-instagram"></i></a>
-                                <a href="#" class="social-btn facebook"><i class="fa-brands fa-github"></i></a>
-                            </div>
-                        </div>
+                    <div class="about-section" id="about-us">
+                        <h3>{!! $contents['about-us']->title !!}</h3>
+                        <div>{!! $contents['about-us']->content !!}</div>
                     </div>
 
-                    <div class="sidebar-card venue-card-layout">
-                        <div class="venue-top-row">
-                            <span class="venue-label">Tech Hub Location</span>
-                        </div>
+{{--                <div class="sidebar">--}}
+{{--                    <div class="sidebar-card organizer-card-layout">--}}
+{{--                        <div class="org-top-row">--}}
+{{--                            <span class="org-label">Powered By</span>--}}
+{{--                            <img src="{{asset('website/images/organizer-logo.png')}}"--}}
+{{--                                 alt="CodeMasters Logo"--}}
+{{--                                 class="org-logo-small"/>--}}
+{{--                        </div>--}}
 
-                        <div class="venue-divider"></div>
+{{--                        <div class="org-divider"></div>--}}
 
-                        <div class="venue-address-row">
-                            <i class="fa-solid fa-location-dot"></i>
-                            <p>Gujarat Tech Park, InfoCity, Gandhinagar, Gujarat</p>
-                        </div>
+{{--                        <div class="org-name-row">--}}
+{{--                            <h4>CodeMasters Foundation</h4>--}}
+{{--                        </div>--}}
 
-                        <div class="venue-map-container">
-                            <div class="map-frame">
-                                <iframe
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3667.3187229380155!2d72.63344267408078!3d23.19505250987198!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395c2a39d06fe04f%3A0xa5c52a12a1286368!2sInfocity%20-%20The%20Global%20IT%20Park%20in%20Gujarat!5e0!3m2!1sen!2sin!4v1766053887093!5m2!1sen!2sin"
-                                    width="100%" height="100%" allowfullscreen=""
-                                    loading="lazy"></iframe>
-                            </div>
-                            <button class="btn btn-gold full-width">Locate Venue</button>
-                        </div>
-                    </div>
-                </div>
+{{--                        <div class="org-divider"></div>--}}
+
+{{--                        <div class="org-social-row">--}}
+{{--                            <span class="org-label">Join Community</span>--}}
+{{--                            <div class="org-social-icons">--}}
+{{--                                <a href="#" class="social-btn youtube"><i class="fa-brands fa-youtube"></i></a>--}}
+{{--                                <a href="#" class="social-btn linkedin"><i class="fa-brands fa-linkedin-in"></i></a>--}}
+{{--                                <a href="#" class="social-btn instagram"><i class="fa-brands fa-instagram"></i></a>--}}
+{{--                                <a href="#" class="social-btn facebook"><i class="fa-brands fa-github"></i></a>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+
+{{--                    <div class="sidebar-card venue-card-layout">--}}
+{{--                        <div class="venue-top-row">--}}
+{{--                            <span class="venue-label">Tech Hub Location</span>--}}
+{{--                        </div>--}}
+
+{{--                        <div class="venue-divider"></div>--}}
+
+{{--                        <div class="venue-address-row">--}}
+{{--                            <i class="fa-solid fa-location-dot"></i>--}}
+{{--                            <p>Gujarat Tech Park, InfoCity, Gandhinagar, Gujarat</p>--}}
+{{--                        </div>--}}
+
+{{--                        <div class="venue-map-container">--}}
+{{--                            <div class="map-frame">--}}
+{{--                                <iframe--}}
+{{--                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3667.3187229380155!2d72.63344267408078!3d23.19505250987198!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395c2a39d06fe04f%3A0xa5c52a12a1286368!2sInfocity%20-%20The%20Global%20IT%20Park%20in%20Gujarat!5e0!3m2!1sen!2sin!4v1766053887093!5m2!1sen!2sin"--}}
+{{--                                    width="100%" height="100%" allowfullscreen=""--}}
+{{--                                    loading="lazy"></iframe>--}}
+{{--                            </div>--}}
+{{--                            <button class="btn btn-gold full-width">Locate Venue</button>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
             </div>
+            @endif
+
             @if($speakers->count()>0)
                 <div class="speakers-section" id="speakers">
                     <h3>Speakers</h3>

@@ -35,13 +35,27 @@
 
                     <div id="kt_content_wrapper">
                         <form method="POST"
-                              action="{{ route('admin.content.save', $content->id) }}"
+                              action="{{ route('admin.content.save', $content->exists ? $content->id : null) }}"
                               id="kt_content_form">
 
                             @csrf
-                            @method('PUT')
+                            @if($content->exists) @method('PUT') @endif
 
                             <div class="card-body border-top p-9">
+
+                                @if(auth()->user()->type === 'admin')
+                                    <div class="row mb-6">
+                                        <label class="col-lg-4 col-form-label required fw-bold fs-6">Event</label>
+                                        <div class="col-lg-8">
+                                            <select name="event_id" class="form-select form-select-lg form-select-solid" required>
+                                                <option value="">Select Event</option>
+                                                @foreach($events as $event)
+                                                    <option value="{{ $event->id }}" @selected((string) old('event_id', $content->event_id) === (string) $event->id)>{{ $event->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <!-- Title -->
                                 <div class="row mb-6">
@@ -49,7 +63,7 @@
                                     <div class="col-lg-8">
                                         <input type="text"
                                                name="title"
-                                               value="{{ old('title', $content->title) }}"
+                                               value="{{ old('title', $content->title ?? 'About Us') }}"
                                                class="form-control form-control-lg form-control-solid @error('title') is-invalid @enderror"
                                                placeholder="Enter title"/>
                                         @error('title')
@@ -64,7 +78,7 @@
                                     <div class="col-lg-8">
                                         <input type="text"
                                                name="slug"
-                                               value="{{ old('slug', $content->slug) }}"
+                                               value="{{ old('slug', $content->slug ?? 'about-us') }}"
                                                class="form-control form-control-lg form-control-solid @error('slug') is-invalid @enderror"
                                                placeholder="Enter slug (e.g., about-us)"/>
                                         <div class="form-text">URL-friendly version (lowercase, hyphens only)</div>
@@ -82,7 +96,7 @@
                                               rows="10"
                                               id="editor"
                                               class="form-control form-control-lg form-control-solid @error('content') is-invalid @enderror"
-                                              placeholder="Enter content">{{ old('content', $content->content) }}</textarea>
+                                              placeholder="Enter content">{{ old('content', $content->content ?? '') }}</textarea>
                                         @error('content')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -158,6 +172,10 @@
                     submitBtn.addEventListener('click', function (e) {
                         e.preventDefault();
 
+                        if (editorInstance) {
+                            document.querySelector('#editor').value = editorInstance.getData();
+                        }
+
                         validator.validate().then(function (status) {
                             if (status === 'Valid') {
                                 submitBtn.setAttribute('data-kt-indicator', 'on');
@@ -192,6 +210,9 @@
                     .create(document.querySelector('#editor'))
                     .then(editor => {
                         editorInstance = editor;
+                        editor.model.document.on('change:data', () => {
+                            document.querySelector('#editor').value = editor.getData();
+                        });
                     })
                     .catch(error => {
                         console.error(error);

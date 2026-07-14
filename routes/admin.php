@@ -163,7 +163,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::controller(ContentController::class)->group(function () {
         Route::get('content', 'index')->name('content');
         Route::get('content/add-edit/{id?}', 'addEditForm')->name('content.add_edit_form');
-        Route::put('content/save/{id}', 'save')->name('content.save');
+        Route::match(['POST', 'PUT'], 'content/save/{id?}', 'save')->name('content.save');
         Route::get('content/datatable', 'datatable')->name('content.datatable');
     });
 

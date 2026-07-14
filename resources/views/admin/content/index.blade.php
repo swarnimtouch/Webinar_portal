@@ -38,6 +38,9 @@
                             <!--end::Search-->
                         </div>
                         <!--begin::Card title-->
+                        <div class="card-toolbar">
+                            <a href="{{ route('admin.content.add_edit_form') }}" class="btn btn-primary">Add Content</a>
+                        </div>
                     </div>
                     <!--end::Card header-->
                     <!--begin::Card body-->

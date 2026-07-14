@@ -15,9 +15,8 @@
         <div class="footer-section links-section">
             <h3>Quick Links</h3>
             <ul>
-                <li><a href="#">Hackathon Rules</a></li>
                 <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Code of Conduct</a></li>
+                <li><a href="#">Content</a></li>
             </ul>
         </div>
 

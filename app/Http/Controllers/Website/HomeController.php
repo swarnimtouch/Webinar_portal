@@ -37,7 +37,7 @@ class HomeController
             'banners' => Banner::Active()->where('event_id', $event->id)->get()->pluck('slider_data'),
             'register_fields' => $fields,
             'login_fields' => $fields->where('login_with', 1)->values(),
-            'contents' => Content::all()->keyBy('slug'),
+            'contents' => Content::where('event_id', $event->id)->get()->keyBy('slug'),
             'speakers' => Speakers::where('event_id', $event->id)->Active()->get(),
             'brands' => Brands::where('event_id', $event->id)->Active()->get(),
             'countries' => Country::select('id', 'name')->orderBy('name')->get(),

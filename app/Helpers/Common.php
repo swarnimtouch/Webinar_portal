@@ -317,13 +317,20 @@ function getModules($user_type = 'admin'): array
                         'name' => 'Brands',
                         'icon' => 'bi bi-tags',
                         'all_routes' => ['admin.brand', 'admin.brand.add_edit_form']
+                    ],
+                    [
+                        'route' => route('admin.content'),
+                        'name' => 'Content',
+                        'icon' => 'bi bi-file-text',
+                        'all_routes' => ['admin.content', 'admin.content.add_edit_form']
                     ]
                 ],
                 'all_routes' => [
                     'admin.event_setting',
                     'admin.banners', 'admin.banner.add_edit_form',
                     'admin.speakers', 'admin.speaker.add_edit_form',
-                    'admin.brand', 'admin.brand.add_edit_form'
+                    'admin.brand', 'admin.brand.add_edit_form',
+                    'admin.content', 'admin.content.add_edit_form'
                 ]
             ],
 
