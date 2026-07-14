@@ -28,12 +28,71 @@
                                 <!--begin::Filter-->
 
                                 <!--begin::Menu-->
-                                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true"
-                                     id="filter-menu">
+                                @if(auth()->user()->type === 'admin')
 
-                                    <div id="dynamic-filters"></div>
+                                    <!--begin::Filter-->
+                                    <button type="button" class="btn btn-light-primary me-3"
+                                            data-kt-menu-trigger="click"
+                                            data-kt-menu-placement="bottom-end">
+                                    <span class="svg-icon svg-icon-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                             viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M19.0759 3H4.72777C3.95892 3 3.47768 3.83148 3.86067 4.49814L8.56967 12.6949C9.17923 13.7559 9.5 14.9582 9.5 16.1819V19.5072C9.5 20.2189 10.2223 20.7028 10.8805 20.432L13.8805 19.1977C14.2553 19.0435 14.5 18.6783 14.5 18.273V13.8372C14.5 12.8089 14.8171 11.8056 15.408 10.964L19.8943 4.57465C20.3596 3.912 19.8856 3 19.0759 3Z"
+                                                fill="black"/>
+                                        </svg>
+                                    </span>
+                                        Filter
+                                    </button>
+                                    <!--begin::Filter Menu-->
+                                    <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                                        <!--begin::Header-->
+                                        <div class="px-7 py-5">
+                                            <div class="fs-5 text-dark fw-bolder">Filter Options</div>
+                                        </div>
+                                        <!--end::Header-->
+                                        <div class="separator border-gray-200"></div>
+                                        <!--begin::Content-->
+                                        <div class="px-7 py-5" data-kt-chat-message-table-filter="form">
+                                            <!--begin::Input group-->
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-bold">Event:</label>
+                                                <select class="form-select form-select-solid fw-bolder"
+                                                        data-kt-select2="true"
+                                                        data-placeholder="Select Option"
+                                                        data-allow-clear="true"
+                                                        data-kt-user-table-filter="event"
+                                                        data-hide-search="true">
 
-                                </div>
+                                                    <option></option>
+                                                    @foreach($download ?? [] as $downloads)
+                                                        <option
+                                                            value="{{ $downloads->id }}">{{ $downloads->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <!--end::Input group-->
+                                            <!--begin::Actions-->
+                                            <div class="d-flex justify-content-end">
+                                                <button type="reset"
+                                                        class="btn btn-light btn-active-light-primary fw-bold me-2 px-6"
+                                                        data-kt-menu-dismiss="true"
+                                                        data-kt-user-table-filter="reset">
+                                                    Reset
+                                                </button>
+                                                <button type="submit"
+                                                        class="btn btn-primary fw-bold px-6"
+                                                        data-kt-menu-dismiss="true"
+                                                        data-kt-user-table-filter="filter">
+                                                    Apply
+                                                </button>
+                                            </div>
+                                            <!--end::Actions-->
+                                        </div>
+                                        <!--end::Content-->
+                                    </div>
+                                    <!--end::Filter Menu-->
+                                @endif
                                 <!--end::Menu-->
                                 <!--end::Filter-->
 
@@ -125,30 +184,31 @@
                     url: '{{ route("admin.certificate_log.datatable") }}',
                     data: d => {
                         d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
+                        if (isAdmin) {
+                            const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                            if (eventEl) d.event = eventEl.value;
+                        }
                     }
                 },
                 order: [[3, 'desc']],
                 columns: [
-
                     {
                         data: 'id',
                         orderable: false,
                         render: id => `
-                            <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
-                            </div>`
+                        <div class="form-check form-check-sm form-check-custom form-check-solid">
+                            <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
+                        </div>`
                     },
                     ...(isAdmin ? [{data: 'event'}] : []),
-
                     {
                         data: 'user_name',
                         render: (name, type, row) => `
-                            <div class="d-flex flex-column">
-                                <span class="fw-bold text-gray-800">${name}</span>
-                                <small class="text-muted">${row.user_email}</small>
-                            </div>`
+                        <div class="d-flex flex-column">
+                            <span class="fw-bold text-gray-800">${name}</span>
+                            <small class="text-muted">${row.user_email}</small>
+                        </div>`
                     },
-
                     {
                         data: 'certificate_name',
                         render: name => `<span class="badge badge-light-primary">${name}</span>`
@@ -156,42 +216,33 @@
                     {
                         data: 'file_path',
                         orderable: false,
-                        render: function (path) {
-
-                            if (!path) {
-                                return `<span class="badge badge-light-warning">No File</span>`;
-                            }
-
-                            let fullUrl = `/storage/${path}`;
-
-                            return `
-                            <a href="${fullUrl}" target="_blank"
-                               class="btn btn-sm btn-light-success">
-                                <i class="bi bi-download me-1"></i>Download
-                            </a>`;
+                        render: path => {
+                            if (!path) return `<span class="badge badge-light-warning">No File</span>`;
+                            return `<a href="/storage/${path}" target="_blank" class="btn btn-sm btn-light-success">
+                            <i class="bi bi-download me-1"></i>Download
+                        </a>`;
                         }
                     },
                     {data: 'downloaded_at'},
-
                     {
                         data: 'id',
                         orderable: false,
                         render: id => `
-                            <div>
-                                <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
-                                    Actions
-                                    <span class="svg-icon svg-icon-5 m-0">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
-                                        </svg>
-                                    </span>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3 download-delete" data-id="${id}">Delete</a>
-                                    </div>
+                        <div>
+                            <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
+                                Actions
+                                <span class="svg-icon svg-icon-5 m-0">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
+                                    </svg>
+                                </span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3 download-delete" data-id="${id}">Delete</a>
                                 </div>
-                            </div>`
+                            </div>
+                        </div>`
                     }
                 ]
             });
@@ -255,66 +306,35 @@
                             return res.json();
                         })
                         .then(data => {
-                            toastr.success(data.message || "Selected certificates deleted successfully");
-
-
+                            toastr.success(data.message || "Selected records deleted successfully");
                             downloadTable.draw(false);
                             toggleBulkToolbar();
                         })
-                        .catch(err => {
-                            toastr.error(err.message || "Failed to delete certificates");
-                        });
+                        .catch(() => toastr.error("Failed to delete records"));
                 });
             });
 
-        var handleExport = function () {
-            const exportBtn = document.getElementById('export-btn');
+        document.querySelector('[data-kt-user-table-filter="filter"]')
+            ?.addEventListener('click', () => downloadTable.draw());
 
-            if (exportBtn) {
-                exportBtn.addEventListener('click', function () {
-                    const originalHTML = exportBtn.innerHTML;
-                    exportBtn.disabled = true;
-                    exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
+        document.querySelector('[data-kt-user-table-filter="reset"]')
+            ?.addEventListener('click', () => {
+                document.querySelector('[data-kt-user-table-filter="search"]').value = '';
 
-                    const searchValue = document.querySelector('[data-kt-user-table-filter="search"]').value;
+                if (isAdmin) {
+                    const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                    if (eventEl) {
+                        eventEl.value = '';
+                        $(eventEl).val(null).trigger('change');
+                    }
+                }
 
-                    const url = new URL('{{ route("admin.certificate_log.export") }}', window.location.origin);
-                    if (searchValue) url.searchParams.set('search', searchValue);
+                downloadTable.draw();
+            });
 
-                    fetch(url.toString(), {
-                        method: 'GET',
-                        headers: {'X-Requested-With': 'XMLHttpRequest'}
-                    })
-                        .then(res => {
-                            if (!res.ok) throw new Error('Export failed');
-                            return res.blob();
-                        })
-                        .then(blob => {
-                            const link = document.createElement('a');
-                            link.href = window.URL.createObjectURL(blob);
-                            link.setAttribute('download', 'certificate_downloads_export_' + new Date().toISOString().slice(0, 10) + '.csv');
-                            link.style.visibility = 'hidden';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
+        document.querySelector('[data-kt-user-table-filter="search"]')
+            .addEventListener('keyup', () => downloadTable.draw());
 
-                            exportBtn.disabled = false;
-                            exportBtn.innerHTML = originalHTML;
-
-                            toastr.success('Certificate downloads exported successfully!');
-
-                        })
-                        .catch(() => {
-                            exportBtn.disabled = false;
-                            exportBtn.innerHTML = originalHTML;
-                            toastr.error('Export failed. Please try again.');
-                        });
-                });
-            }
-        };
-
-
-        handleExport();
         document.addEventListener('click', e => {
             if (!e.target.classList.contains('download-delete')) return;
 
@@ -333,7 +353,7 @@
                     url: '{{ route("admin.certificate_log.delete", ":id") }}'.replace(':id', id),
                     method: 'DELETE',
                     data: {_token: '{{ csrf_token() }}'},
-                    success: (data) => {
+                    success: data => {
                         toastr.success(data.message);
                         downloadTable.draw(false);
                     },
@@ -342,8 +362,50 @@
             });
         });
 
-        document.querySelector('[data-kt-user-table-filter="search"]')
-            .addEventListener('keyup', () => downloadTable.draw());
+        var handleExport = function () {
+            const exportBtn = document.getElementById('export-btn');
+            if (!exportBtn) return;
+
+            exportBtn.addEventListener('click', function () {
+                const originalHTML = exportBtn.innerHTML;
+                exportBtn.disabled = true;
+                exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
+
+                const url = new URL('{{ route("admin.certificate_log.export") }}', window.location.origin);
+                const searchValue = document.querySelector('[data-kt-user-table-filter="search"]').value;
+                if (searchValue) url.searchParams.set('search', searchValue);
+
+                if (isAdmin) {
+                    const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                    if (eventEl && eventEl.value) url.searchParams.set('event', eventEl.value);
+                }
+
+                fetch(url.toString(), {method: 'GET', headers: {'X-Requested-With': 'XMLHttpRequest'}})
+                    .then(res => {
+                        if (!res.ok) throw new Error();
+                        return res.blob();
+                    })
+                    .then(blob => {
+                        const link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.setAttribute('download', 'certificate_downloads_export_' + new Date().toISOString().slice(0, 10) + '.csv');
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        exportBtn.disabled = false;
+                        exportBtn.innerHTML = originalHTML;
+                        toastr.success('Certificate downloads exported successfully!');
+                    })
+                    .catch(() => {
+                        exportBtn.disabled = false;
+                        exportBtn.innerHTML = originalHTML;
+                        toastr.error('Export failed. Please try again.');
+                    });
+            });
+        };
+
+        handleExport();
 
         KTUtil.onDOMContentLoaded(() => initDownloadTable());
     </script>

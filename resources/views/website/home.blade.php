@@ -163,7 +163,7 @@
                 <span class="close-modal-btn">×</span>
                 <h2>Welcome</h2>
             </div>
-            <form method="POST" action="{{route('login',['slug'=>request()->route('slug')])}}" id="loginForm">
+            <form method="POST" action="{{ event_route('login') }}" id="loginForm">
                 @csrf
                 @foreach($login_fields as $field)
                     <div class="email-input-group">
@@ -189,9 +189,17 @@
                 <h2>Doctor Registration</h2>
                 <span class="close-modal-btn close-register-btn">×</span>
             </div>
-            <form method="POST" action="{{ route('register',['slug'=>request()->route('slug')]) }}" id="registerForm"
+            <form method="POST" action="{{ event_route('register') }}" id="registerForm"
                   autocomplete="off">
                 @csrf
+                @if(!$has_country_field && $default_country)
+                    <input type="hidden" name="country" id="country" value="{{ $default_country->name }}"
+                           data-id="{{ $default_country->id }}">
+                @endif
+                @if(!$has_state_field && $default_state)
+                    <input type="hidden" name="state" id="state" value="{{ $default_state->name }}"
+                           data-id="{{ $default_state->id }}">
+                @endif
                 <div class="row">
                     @foreach($register_fields as $field)
 
@@ -221,6 +229,14 @@
                                     $source_label = isset($input_value['label'])?$input_value['label']:'name';
                                     $source = \Illuminate\Support\Facades\DB::table($input_value['source'])->select('*')->get();
                                 }
+                            }
+
+                            if ($field->field_name === 'country') {
+                                $source = $countries;
+                            } elseif ($field->field_name === 'state') {
+                                $source = $initial_states;
+                            } elseif ($field->field_name === 'city') {
+                                $source = $initial_cities;
                             }
                         @endphp
 
@@ -260,8 +276,17 @@
                                             data-is-required="{{ $field->is_required }}">
                                             <option value="">Select {{ $field->label }}</option>
                                             @foreach($source as $key=>$value)
+                                                @php
+                                                    $optionId = $value->{$source_value ?: 'id'} ?? $value->id ?? '';
+                                                    $optionLabel = $value->{$source_label ?: 'name'} ?? $value->name ?? '';
+                                                    $selectedValue = old($field->field_name);
+                                                    if ($field->field_name === 'country' && !$selectedValue) {
+                                                        $selectedValue = $default_country?->name;
+                                                    }
+                                                @endphp
                                                 <option
-                                                    value="@php echo $value->{$source_label} @endphp">@php echo $value->{$source_label} @endphp</option>
+                                                    value="{{ $optionLabel }}" data-id="{{ $optionId }}"
+                                                    @selected($selectedValue === $optionLabel)>{{ $optionLabel }}</option>
                                             @endforeach
                                         </select>
                                         @break('select')
@@ -317,6 +342,49 @@
 
                 const loginForm = $("#loginForm");
                 const registerForm = $("#registerForm");
+                const statesUrlTemplate = @json(event_route('states', ['country' => '__COUNTRY_ID__']));
+                const citiesUrlTemplate = @json(event_route('cities', ['state' => '__STATE_ID__']));
+                const $country = registerForm.find('#country');
+                const $state = registerForm.find('#state');
+                const $city = registerForm.find('#city');
+
+                const selectedLocationId = $field => $field.is('select')
+                    ? $field.find(':selected').data('id')
+                    : $field.data('id');
+
+                const fillLocationOptions = ($select, items, label) => {
+                    if (!$select.is('select')) return;
+                    $select.empty().append(new Option(`Select ${label}`, ''));
+                    (items || []).forEach(item => {
+                        const option = new Option(item.name, item.name);
+                        option.dataset.id = item.id;
+                        $select.append(option);
+                    });
+                    $select.val('').trigger('change.select2');
+                };
+
+                $country.on('change', function () {
+                    if (!$state.is('select')) return;
+                    const countryId = selectedLocationId($country);
+                    fillLocationOptions($state, [], 'State');
+                    fillLocationOptions($city, [], 'City');
+                    if (!countryId) return;
+
+                    $.getJSON(statesUrlTemplate.replace('__COUNTRY_ID__', countryId))
+                        .done(items => fillLocationOptions($state, items, 'State'))
+                        .fail(() => toastr.error('Unable to load states.'));
+                });
+
+                $state.on('change', function () {
+                    if (!$city.is('select')) return;
+                    const stateId = selectedLocationId($state);
+                    fillLocationOptions($city, [], 'City');
+                    if (!stateId) return;
+
+                    $.getJSON(citiesUrlTemplate.replace('__STATE_ID__', stateId))
+                        .done(items => fillLocationOptions($city, items, 'City'))
+                        .fail(() => toastr.error('Unable to load cities.'));
+                });
 
                 loginForm.validate({
                     errorElement: "div",
@@ -368,7 +436,7 @@
                     const formData = new FormData(loginForm[0]);
 
                     $.ajax({
-                        url: "{{ route('login',['slug'=>request()->route('slug')]) }}",
+                        url: "{{ event_route('login') }}",
                         type: "POST",
                         data: formData,
                         processData: false,
@@ -382,7 +450,7 @@
                         success: function (res) {
                             if (res.status) {
                                 toastr.success(res.message || "Login successful");
-                                window.location.href = '{{route('dashboard',['slug'=>request()->route('slug')])}}';
+                                window.location.href = '{{ event_route('dashboard') }}';
                             } else {
                                 toastr.error(res.message || "Login failed");
                             }
@@ -461,7 +529,7 @@
                     const formData = new FormData(registerForm[0]);
 
                     $.ajax({
-                        url: "{{ route('register',['slug'=>request()->route('slug')]) }}",
+                        url: "{{ event_route('register') }}",
                         type: "POST",
                         data: formData,
                         processData: false,
@@ -475,7 +543,7 @@
                         success: function (res) {
                             if (res.status) {
                                 toastr.success(res.message || "Register successful");
-                                window.location.href = '{{route('dashboard',['slug'=>request()->route('slug')])}}';
+                                window.location.href = '{{ event_route('dashboard') }}';
                             } else {
                                 toastr.error(res.message || "Register failed");
                             }

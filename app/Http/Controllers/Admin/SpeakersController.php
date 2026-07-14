@@ -15,7 +15,8 @@ class SpeakersController extends Controller
      */
     public function index()
     {
-        return view('admin.speakers.index', ['title' => __('Speakers'), 'breadcrumb' => breadcrumb([__('Speakers') => route('admin.speakers')])]);
+        $speaker = Speakers::with('event')->get()->unique('event_id')->values();
+        return view('admin.speakers.index', ['speaker' => $speaker, 'title' => __('Speakers'), 'breadcrumb' => breadcrumb([__('Speakers') => route('admin.speakers')])]);
     }
 
     /**
@@ -144,7 +145,9 @@ class SpeakersController extends Controller
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-
+        if ($request->filled('event')) {
+            $query->where('event_id', $request->event);
+        }
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
 

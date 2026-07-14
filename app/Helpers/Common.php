@@ -3,6 +3,26 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 
+if (!function_exists('event_route')) {
+    function event_route(string $name, array $parameters = []): string
+    {
+        $company = request()->route('company');
+        $slug = request()->route('slug');
+        $routeName = $name;
+        $defaults = ['slug' => $slug];
+
+        if ($company) {
+            $prefix = str_starts_with((string) request()->route()?->getName(), 'company.live.')
+                ? 'company.live.'
+                : 'company.local.';
+            $routeName = $prefix . $name;
+            $defaults['company'] = $company;
+        }
+
+        return route($routeName, array_merge($defaults, $parameters));
+    }
+}
+
 if (!function_exists('pre')) {
     function pre($data = null, $exit = true): void
     {
@@ -125,11 +145,11 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.poll', 'admin.poll.add_edit_form']
             ],
             [
-                'route' => route('admin.user_quiz_result'),
-                'name' => 'User Quiz Answers',
+                'route' => route('admin.user_poll_result'),
+                'name' => 'User Poll Answers',
                 'icon' => 'bi-patch-question',
                 'child' => [],
-                'all_routes' => ['admin.user_quiz_result']
+                'all_routes' => ['admin.user_poll_result']
             ],
             [
                 'route' => route('admin.chat_log'),
@@ -150,7 +170,7 @@ function getModules($user_type = 'admin'): array
                 'name' => 'Certificate Log',
                 'icon' => 'bi-journal-text',
                 'child' => [],
-                'all_routes' => ['admin.certificate-log']
+                'all_routes' => ['admin.certificate_log']
             ],
             [
                 'route' => '#',
@@ -242,11 +262,11 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.poll', 'admin.poll.add_edit_form']
             ],
             [
-                'route' => route('admin.user_quiz_result'),
-                'name' => 'User Quiz Answers',
+                'route' => route('admin.user_poll_result'),
+                'name' => 'User Poll Answers',
                 'icon' => 'bi-patch-question',
                 'child' => [],
-                'all_routes' => ['admin.user_quiz_result']
+                'all_routes' => ['admin.user_poll_result']
             ],
             [
                 'route' => route('admin.chat_log'),

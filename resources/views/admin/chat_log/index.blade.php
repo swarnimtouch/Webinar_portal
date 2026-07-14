@@ -10,93 +10,93 @@
                     <div class="card-header border-0 pt-6">
                         <!--begin::Card title-->
                         <div class="card-title">
-                            <!--begin::Search-->
                             <div class="d-flex align-items-center position-relative my-1">
-                            <span class="svg-icon svg-icon-1 position-absolute ms-6">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                     viewBox="0 0 24 24" fill="none">
-                                    <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546"
-                                          height="2" rx="1" transform="rotate(45 17.0365 15.1223)"
-                                          fill="black"/>
-                                    <path
-                                        d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
-                                        fill="black"/>
-                                </svg>
-                            </span>
+                                <span class="svg-icon svg-icon-1 position-absolute ms-6">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         fill="none">
+                                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1"
+                                              transform="rotate(45 17.0365 15.1223)" fill="black"/>
+                                        <path
+                                            d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
+                                            fill="black"/>
+                                    </svg>
+                                </span>
                                 <input type="text"
-                                       data-kt-chat-message-table-filter="search"
+                                       data-kt-thread-table-filter="search"
                                        class="form-control form-control-solid w-250px ps-14"
-                                       placeholder="Search messages..."/>
+                                       placeholder="Search threads..."/>
                             </div>
-                            <!--end::Search-->
                         </div>
                         <!--end::Card title-->
 
                         <!--begin::Card toolbar-->
                         <div class="card-toolbar">
-                            <!--begin::Toolbar-->
-                            <div class="d-flex justify-content-end" data-kt-chat-message-table-toolbar="base">
+                            <div class="d-flex justify-content-end" data-kt-thread-table-toolbar="base">
+                                @if(auth()->user()->type === 'admin')
 
-                                <!--begin::Filter-->
-                                <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                                        data-kt-menu-placement="bottom-end">
-                                <span class="svg-icon svg-icon-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                         viewBox="0 0 24 24" fill="none">
-                                        <path
-                                            d="M19.0759 3H4.72777C3.95892 3 3.47768 3.83148 3.86067 4.49814L8.56967 12.6949C9.17923 13.7559 9.5 14.9582 9.5 16.1819V19.5072C9.5 20.2189 10.2223 20.7028 10.8805 20.432L13.8805 19.1977C14.2553 19.0435 14.5 18.6783 14.5 18.273V13.8372C14.5 12.8089 14.8171 11.8056 15.408 10.964L19.8943 4.57465C20.3596 3.912 19.8856 3 19.0759 3Z"
-                                            fill="black"/>
-                                    </svg>
-                                </span>
-                                    Filter
-                                </button>
-                                <!--begin::Filter Menu-->
-                                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                                    <!--begin::Header-->
-                                    <div class="px-7 py-5">
-                                        <div class="fs-5 text-dark fw-bolder">Filter Options</div>
-                                    </div>
-                                    <!--end::Header-->
-                                    <div class="separator border-gray-200"></div>
-                                    <!--begin::Content-->
-                                    <div class="px-7 py-5" data-kt-chat-message-table-filter="form">
-                                        <!--begin::Input group-->
-                                        <div class="mb-10">
-                                            <label class="form-label fs-6 fw-bold">Group:</label>
-                                            <select class="form-select form-select-solid fw-bolder"
-                                                    data-kt-select2="true"
-                                                    data-placeholder="Select group"
-                                                    data-allow-clear="true"
-                                                    data-kt-chat-message-table-filter="group"
-                                                    data-hide-search="true">
-                                                <option></option>
-                                                @foreach($groups ?? [] as $group)
-                                                    <option value="{{ $group->id }}">{{ $group->name }}</option>
-                                                @endforeach
-                                            </select>
+                                    <!--begin::Filter-->
+                                    <button type="button" class="btn btn-light-primary me-3"
+                                            data-kt-menu-trigger="click"
+                                            data-kt-menu-placement="bottom-end">
+                                    <span class="svg-icon svg-icon-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                             viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M19.0759 3H4.72777C3.95892 3 3.47768 3.83148 3.86067 4.49814L8.56967 12.6949C9.17923 13.7559 9.5 14.9582 9.5 16.1819V19.5072C9.5 20.2189 10.2223 20.7028 10.8805 20.432L13.8805 19.1977C14.2553 19.0435 14.5 18.6783 14.5 18.273V13.8372C14.5 12.8089 14.8171 11.8056 15.408 10.964L19.8943 4.57465C20.3596 3.912 19.8856 3 19.0759 3Z"
+                                                fill="black"/>
+                                        </svg>
+                                    </span>
+                                        Filter
+                                    </button>
+                                    <!--begin::Filter Menu-->
+                                    <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                                        <!--begin::Header-->
+                                        <div class="px-7 py-5">
+                                            <div class="fs-5 text-dark fw-bolder">Filter Options</div>
                                         </div>
-                                        <!--end::Input group-->
-                                        <!--begin::Actions-->
-                                        <div class="d-flex justify-content-end">
-                                            <button type="reset"
-                                                    class="btn btn-light btn-active-light-primary fw-bold me-2 px-6"
-                                                    data-kt-menu-dismiss="true"
-                                                    data-kt-chat-message-table-filter="reset">
-                                                Reset
-                                            </button>
-                                            <button type="submit"
-                                                    class="btn btn-primary fw-bold px-6"
-                                                    data-kt-menu-dismiss="true"
-                                                    data-kt-chat-message-table-filter="filter">
-                                                Apply
-                                            </button>
-                                        </div>
-                                        <!--end::Actions-->
-                                    </div>
-                                    <!--end::Content-->
-                                </div>
-                                <!--end::Filter Menu-->
+                                        <!--end::Header-->
+                                        <div class="separator border-gray-200"></div>
+                                        <!--begin::Content-->
+                                        <div class="px-7 py-5" data-kt-chat-message-table-filter="form">
+                                            <!--begin::Input group-->
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-bold">Event:</label>
+                                                <select class="form-select form-select-solid fw-bolder"
+                                                        data-kt-select2="true"
+                                                        data-placeholder="Select Option"
+                                                        data-allow-clear="true"
+                                                        data-kt-thread-table-filter="event"
+                                                        data-hide-search="true">
 
+                                                    <option></option>
+                                                    @foreach($groups ?? [] as $group)
+                                                        <option
+                                                            value="{{ $group->id }}">{{ $group->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <!--end::Input group-->
+                                            <!--begin::Actions-->
+                                            <div class="d-flex justify-content-end">
+                                                <button type="reset"
+                                                        class="btn btn-light btn-active-light-primary fw-bold me-2 px-6"
+                                                        data-kt-menu-dismiss="true"
+                                                        data-kt-thread-table-filter="reset">
+                                                    Reset
+                                                </button>
+                                                <button type="submit"
+                                                        class="btn btn-primary fw-bold px-6"
+                                                        data-kt-menu-dismiss="true"
+                                                        data-kt-thread-table-filter="filter">
+                                                    Apply
+                                                </button>
+                                            </div>
+                                            <!--end::Actions-->
+                                        </div>
+                                        <!--end::Content-->
+                                    </div>
+                                    <!--end::Filter Menu-->
+                                @endif
                                 <!--begin::Export-->
                                 <button type="button" class="btn btn-light-primary me-3" id="export-btn">
                                     <span class="svg-icon svg-icon-2">
@@ -116,17 +116,15 @@
                                 </button>
                                 <!--end::Export-->
                             </div>
-                            <!--end::Toolbar-->
 
                             <!--begin::Group actions-->
                             <div class="d-flex justify-content-end align-items-center d-none"
-                                 data-kt-chat-message-table-toolbar="selected">
+                                 data-kt-thread-table-toolbar="selected">
                                 <div class="fw-bolder me-5">
-                                    <span class="me-2" data-kt-chat-message-table-select="selected_count"></span>
-                                    Selected
+                                    <span class="me-2" data-kt-thread-table-select="selected_count"></span>Selected
                                 </div>
                                 <button type="button" class="btn btn-danger"
-                                        data-kt-chat-message-table-select="delete_selected">
+                                        data-kt-thread-table-select="delete_selected">
                                     Delete Selected
                                 </button>
                             </div>
@@ -138,9 +136,7 @@
 
                     <!--begin::Card body-->
                     <div class="card-body pt-0">
-                        <!--begin::Table-->
-                        <table class="table align-middle table-row-dashed fs-6 gy-5"
-                               id="kt_table_chat_messages">
+                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_threads">
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
                                 <th class="w-10px pe-2">
@@ -148,25 +144,20 @@
                                         <input class="form-check-input"
                                                type="checkbox"
                                                data-kt-check="true"
-                                               data-kt-check-target="#kt_table_chat_messages .row-checkbox"
+                                               data-kt-check-target="#kt_table_threads .row-checkbox"
                                                value="1"/>
                                     </div>
                                 </th>
                                 @if(auth()->user()->type === 'admin')
                                     <th>Event</th>
                                 @endif
-                                <th>Group</th>
-                                <th>Sender</th>
-                                <th>Message</th>
-                                <th>Seen By</th>
-                                <th>Date</th>
+                                <th>Thread Name</th>
+                                <th>Created At</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
-                            <tbody class="fw-semibold text-gray-600">
-                            </tbody>
+                            <tbody class="fw-semibold text-gray-600"></tbody>
                         </table>
-                        <!--end::Table-->
                     </div>
                     <!--end::Card body-->
                 </div>
@@ -177,99 +168,133 @@
 @endsection
 
 @push('scripts')
-
     <script>
         "use strict";
 
-        let chatMessageTable;
+        let threadTable;
         const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        const showUrl = '{{ route("admin.chat_log.show", ":id") }}';
 
-        function initChatMessageTable() {
-            chatMessageTable = $('#kt_table_chat_messages').DataTable({
+        function initThreadTable() {
+            threadTable = $('#kt_table_threads').DataTable({
                 processing: true,
                 serverSide: true,
                 searching: false,
                 ajax: {
                     url: '{{ route("admin.chat_log.datatable") }}',
                     data: d => {
-                        d.search = document.querySelector('[data-kt-chat-message-table-filter="search"]').value;
-                        d.group = document.querySelector('[data-kt-chat-message-table-filter="group"]')?.value ?? '';
+                        d.search = document.querySelector('[data-kt-thread-table-filter="search"]').value;
+                        if (isAdmin) {
+                            const eventEl = document.querySelector('[data-kt-thread-table-filter="event"]');
+                            if (eventEl) d.event = eventEl.value;
+                        }
+
                     }
                 },
-                order: [[5, 'desc']],
+                order: [[isAdmin ? 3 : 2, 'desc']],
                 columns: [
                     {
                         data: 'id',
                         orderable: false,
-                        render: id => `
-                    <div class="form-check form-check-sm form-check-custom form-check-solid">
-                        <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
-                    </div>`
+                        render: id =>
+                            `<div class="form-check form-check-sm form-check-custom form-check-solid">
+                                <input class="form-check-input row-checkbox" type="checkbox" value="${id}">
+                            </div>`
                     },
-                    ...(isAdmin ? [{data: 'event'}] : []),
-
+                    ...(isAdmin ? [{data: 'event', defaultContent: '—'}] : []),
                     {
-                        data: 'group_name',
+                        data: 'name',
                         render: name => `<span class="fw-bold text-gray-800">${name}</span>`
                     },
-
-                    {data: 'sender_name'},
-
-                    {
-                        data: 'message',
-                        render: data => data.length > 60 ? data.substr(0, 60) + '...' : data
-                    },
-
-                    {data: 'seen_by'},
-
                     {data: 'created_at'},
-
                     {
                         data: 'id',
                         orderable: false,
-                        render: id => `
-                    <div>
-                        <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown">
-                            Actions
-                            <span class="svg-icon svg-icon-5 m-0">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/>
-                                </svg>
-                            </span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3 message-delete" data-id="${id}">Delete</a>
-                            </div>
-                        </div>
-                    </div>`
+                        render: id =>
+                            `<div>
+                                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-bs-toggle="dropdown"> Actions
+                                                        <span class="svg-icon svg-icon-5 m-0">
+                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor"/> </svg>
+                                                            </span>
+                                                    </a>
+                                                    <div class="dropdown-menu dropdown-menu-end menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4">
+                                                        <div class="menu-item px-3">
+                                                            <a href="#" class="menu-link px-3 thread-delete"
+                                               data-id="${id}">Delete</a>
+                                                        </div>
+                                                        <div class="menu-item px-3">
+                                                            <a href="${showUrl.replace(':id', id)}" class="menu-link px-3 "> Show </a>
+                                                        </div>
+
+                                                    </div>
+                                            </div>`
                     }
                 ]
             });
         }
 
-        document.addEventListener('change', e => {
-            if (!e.target.matches('[data-kt-check="true"]')) return;
+        document.querySelector('[data-kt-thread-table-filter="filter"]')
+            ?.addEventListener('click', () => threadTable.draw());
 
-            const checked = e.target.checked;
-            document.querySelectorAll('.row-checkbox').forEach(cb => {
-                cb.checked = checked;
+        document.querySelector('[data-kt-thread-table-filter="reset"]')
+            ?.addEventListener('click', () => {
+                document.querySelector('[data-kt-thread-table-filter="search"]').value = '';
+                if (isAdmin) {
+                    const eventEl = document.querySelector('[data-kt-thread-table-filter="event"]');
+                    if (eventEl) {
+                        eventEl.value = '';
+                        $(eventEl).val(null).trigger('change');
+                    }
+                }
+                threadTable.draw();
             });
 
-            toggleBulkToolbar();
+
+        document.addEventListener('click', e => {
+            const deleteBtn = e.target.closest('.thread-delete');
+            if (!deleteBtn) return;
+
+            e.preventDefault();
+            const id = deleteBtn.dataset.id;
+
+            Swal.fire({
+                text: 'Delete this thread and all its messages?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete'
+            }).then(result => {
+                if (!result.isConfirmed) return;
+
+                $.ajax({
+                    url: '{{ route("admin.chat_log.delete", ":id") }}'.replace(':id', id),
+                    type: 'DELETE',
+                    data: {_token: csrf},
+                    success: response => {
+                        toastr.success(response.message ?? 'Thread deleted successfully');
+                        threadTable.draw(false);
+                        toggleBulkToolbar();
+                    },
+                    error: () => toastr.error('Failed to delete thread')
+                });
+            });
         });
 
         document.addEventListener('change', e => {
-            if (!e.target.classList.contains('row-checkbox')) return;
-            toggleBulkToolbar();
+            if (e.target.matches('[data-kt-check="true"]')) {
+                document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
+                toggleBulkToolbar();
+                return;
+            }
+            if (e.target.classList.contains('row-checkbox')) toggleBulkToolbar();
         });
 
         function toggleBulkToolbar() {
             const selected = document.querySelectorAll('.row-checkbox:checked').length;
-
-            const baseToolbar = document.querySelector('[data-kt-chat-message-table-toolbar="base"]');
-            const selectedToolbar = document.querySelector('[data-kt-chat-message-table-toolbar="selected"]');
-            const countEl = document.querySelector('[data-kt-chat-message-table-select="selected_count"]');
+            const baseToolbar = document.querySelector('[data-kt-thread-table-toolbar="base"]');
+            const selectedToolbar = document.querySelector('[data-kt-thread-table-toolbar="selected"]');
+            const countEl = document.querySelector('[data-kt-thread-table-select="selected_count"]');
 
             if (selected > 0) {
                 baseToolbar.classList.add('d-none');
@@ -282,26 +307,20 @@
             }
         }
 
-        document.querySelector('[data-kt-chat-message-table-select="delete_selected"]')
+        document.querySelector('[data-kt-thread-table-select="delete_selected"]')
             ?.addEventListener('click', () => {
-
-                const ids = [...document.querySelectorAll('.row-checkbox:checked')]
-                    .map(cb => cb.value);
+                const ids = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.value);
 
                 if (!ids.length) {
-                    Swal.fire({
-                        text: "Please select at least one message",
-                        icon: "info",
-                        confirmButtonText: "OK"
-                    });
+                    Swal.fire({text: 'Please select at least one thread', icon: 'info', confirmButtonText: 'OK'});
                     return;
                 }
 
                 Swal.fire({
-                    text: `Delete ${ids.length} selected message(s)?`,
-                    icon: "warning",
+                    text: `Delete ${ids.length} selected thread(s) and all their messages?`,
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: "Yes, delete"
+                    confirmButtonText: 'Yes, delete'
                 }).then(result => {
                     if (!result.isConfirmed) return;
 
@@ -309,7 +328,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-CSRF-TOKEN': csrf,
                             'Accept': 'application/json'
                         },
                         body: JSON.stringify({ids})
@@ -319,120 +338,54 @@
                             return res.json().catch(() => ({}));
                         })
                         .then(data => {
-
-                            toastr.success(data.message ?? 'Selected messages deleted successfully');
-
-                            chatMessageTable.draw(false);
+                            toastr.success(data.message ?? 'Selected threads deleted successfully');
+                            threadTable.draw(false);
                             toggleBulkToolbar();
                         })
-                        .catch(error => {
-
-                            toastr.error(error.message ?? 'Failed to delete messages');
-
-                        });
+                        .catch(error => toastr.error(error.message ?? 'Failed to delete threads'));
                 });
             });
 
-        document.addEventListener('click', function (e) {
+        document.getElementById('export-btn')?.addEventListener('click', function () {
+            const btn = this;
+            const originalHTML = btn.innerHTML;
 
-            if (!e.target.classList.contains('message-delete')) return;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
 
-            e.preventDefault();
-            const id = e.target.dataset.id;
+            const search = document.querySelector('[data-kt-thread-table-filter="search"]').value;
+            const url = new URL('{{ route("admin.chat_log.export") }}', window.location.origin);
+            url.searchParams.set('export', '1');
+            if (search) url.searchParams.set('search', search);
 
-            Swal.fire({
-                text: "Delete this message?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes, delete"
-            }).then((result) => {
+            fetch(url.toString(), {method: 'GET', headers: {'X-Requested-With': 'XMLHttpRequest'}})
+                .then(res => {
+                    if (!res.ok) throw new Error('Export failed');
+                    return res.blob();
+                })
+                .then(blob => {
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.setAttribute('download', 'threads_export_' + new Date().toISOString().slice(0, 10) + '.csv');
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
 
-                if (!result.isConfirmed) return;
-
-                $.ajax({
-                    url: '{{ route("admin.chat_log.delete", ":id") }}'.replace(':id', id),
-                    type: 'DELETE',
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function (response) {
-
-                        toastr.success(response.message ?? 'Message deleted successfully');
-
-                        chatMessageTable.draw(false);
-                        toggleBulkToolbar();
-                    },
-                    error: function () {
-
-                        toastr.error('Failed to delete message');
-                    }
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                    toastr.success('Exported successfully!');
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                    toastr.error('Export failed. Please try again.');
                 });
-
-            });
         });
 
-        var handleExport = function () {
-            const exportBtn = document.getElementById('export-btn');
+        document.querySelector('[data-kt-thread-table-filter="search"]')
+            .addEventListener('keyup', () => threadTable.draw());
 
-            if (exportBtn) {
-                exportBtn.addEventListener('click', function () {
-                    const originalHTML = exportBtn.innerHTML;
-                    exportBtn.disabled = true;
-                    exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
-
-                    const searchValue = document.querySelector('[data-kt-chat-message-table-filter="search"]').value;
-                    const groupValue = document.querySelector('[data-kt-chat-message-table-filter="group"]')?.value ?? '';
-
-                    const url = new URL('{{ route("admin.chat_log.export") }}', window.location.origin);
-                    url.searchParams.set('export', '1');
-                    if (searchValue) url.searchParams.set('search', searchValue);
-                    if (groupValue) url.searchParams.set('group', groupValue);
-
-                    fetch(url.toString(), {
-                        method: 'GET',
-                        headers: {'X-Requested-With': 'XMLHttpRequest'}
-                    })
-                        .then(res => {
-                            if (!res.ok) throw new Error('Export failed');
-                            return res.blob();
-                        })
-                        .then(blob => {
-                            const link = document.createElement('a');
-                            link.href = window.URL.createObjectURL(blob);
-                            link.setAttribute('download', 'chat_messages_export_' + new Date().toISOString().slice(0, 10) + '.csv');
-                            link.style.visibility = 'hidden';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-
-                            exportBtn.disabled = false;
-                            exportBtn.innerHTML = originalHTML;
-                            toastr.success('Messages exported successfully!');
-                        })
-                        .catch(() => {
-                            exportBtn.disabled = false;
-                            exportBtn.innerHTML = originalHTML;
-                            toastr.error('Export failed. Please try again.');
-                        });
-                });
-            }
-        };
-
-        handleExport();
-
-
-        document.querySelector('[data-kt-chat-message-table-filter="search"]')
-            .addEventListener('keyup', () => chatMessageTable.draw());
-
-        document.querySelector('[data-kt-chat-message-table-filter="filter"]')
-            ?.addEventListener('click', () => chatMessageTable.draw());
-
-        document.querySelector('[data-kt-chat-message-table-filter="reset"]')
-            ?.addEventListener('click', () => {
-                document.querySelector('[data-kt-chat-message-table-filter="group"]').value = '';
-                chatMessageTable.draw();
-            });
-
-        KTUtil.onDOMContentLoaded(() => initChatMessageTable());
+        KTUtil.onDOMContentLoaded(() => initThreadTable());
     </script>
 @endpush

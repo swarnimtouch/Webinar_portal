@@ -19,4 +19,9 @@ class UserPollAnswer extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function pollAnswer()
+    {
+        return $this->belongsTo(PollAnswer::class, 'answer_id');
+    }
 }

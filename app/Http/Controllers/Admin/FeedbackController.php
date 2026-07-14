@@ -12,8 +12,9 @@ class FeedbackController
     //
     public function index()
     {
-
+        $feedback = Feedback::with('event')->get()->unique('event_id')->values();
         return view('admin.feedback.index', [
+            'feedback' => $feedback,
             'title' => __('FeedBack'),
             'breadcrumb' => breadcrumb([
                 __('FeedBack') => route('admin.feedback.index')
@@ -77,7 +78,9 @@ class FeedbackController
                     ->orWhere('email', 'like', "%{$search}%");
             })->orWhere('comment', 'like', "%{$search}%");
         }
-
+        if ($request->filled('event')) {
+            $query->where('event_id', $request->event);
+        }
         $total = $query->count();
 
         if ($request->has('order')) {

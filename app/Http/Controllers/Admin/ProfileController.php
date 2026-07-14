@@ -51,7 +51,7 @@ class ProfileController extends Controller
 
         return redirect()
             ->route('admin.dashboard')
-            ->with('success', 'Profile updated successfully');
+            ->with('success', 'Profile Save successfully');
     }
 
     public function password()
@@ -81,7 +81,7 @@ class ProfileController extends Controller
 
         return redirect()
             ->route('admin.dashboard')
-            ->with('success', 'Password updated successfully');
+            ->with('success', 'Password Save successfully');
     }
 
     public function checkEmailExists(Request $request)

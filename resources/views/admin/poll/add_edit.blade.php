@@ -127,24 +127,7 @@
                             </div>
 
                             <!-- Status -->
-                            <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Status</label>
-                                <div class="col-lg-8">
-                                    <select name="status" id="status"
-                                            class="form-select form-select-solid form-select-lg"
-                                            data-control="select2" data-placeholder="Select status"
-                                            data-hide-search="true">
-                                        <option
-                                            value="active" {{ old('status', $poll->status ?? 'active') === 'active' ? 'selected' : '' }}>
-                                            Active
-                                        </option>
-                                        <option
-                                            value="inactive" {{ old('status', $poll->status ?? '') === 'inactive' ? 'selected' : '' }}>
-                                            Inactive
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
+
 
                             <!-- Is Hidden -->
                             <div class="row mb-6">
@@ -218,13 +201,7 @@
                                 }
                             }
                         }),
-                        status: {
-                            validators: {
-                                notEmpty: {
-                                    message: 'Status is required'
-                                }
-                            }
-                        }
+                       
                     },
                     plugins: {
                         trigger: new FormValidation.plugins.Trigger(),

@@ -4,7 +4,7 @@
             <button class="tab-link active" data-tab="chat">
                 <i class="fa-solid fa-comments"></i> Live Chat
             </button>
-            <button class="tab-link" data-tab="qa">
+            <button class="tab-link d-none" data-tab="qa">
                 <i class="fa-solid fa-circle-question"></i> Q&A
             </button>
             <button class="tab-link" data-tab="polls">
@@ -120,17 +120,14 @@
                             <span>Share Screen</span>
                         </button>
 
-                        @if(!empty($file))
-                            <a href="{{ asset('storage/site_settings/'.$file) }}"
-                               class="action-box"
-                               target="_blank"
-                               download>
+                        @if($resources->isNotEmpty())
+                            <a href="#session-resources" class="action-box">
                                 <i class="fa-solid fa-file-lines"></i>
                                 <span>Resources</span>
                             </a>
                         @endif
                         @if($active_certificate)
-                            <a href="{{ route('certificate.generate', ['certificateId' => $active_certificate->id, 'userId' => auth()->id(),'slug'=>request()->route('slug')]) }}"
+                            <a href="{{ event_route('certificate.generate', ['certificateId' => $active_certificate->id, 'userId' => auth()->id()]) }}"
                                class="action-box">
                                 <i class="fa-solid fa-certificate"></i>
                                 <span>Certificate</span>

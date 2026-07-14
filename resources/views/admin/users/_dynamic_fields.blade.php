@@ -168,9 +168,9 @@
                         @endif>
                         <option value="">Select {{ $label }}</option>
                         @foreach($source_items as $item)
-                            <option value="{{ $item->{$source_lbl} }}" {{-- name as value --}}
-                            data-id="{{ $item->id }}"
-                                {{ $value == $item->{$source_lbl} ? 'selected' : '' }}>  {{-- compare name with name --}}
+                            <option value="{{ $item->{$source_lbl} }}"
+                                    data-id="{{ $item->id }}"
+                                {{ $value == $item->{$source_lbl} ? 'selected' : '' }}>
                                 {{ $item->{$source_lbl} }}
                             </option>
                         @endforeach

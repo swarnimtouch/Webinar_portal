@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Events;
 use App\Models\UserAttendance;
 use App\Models\DynamicFields;
 use App\Models\User;
@@ -24,12 +25,22 @@ class UserAttendanceController extends Controller
             ->when($user->type !== 'sub_admin', function ($collection) {
                 return $collection->unique('field_name');
             });
+        $eventIds = UserAttendance::with('user')
+            ->get()
+            ->pluck('user.event_id')
+            ->filter()
+            ->unique()
+            ->values();
+        $events = Events::whereIn('id', $eventIds)
+            ->orderBy('name')
+            ->get();
 
         return view('admin.user_attendance.index', [
             'title' => __('User Attendance'),
             'breadcrumb' => breadcrumb([
                 __('User Attendance') => route('admin.user_attendance')
             ]),
+            'events' => $events,
             'active_fields' => $activeFields
         ]);
     }
@@ -47,6 +58,9 @@ class UserAttendanceController extends Controller
         $query = UserAttendance::with(['user.event'])
             ->when($user->type === 'sub_admin', function ($q) use ($user) {
                 $q->whereHas('user', fn($uq) => $uq->where('event_id', $user->event_id));
+            })
+            ->when($request->filled('event'), function ($q) use ($request) {
+                $q->whereHas('user', fn($uq) => $uq->where('event_id', $request->event));
             });
 
         if ($request->filled('search')) {
@@ -70,6 +84,7 @@ class UserAttendanceController extends Controller
 
         if ($request->filled('order')) {
             $columns = $request->columns;
+
             foreach ($request->order as $order) {
                 $columnIndex = $order['column'];
                 $columnName = $columns[$columnIndex]['data'] ?? null;
@@ -79,20 +94,31 @@ class UserAttendanceController extends Controller
                     $query->orderBy('session_time', $direction);
 
                 } elseif ($columnName === 'registration_date') {
-                    $query->join('users as u_sort', 'u_sort.id', '=', 'user_attendances.user_id')
-                        ->orderBy('u_sort.created_at', $direction);
+                    $query->orderBy(
+                        User::select('created_at')
+                            ->whereColumn('users.id', 'user_attendances.user_id')
+                            ->limit(1),
+                        $direction
+                    );
 
                 } elseif ($columnName) {
                     $dbColumn = $this->mapFieldNameToColumn($columnName);
                     if ($dbColumn && \Schema::hasColumn('users', $dbColumn)) {
-                        $query->join('users as u_sort', 'u_sort.id', '=', 'user_attendances.user_id')
-                            ->orderBy('u_sort.' . $dbColumn, $direction);
+                        $query->orderBy(
+                            User::select($dbColumn)
+                                ->whereColumn('users.id', 'user_attendances.user_id')
+                                ->limit(1),
+                            $direction
+                        );
                     }
                 }
             }
         } else {
-            $query->join('users as u_sort', 'u_sort.id', '=', 'user_attendances.user_id')
-                ->orderBy('u_sort.created_at', 'desc');
+            $query->orderByDesc(
+                User::select('created_at')
+                    ->whereColumn('users.id', 'user_attendances.user_id')
+                    ->limit(1)
+            );
         }
 
         $length = $request->input('length', 10);
@@ -127,6 +153,7 @@ class UserAttendanceController extends Controller
             'data' => $data,
         ]);
     }
+
 
     /**
      * Map dynamic field names to actual database column names

@@ -1,13 +1,4 @@
 @extends('layouts.admin')
-
-@push('style')
-    <style>
-        .ql-container {
-            min-height: 100px;
-        }
-    </style>
-@endpush
-
 @section('content')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <div class="post d-flex flex-column-fluid" id="kt_post">
@@ -250,7 +241,8 @@
                 const colorPicker = document.getElementById('font_color_picker');
                 const colorText = document.getElementById('font_color');
                 const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
-                const isEdit = {{ isset($certificate) ? 'true' : 'false' }};
+                const isEdit = {{ $certificate->exists ? 'true' : 'false' }};
+
                 colorPicker.addEventListener('input', () => {
                     colorText.value = colorPicker.value;
                 });
@@ -279,28 +271,42 @@
                             }
                         }),
                         background_image: {
-                            validators: isEdit ? {} : {
-                                notEmpty: {
-                                    message: 'Background image is required'
-                                },
-                                file: {
-                                    extension: 'jpg,jpeg,png,webp',
-                                    type: 'image/jpeg,image/png,image/webp',
-                                    maxSize: 5242880,
-                                    message: 'Invalid image (max 5MB)'
+                            validators: {
+                                callback: {
+                                    callback: function () {
+                                        const file = document.getElementById('background_image').files[0];
+                                        if (isEdit && !file) return true;
+                                        if (!isEdit && !file) return {
+                                            valid: false,
+                                            message: 'Background image is required'
+                                        };
+                                        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+                                        if (!allowed.includes(file.type)) return {
+                                            valid: false,
+                                            message: 'Only JPG, PNG, WEBP allowed'
+                                        };
+                                        if (file.size > 5242880) return {valid: false, message: 'Max file size is 5MB'};
+                                        return true;
+                                    }
                                 }
                             }
                         },
 
                         font_file: {
-                            validators: isEdit ? {} : {
-                                notEmpty: {
-                                    message: 'Font file is required'
-                                },
-                                file: {
-                                    extension: 'ttf,otf,woff,woff2',
-                                    type: 'application/x-font-ttf,application/x-font-opentype,font/woff,font/woff2',
-                                    message: 'Invalid font file'
+                            validators: {
+                                callback: {
+                                    callback: function () {
+                                        const file = document.getElementById('font_file').files[0];
+                                        if (isEdit && !file) return true;
+                                        if (!isEdit && !file) return {valid: false, message: 'Font file is required'};
+                                        const allowed = ['ttf', 'otf', 'woff', 'woff2'];
+                                        const ext = file.name.split('.').pop().toLowerCase();
+                                        if (!allowed.includes(ext)) return {
+                                            valid: false,
+                                            message: 'Only TTF, OTF, WOFF, WOFF2 allowed'
+                                        };
+                                        return true;
+                                    }
                                 }
                             }
                         },
@@ -353,7 +359,14 @@
                         validator.revalidateField('event_id');
                     });
                 }
-                /* ===== SUBMIT ===== */
+                document.getElementById('background_image').addEventListener('change', () => {
+                    validator.revalidateField('background_image');
+                });
+
+                document.getElementById('font_file').addEventListener('change', () => {
+                    validator.revalidateField('font_file');
+                });
+                
                 submitBtn.addEventListener('click', e => {
                     e.preventDefault();
 

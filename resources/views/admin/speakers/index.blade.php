@@ -61,7 +61,22 @@
                                     <!--begin::Content-->
                                     <div class="px-7 py-5" data-kt-user-table-filter="form">
                                         <!--begin::Input group-->
-
+                                        @if(auth()->user()->type === 'admin')
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-bold">Event:</label>
+                                                <select class="form-select form-select-solid fw-bolder"
+                                                        data-kt-select2="true"
+                                                        data-placeholder="Select option" data-allow-clear="true"
+                                                        data-kt-user-table-filter="event" data-hide-search="true">
+                                                    <option value="">-- Select Event --</option>
+                                                    @foreach($speaker as $speakers)
+                                                        <option value="{{ $speakers->event_id }}">
+                                                            {{ optional($speakers->event)->name ?? 'N/A' }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
                                         <!--end::Input group-->
                                         <!--begin::Input group-->
                                         <div class="mb-10">
@@ -194,6 +209,9 @@
                         data: d => {
                             d.search = document.querySelector('[data-kt-user-table-filter="search"]').value;
                             d.status = document.querySelector('[data-kt-user-table-filter="status"]').value;
+                            if (isAdmin) {
+                                d.event = document.querySelector('[data-kt-user-table-filter="event"]').value;
+                            }
                         }
                     },
                     pageLength: 10,
@@ -507,7 +525,20 @@
 
                 document.querySelector('[data-kt-user-table-filter="reset"]')
                     ?.addEventListener('click', () => {
-                        document.querySelector('[data-kt-user-table-filter="status"]').value = '';
+                        document.querySelector('[data-kt-user-table-filter="search"]').value = '';
+
+                        const statusEl = document.querySelector('[data-kt-user-table-filter="status"]');
+                        if (statusEl) {
+                            statusEl.value = '';
+                            $(statusEl).val(null).trigger('change');
+                        }
+
+                        const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
+                        if (eventEl) {
+                            eventEl.value = '';
+                            $(eventEl).val(null).trigger('change');
+                        }
+
                         datatable.draw();
                     });
             };

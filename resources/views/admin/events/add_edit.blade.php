@@ -34,6 +34,32 @@
 
 
                             <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Company</label>
+                                <div class="col-lg-8">
+                                    <select name="company_id" id="company_id"
+                                            class="form-select form-select-lg form-select-solid"
+                                            data-placeholder="Search or add a company">
+                                        @if($selectedCompany)
+                                            <option value="{{ old('company_id', $event->company_id) }}"
+                                                    data-slug="{{ $selectedCompany->slug }}" selected>
+                                                {{ $selectedCompany->name }}
+                                            </option>
+                                        @endif
+                                    </select>
+                                    <div class="text-muted fs-7 mt-2" id="event_url_preview">
+                                        @if($event->exists && $event->domain)
+                                            Live URL: https://{{ $event->domain }}.{{ config('app.event_base_domain') }}/{{ $event->slug }}
+                                        @else
+                                            Enter the domain and event name to preview the live URL.
+                                        @endif
+                                    </div>
+                                    @if($event->exists)
+                                        <div class="text-muted fs-7 mt-1">Event slug is locked: <strong>{{ $event->slug }}</strong></div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Domain</label>
                                 <div class="col-lg-8">
                                     <div class="position-relative">
@@ -46,6 +72,7 @@
                                             .doctorly.com
                                         </div>
                                     </div>
+                                    <div class="text-muted fs-7 mt-2">Use lowercase letters, numbers and hyphens only.</div>
                                 </div>
                             </div>
 
@@ -269,6 +296,71 @@
                             </div>
 
                             <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Event Resources</label>
+                                <div class="col-lg-8">
+                                    <div id="event-resources-list">
+                                        @foreach($eventResources->isNotEmpty() ? $eventResources : collect([null]) as $index => $savedResource)
+                                            <div class="resource-input-row border rounded p-5 mb-4">
+                                                <input type="hidden" class="resource-id"
+                                                       name="resource_id[{{ $index }}]"
+                                                       value="{{ $savedResource?->id }}">
+                                                <div class="d-flex align-items-start gap-3">
+                                                    <div class="flex-grow-1">
+                                                        <input type="text"
+                                                               name="resource_title[{{ $index }}]"
+                                                               class="form-control form-control-lg form-control-solid mb-3 resource-title"
+                                                               maxlength="255"
+                                                               value="{{ old('resource_title.'.$index, $savedResource?->title) }}"
+                                                               placeholder="Resource title">
+                                                        <input type="file"
+                                                               name="resource_file[{{ $index }}]"
+                                                               class="form-control form-control-lg form-control-solid resource-file"
+                                                               accept=".pdf,application/pdf">
+                                                        <div class="text-muted fs-7 mt-2 resource-file-note">
+                                                            @if($savedResource)
+                                                                Current file: {{ $savedResource->original_name }} &middot;
+                                                            @endif
+                                                            PDF only, maximum 10 MB.
+                                                        </div>
+                                                    </div>
+                                                    <button type="button"
+                                                            class="btn btn-icon btn-light-danger remove-resource-btn"
+                                                            @if($index === 0) style="display:none" @endif
+                                                            title="Remove resource">
+                                                        <i class="bi bi-trash fs-3"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <button type="button" class="btn btn-light-primary" id="add-resource-btn">
+                                        <i class="bi bi-plus-lg"></i> Add Resource
+                                    </button>
+                                </div>
+                            </div>
+
+                            <template id="resource-row-template">
+                                <div class="resource-input-row border rounded p-5 mb-4">
+                                    <input type="hidden" class="resource-id" name="resource_id[__INDEX__]" value="">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="flex-grow-1">
+                                            <input type="text" name="resource_title[__INDEX__]"
+                                                   class="form-control form-control-lg form-control-solid mb-3 resource-title"
+                                                   maxlength="255" placeholder="Resource title">
+                                            <input type="file" name="resource_file[__INDEX__]"
+                                                   class="form-control form-control-lg form-control-solid resource-file"
+                                                   accept=".pdf,application/pdf">
+                                            <div class="text-muted fs-7 mt-2 resource-file-note">PDF only, maximum 10 MB.</div>
+                                        </div>
+                                        <button type="button" class="btn btn-icon btn-light-danger remove-resource-btn"
+                                                title="Remove resource">
+                                            <i class="bi bi-trash fs-3"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Start Datetime</label>
                                 <div class="col-lg-8">
                                     <input type="text" name="start_time" id="start_time"
@@ -343,6 +435,44 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="fw-bold mb-0">Add Company</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-8">
+                    <div class="mb-5">
+                        <label class="form-label required fw-bold">Company Name</label>
+                        <input type="text" id="new_company_name" class="form-control form-control-solid"
+                               maxlength="255" autocomplete="organization">
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label required fw-bold">Email</label>
+                        <input type="email" id="new_company_email" class="form-control form-control-solid"
+                               maxlength="255" placeholder="company@example.com" autocomplete="email">
+                    </div>
+                    <div>
+                        <label class="form-label required fw-bold">Phone Number</label>
+                        <input type="text" id="new_company_phone" class="form-control form-control-solid"
+                               maxlength="30" placeholder="Enter phone number" autocomplete="tel">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save_company_btn">
+                        <span class="indicator-label">Add Company</span>
+                        <span class="indicator-progress">Please wait...
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
@@ -403,16 +533,177 @@
 
             $('#player_type').select2({minimumResultsForSearch: Infinity});
 
-            $('#domain').on('input', function () {
-                $(this).val(
-                    $(this).val()
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')
-                        .replace(/[^a-z0-9-]/g, '')
-                        .replace(/-+/g, '-')
-                        .replace(/^-|-$/g, '')
-                );
+            const companySearchUrl = @json(route('admin.events.companies.search'));
+            const companyStoreUrl = @json(route('admin.events.companies.store'));
+            const baseDomain = @json(config('app.event_base_domain', 'doctorly.in'));
+            const lockedEventSlug = @json($event->exists ? $event->slug : null);
+            let currentCompanySearch = '';
+
+            const slugify = value => value.toLowerCase().trim()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '');
+
+            const updateEventUrlPreview = () => {
+                const eventSlug = lockedEventSlug || slugify($('#name').val() || '');
+                const eventDomain = ($('#domain').val() || '').trim();
+                const preview = document.getElementById('event_url_preview');
+                preview.textContent = eventDomain && eventSlug
+                    ? `Live URL: https://${eventDomain}.${baseDomain}/${eventSlug}`
+                    : 'Enter the domain and event name to preview the live URL.';
+            };
+
+            const companySelect = $('#company_id').select2({
+                placeholder: 'Search or add a company',
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: companySearchUrl,
+                    dataType: 'json',
+                    delay: 250,
+                    data: params => {
+                        currentCompanySearch = (params.term || '').trim();
+                        return {search: currentCompanySearch};
+                    },
+                    processResults: data => {
+                        const results = (data.companies || []).map(company => ({
+                            id: company.id,
+                            text: company.name,
+                            slug: company.slug,
+                        }));
+
+                        if (results.length === 0 && currentCompanySearch) {
+                            results.push({
+                                id: '__create_company__',
+                                text: `+ Add "${currentCompanySearch}"`,
+                                companyName: currentCompanySearch,
+                                isNewCompany: true,
+                            });
+                        }
+
+                        return {results};
+                    },
+                    cache: true,
+                },
+                templateResult: company => {
+                    if (company.isNewCompany) {
+                        return $(`<div class="text-primary fw-bold py-1"></div>`).text(company.text);
+                    }
+                    return company.text;
+                },
             });
+
+            companySelect.on('select2:select', function (event) {
+                if (event.params.data.isNewCompany) {
+                    const name = event.params.data.companyName;
+                    $(this).find('option[value="__create_company__"]').remove();
+                    $(this).val(null).trigger('change.select2');
+                    $('#new_company_name').val(name);
+                    $('#new_company_email, #new_company_phone').val('');
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('addCompanyModal')).show();
+                    return;
+                }
+
+                updateEventUrlPreview();
+            }).on('select2:clear', function () {
+                updateEventUrlPreview();
+            });
+
+            $('#addCompanyModal').on('shown.bs.modal', function () {
+                $('#new_company_email').trigger('focus');
+            });
+
+            $('#save_company_btn').on('click', function () {
+                const button = this;
+                const name = $('#new_company_name').val().trim();
+                const email = $('#new_company_email').val().trim();
+                const phone = $('#new_company_phone').val().trim();
+
+                if (!name || !email || !phone) {
+                    toastr.warning('Company name, email and phone number are required.');
+                    return;
+                }
+
+                button.setAttribute('data-kt-indicator', 'on');
+                button.disabled = true;
+
+                fetch(companyStoreUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({name, email, phone})
+                })
+                    .then(async response => {
+                        const data = await response.json();
+                        if (!response.ok) throw data;
+                        return data;
+                    })
+                    .then(data => {
+                        const company = data.company;
+                        const option = new Option(company.name, company.id, true, true);
+                        option.dataset.slug = company.slug;
+                        companySelect.append(option).trigger('change');
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('addCompanyModal')).hide();
+                        updateEventUrlPreview();
+                        toastr.success('Company added successfully.');
+                    })
+                    .catch(error => {
+                        const validationMessage = error.errors
+                            ? Object.values(error.errors).flat()[0]
+                            : null;
+                        toastr.error(validationMessage || error.message || 'Unable to add company.');
+                    })
+                    .finally(() => {
+                        button.removeAttribute('data-kt-indicator');
+                        button.disabled = false;
+                    });
+            });
+
+            $('#name, #domain').on('input', updateEventUrlPreview);
+            updateEventUrlPreview();
+
+            const resourcesList = document.getElementById('event-resources-list');
+            const resourceTemplate = document.getElementById('resource-row-template');
+
+            const reindexResources = () => {
+                resourcesList.querySelectorAll('.resource-input-row').forEach((row, index) => {
+                    row.querySelector('.resource-id').name = `resource_id[${index}]`;
+                    row.querySelector('.resource-title').name = `resource_title[${index}]`;
+                    row.querySelector('.resource-file').name = `resource_file[${index}]`;
+                    row.querySelector('.remove-resource-btn').style.display = index === 0 ? 'none' : '';
+                });
+            };
+
+            document.getElementById('add-resource-btn').addEventListener('click', () => {
+                const index = resourcesList.querySelectorAll('.resource-input-row').length;
+                resourcesList.insertAdjacentHTML(
+                    'beforeend',
+                    resourceTemplate.innerHTML.replaceAll('__INDEX__', index)
+                );
+                reindexResources();
+            });
+
+            resourcesList.addEventListener('click', event => {
+                const removeButton = event.target.closest('.remove-resource-btn');
+                if (!removeButton) return;
+
+                const row = removeButton.closest('.resource-input-row');
+                const rows = resourcesList.querySelectorAll('.resource-input-row');
+
+                if (rows.length === 1) {
+                    row.querySelector('.resource-id').value = '';
+                    row.querySelector('.resource-title').value = '';
+                    row.querySelector('.resource-file').value = '';
+                    row.querySelector('.resource-file-note').textContent = 'PDF only, maximum 10 MB.';
+                } else {
+                    row.remove();
+                    reindexResources();
+                }
+            });
+
+            reindexResources();
 
             const toggleAttendanceFields = () => {
                 $('#attendance-date-fields').toggle($('#is_log_attendance').is(':checked'));
@@ -504,6 +795,12 @@
             const validator = FormValidation.formValidation(form, {
                 fields: {
 
+                    company_id: {
+                        validators: {
+                            notEmpty: {message: 'Company is required'}
+                        }
+                    },
+
                     domain: {
                         validators: {
                             notEmpty: {message: 'Domain is required'},
@@ -512,8 +809,9 @@
                                 message: 'Only lowercase letters, numbers and hyphens allowed'
                             },
                             stringLength: {
-                                min: 3, max: 50,
-                                message: 'Domain must be between 3 and 50 characters'
+                                min: 2,
+                                max: 50,
+                                message: 'Domain must be between 2 and 50 characters'
                             }
                         }
                     },
@@ -651,6 +949,8 @@
                     bootstrap5: new FormValidation.plugins.Bootstrap5({rowSelector: '.row'})
                 }
             });
+
+            companySelect.on('change', () => validator.revalidateField('company_id'));
 
             $('#is_log_attendance').on('change', () => {
                 validator.revalidateField('active_user_from');

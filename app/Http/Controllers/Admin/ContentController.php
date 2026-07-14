@@ -25,9 +25,9 @@ class ContentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($slug)
+    public function show($contentSlug)
     {
-        $content = Content::where('slug', $slug)->firstOrFail();
+        $content = Content::where('slug', $contentSlug)->firstOrFail();
 
         return view('admin.content.show', compact('content'));
     }

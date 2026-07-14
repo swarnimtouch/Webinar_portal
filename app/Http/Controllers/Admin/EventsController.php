@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Company;
 use App\Models\DynamicFields;
+use App\Models\EventResource;
 use App\Models\Events;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class EventsController
@@ -18,10 +21,14 @@ class EventsController
 
     public function addEditForm($id = null)
     {
-        $event = $id ? Events::findOrFail($id) : new Events();
+        $event = $id ? Events::with(['company', 'resources'])->findOrFail($id) : new Events();
+        $selectedCompanyId = session()->getOldInput('company_id', $event->company_id);
+        $selectedCompany = $selectedCompanyId ? Company::find($selectedCompanyId) : null;
 
         $response = [
             'event' => $event,
+            'selectedCompany' => $selectedCompany,
+            'eventResources' => $event->exists ? $event->resources->sortBy('slot')->values() : collect(),
             'title' => __('Event'),
             'breadcrumb' => breadcrumb([__('Events') => route('admin.events'), ($id ? 'Edit' : 'Add' . ' Event') => '']),
         ];
@@ -33,7 +40,8 @@ class EventsController
     {
         $event = $id ? Events::findOrFail($id) : new Events();
         $request->validate([
-            'domain' => ['required', 'string', 'max:255'],
+            'company_id' => ['required', 'integer', 'exists:companies,id'],
+            'domain' => ['required', 'string', 'max:50', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email'],
             'phone' => ['required', 'string', 'max:255'],
@@ -55,10 +63,28 @@ class EventsController
             'publish_date' => ['required', 'date'],
             'start_time' => ['required'],
             'end_time' => ['required'],
+            'resource_id' => ['nullable', 'array'],
+            'resource_id.*' => ['nullable', 'integer'],
+            'resource_title' => ['nullable', 'array'],
+            'resource_title.*' => ['nullable', 'string', 'max:255'],
+            'resource_file' => ['nullable', 'array'],
+            'resource_file.*' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
         ]);
 
-        $event->slug = generate_slug($request->name) ?? null;
-        $event->domain = $request->domain ?? null;
+        $company = Company::findOrFail($request->integer('company_id'));
+
+        if (!$event->exists) {
+            $baseSlug = generate_slug($request->name) ?: Str::slug($request->name);
+            $slug = $baseSlug;
+            $suffix = 2;
+            while (Events::where('slug', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $suffix++;
+            }
+            $event->slug = $slug;
+        }
+
+        $event->company_id = $company->id;
+        $event->domain = $request->domain;
         $event->name = $request->name ?? null;
         $event->email = $request->email ?? null;
         $event->phone = $request->phone ?? null;
@@ -89,6 +115,7 @@ class EventsController
         $event->active_user_to = $request->active_user_to ? Carbon::parse($request->active_user_to)->format('Y-m-d H:i:s') : null;
         $event->is_log_attendance = $request->is_log_attendance ?? 0;
         $event->save();
+        $this->saveResources($request, $event);
         $isDynamicFieldsExist = DynamicFields::where('event_id', $event->id)->count();
         if ($isDynamicFieldsExist == 0) {
             foreach (get_dynamic_fields() as $key => $fields) {
@@ -114,6 +141,7 @@ class EventsController
             if (Storage::exists('public/events/' . $event->logo)) {
                 Storage::delete('public/events/' . $event->logo);
             }
+            $this->deleteResourceFiles($event);
             $event->delete();
 
             return response()->json(['success' => true, 'message' => 'Event deleted successfully']);
@@ -138,6 +166,7 @@ class EventsController
                 if (Storage::exists('public/events/' . $event->logo)) {
                     Storage::delete('public/events/' . $event->logo);
                 }
+                $this->deleteResourceFiles($event);
                 $event->delete();
             }
             return response()->json(['success' => true, 'message' => 'Events deleted successfully']);
@@ -167,14 +196,15 @@ class EventsController
 
     public function datatable(Request $request)
     {
-        $query = Events::query();
+        $query = Events::with('company');
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('domain', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhereHas('company', fn($company) => $company->where('name', 'like', "%{$search}%"));
             });
         }
         if ($request->has('status') && !empty($request->status)) {
@@ -192,6 +222,7 @@ class EventsController
                     'name' => 'name',
                     'slug' => 'slug',
                     'domain' => 'domain',
+                    'company' => 'domain',
                     'email' => 'email',
                     'phone' => 'phone',
                     default => 'id'
@@ -211,6 +242,8 @@ class EventsController
                 'name' => $event->name,
                 'slug' => $event->slug,
                 'domain' => $event->domain,
+                'company' => $event->company?->name ?? Str::headline($event->domain),
+                'public_url' => $event->public_url,
                 'email' => $event->email,
                 'phone' => $event->phone,
                 'status' => $event->status,
@@ -223,5 +256,123 @@ class EventsController
             'recordsFiltered' => $total,
             'data' => $data
         ]);
+    }
+
+    public function searchCompanies(Request $request)
+    {
+        $search = trim((string) $request->query('search', ''));
+
+        $companies = Company::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($companyQuery) use ($search) {
+                    $companyQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get(['id', 'name', 'slug']);
+
+        return response()->json(['companies' => $companies]);
+    }
+
+    public function storeCompany(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
+        ]);
+
+        $name = trim($validated['name']);
+        $existing = Company::where('name', $name)->first();
+        if ($existing) {
+            return response()->json(['company' => $existing]);
+        }
+
+        $baseSlug = Str::slug($name);
+        $slug = $baseSlug;
+        $suffix = 2;
+        while (Company::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $suffix++;
+        }
+
+        $company = Company::create([
+            'name' => $name,
+            'slug' => $slug,
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+        ]);
+
+        return response()->json(['company' => $company], 201);
+    }
+
+    private function saveResources(Request $request, Events $event): void
+    {
+        $submittedIds = collect($request->input('resource_id', []))
+            ->filter()
+            ->map(fn($id) => (int) $id)
+            ->values();
+
+        $event->resources()
+            ->whereNotIn('id', $submittedIds)
+            ->get()
+            ->each(function (EventResource $resource) {
+                Storage::disk('public')->delete($resource->file_path);
+                $resource->delete();
+            });
+
+        $titles = $request->input('resource_title', []);
+        $ids = $request->input('resource_id', []);
+        $files = $request->file('resource_file', []);
+        $indexes = collect(array_keys($titles))
+            ->merge(array_keys($ids))
+            ->merge(array_keys($files))
+            ->unique();
+        $nextSlot = (int) $event->resources()->max('slot') + 1;
+
+        foreach ($indexes as $index) {
+            $resourceId = $ids[$index] ?? null;
+            $resource = $resourceId
+                ? $event->resources()->whereKey($resourceId)->first()
+                : null;
+            $title = trim((string) ($titles[$index] ?? ''));
+            $file = $files[$index] ?? null;
+
+            if (!$resource && !$file) {
+                continue;
+            }
+
+            if ($file) {
+                $slot = $resource?->slot ?? $nextSlot++;
+                $storedPath = $file->storeAs(
+                    "events/{$event->id}/resources",
+                    "resource-{$slot}-" . Str::uuid() . '.pdf',
+                    'public'
+                );
+
+                if ($resource) {
+                    Storage::disk('public')->delete($resource->file_path);
+                }
+
+                ($resource ?: new EventResource([
+                    'event_id' => $event->id,
+                    'slot' => $slot,
+                ]))->fill([
+                    'title' => $title ?: "Resource {$slot}",
+                    'file_path' => $storedPath,
+                    'original_name' => $file->getClientOriginalName(),
+                ])->save();
+            } elseif ($resource) {
+                $resource->update(['title' => $title ?: "Resource {$resource->slot}"]);
+            }
+        }
+    }
+
+    private function deleteResourceFiles(Events $event): void
+    {
+        $event->resources()->each(function (EventResource $resource) {
+            Storage::disk('public')->delete($resource->file_path);
+        });
     }
 }

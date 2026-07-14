@@ -26,7 +26,13 @@ class HomeController
             ->Active()
             ->orderBy('index_no')
             ->get();
-
+        $hasCountryField = $fields->contains('field_name', 'country');
+        $hasStateField = $fields->contains('field_name', 'state');
+        $defaultCountry = Country::whereRaw('LOWER(name) = ?', ['india'])->first();
+        $defaultState = $defaultCountry
+            ? State::where('country_id', $defaultCountry->id)
+                ->whereRaw('LOWER(name) = ?', ['gujarat'])->first()
+            : null;
         return view('website.home', [
             'banners' => Banner::Active()->where('event_id', $event->id)->get()->pluck('slider_data'),
             'register_fields' => $fields,
@@ -34,6 +40,17 @@ class HomeController
             'contents' => Content::all()->keyBy('slug'),
             'speakers' => Speakers::where('event_id', $event->id)->Active()->get(),
             'brands' => Brands::where('event_id', $event->id)->Active()->get(),
+            'countries' => Country::select('id', 'name')->orderBy('name')->get(),
+            'initial_states' => $defaultCountry
+                ? State::select('id', 'name')->where('country_id', $defaultCountry->id)->orderBy('name')->get()
+                : collect(),
+            'initial_cities' => !$hasStateField && $defaultState
+                ? City::select('id', 'name')->where('state_id', $defaultState->id)->orderBy('name')->get()
+                : collect(),
+            'has_country_field' => $hasCountryField,
+            'has_state_field' => $hasStateField,
+            'default_country' => $defaultCountry,
+            'default_state' => $defaultState,
             'title' => 'Home',
         ]);
     }
@@ -134,6 +151,13 @@ class HomeController
 
         $data = $request->except('_token');
 
+        if (!$fields->contains('field_name', 'country')) {
+            $data['country'] = 'India';
+        }
+        if (!$fields->contains('field_name', 'state')) {
+            $data['state'] = 'Gujarat';
+        }
+
         if (isset($data['mobile_number'])) {
             $data['mobile'] = $data['mobile_number'];
             unset($data['mobile_number']);
@@ -171,16 +195,18 @@ class HomeController
 
     }
 
-    public function states($countryId)
+    public function states(Request $request)
     {
+        $countryId = $request->route('country');
         return State::select('id', 'name')
             ->where('country_id', $countryId)
             ->orderBy('name')
             ->get();
     }
 
-    public function cities($stateId)
+    public function cities(Request $request)
     {
+        $stateId = $request->route('state');
         return City::select('id', 'name')
             ->where('state_id', $stateId)
             ->orderBy('name')
@@ -194,6 +220,6 @@ class HomeController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home', ['slug' => $request->route('slug')]);
+        return redirect(event_route('home'));
     }
 }

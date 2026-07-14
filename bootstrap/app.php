@@ -18,13 +18,27 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
 
-/*            Route::prefix('{slug}')
+            Route::prefix('{company}/{slug}')
+                ->name('company.local.')
+                ->where([
+                    'company' => '[a-z0-9\-]+',
+                    'slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$',
+                ])
+                ->middleware(['event','web'])
+                ->group(base_path('routes/event.php'));
+
+            Route::prefix('{slug}')
                 ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
                 ->middleware(['event','web'])
-                ->group(base_path('routes/event.php'));*/
+                ->group(base_path('routes/event.php'));
 
-            Route::domain('{slug}.doctorly.in')
-                ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
+            Route::domain('{company}.' . config('app.event_base_domain', 'doctorly.in'))
+                ->prefix('{slug}')
+                ->name('company.live.')
+                ->where([
+                    'company' => '[a-z0-9\-]+',
+                    'slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$',
+                ])
                 ->middleware(['event','web'])
                 ->group(base_path('routes/event.php'));
 
@@ -47,7 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('admin.login');
             }
 
-            return route('home',['slug' => $request->route('slug')]);
+            return event_route('home');
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {

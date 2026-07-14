@@ -29,9 +29,8 @@
                     </div>
                     <div class="webinar-actions">
                         <div class="action-group-right">
-                            @if(!empty($file))
-                                <a href="{{ asset('storage/site_settings/'.$file) }}"
-                                   class="action-btn download" download target="_blank">
+                            @if($resources->isNotEmpty())
+                                <a href="#session-resources" class="action-btn download">
                                     <i class="fa-solid fa-download"></i> Download Resources
                                 </a>
                             @endif
@@ -90,64 +89,31 @@
                     </div>
                 </div>
 
-                <div class="session-resources">
-                    <h3>Session Resources</h3>
-                    <div class="resources-grid">
-                        <div class="resource-card">
-                            <div class="card-header">
-                                <div class="card-icon"><i class="fa-solid fa-file-pdf"></i></div>
-                                <span class="card-meta">PDF • 2.4 MB</span>
-                            </div>
-                            <div class="card-body">
-                                <h4>AI Strategy Framework 2025</h4>
-                                <p>Complete guide to building your AI roadmap</p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="#" class="card-link">Download <i class="fa-solid fa-arrow-down"></i></a>
-                            </div>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-header">
-                                <div class="card-icon"><i class="fa-solid fa-file-powerpoint"></i></div>
-                                <span class="card-meta">PPTX • 8.7 MB</span>
-                            </div>
-                            <div class="card-body">
-                                <h4>Presentation Slides</h4>
-                                <p>Full deck from today's session</p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="#" class="card-link">Download <i class="fa-solid fa-arrow-down"></i></a>
-                            </div>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-header">
-                                <div class="card-icon"><i class="fa-solid fa-file-zipper"></i></div>
-                                <span class="card-meta">ZIP • 15.2 MB</span>
-                            </div>
-                            <div class="card-body">
-                                <h4>Code Examples</h4>
-                                <p>Sample implementations and templates</p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="#" class="card-link">Download <i class="fa-solid fa-arrow-down"></i></a>
-                            </div>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-header">
-                                <div class="card-icon"><i class="fa-solid fa-link"></i></div>
-                                <span class="card-meta">External</span>
-                            </div>
-                            <div class="card-body">
-                                <h4>Additional Resources</h4>
-                                <p>Curated list of articles and tools</p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="#" class="card-link">View Links <i
-                                        class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                            </div>
+                @if($resources->isNotEmpty())
+                    <div class="session-resources" id="session-resources">
+                        <h3>Session Resources</h3>
+                        <div class="resources-grid">
+                            @foreach($resources as $resource)
+                                <div class="resource-card">
+                                    <div class="card-header">
+                                        <div class="card-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
+                                        <span class="card-meta">PDF</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <h4>{{ $resource->title }}</h4>
+                                        <p>{{ $resource->original_name }}</p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <a href="{{ event_route('resource.download', ['resourceId' => $resource->id]) }}"
+                                           class="card-link">
+                                            Download <i class="fa-solid fa-arrow-down"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
         </section>
 
@@ -177,15 +143,15 @@
         window.csrfToken = "{{ csrf_token() }}";
         window.eventSlug = "{{ request()->route('slug') }}";
         window.trackingEnabled = {{ $is_log_attendance }};
-        window.chatMessagesUrl = "{{ route('chat.messages',['slug' => request()->route('slug')]) }}";
-        window.chatSendUrl = "{{ route('chat.send',['slug' => request()->route('slug')]) }}";
-        window.raiseHandUrl = "{{ route('raise.hand',['slug' => request()->route('slug')]) }}";
-        window.handStatusUrl = "{{ route('hand.status',['slug' => request()->route('slug')]) }}";
-        window.pollUrl = "{{ route('poll',['slug' => request()->route('slug')]) }}";
-        window.pollVoteUrl = "{{ route('poll.vote',['slug' => request()->route('slug')]) }}";
-        window.feedbackStoreUrl = "{{ route('feedback.save',['slug' => request()->route('slug')]) }}";
-        window.attendanceJoinUrl = "{{ route('attendance.join',['slug' => request()->route('slug')]) }}";
-        window.attendanceLeaveUrl = "{{ route('attendance.leave',['slug' => request()->route('slug')]) }}";
+        window.chatMessagesUrl = "{{ event_route('chat.messages') }}";
+        window.chatSendUrl = "{{ event_route('chat.send') }}";
+        window.raiseHandUrl = "{{ event_route('raise.hand') }}";
+        window.handStatusUrl = "{{ event_route('hand.status') }}";
+        window.pollUrl = "{{ event_route('poll') }}";
+        window.pollVoteUrl = "{{ event_route('poll.vote') }}";
+        window.feedbackStoreUrl = "{{ event_route('feedback.save') }}";
+        window.attendanceJoinUrl = "{{ event_route('attendance.join') }}";
+        window.attendanceLeaveUrl = "{{ event_route('attendance.leave') }}";
         window.initialFeedback = @json([
             'rating' => $feedback->rating ?? null,
             'comment' => $feedback->comment ?? null,
@@ -211,10 +177,10 @@
             const echo = new Echo({
                 broadcaster: 'reverb',
                 key: window.reverbKey,
-                wsHost: window.location.hostname,
-                wsPort: 443,
-                wssPort: 443,
-                forceTLS: true,
+                wsHost: window.reverbHost,
+                wsPort: window.reverbPort,
+                wssPort: window.reverbPort,
+                forceTLS: window.reverbScheme === 'https',
                 enabledTransports: ['ws', 'wss'],
                 authEndpoint: '/broadcasting/auth',
                 auth: {
@@ -249,6 +215,8 @@
                     attendanceBeacon(window.attendanceLeaveUrl);
                 }
 
+                attendanceJoin();
+
                 document.addEventListener('visibilitychange', function () {
                     if (document.hidden) {
                         attendanceLeave();
@@ -275,7 +243,6 @@
                     });
                     renderParticipants();
 
-                    if (window.trackingEnabled) attendanceJoin();
                 })
 
                 .joining(function (user) {

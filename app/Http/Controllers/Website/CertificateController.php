@@ -5,22 +5,33 @@ namespace App\Http\Controllers\Website;
 use Intervention\Image\Laravel\Facades\Image;
 use App\Models\Certificate;
 use App\Models\CertificateLogs;
-use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CertificateController
 {
-    public function generate($slug,$certificateId, $userId)
+    public function generate(Request $request)
     {
-        $certificate = Certificate::findOrFail($certificateId);
-        $user = User::findOrFail($userId);
+        $event = app('event');
+        $certificateId = $request->route('certificateId');
+        $user = Auth::guard('web')->user();
+        abort_unless($user, 403);
 
-        $bgPath = storage_path('app/public/' . $certificate->background_image);
-        $fontPath = storage_path('app/public/' . $certificate->font_file);
+        $certificate = Certificate::whereKey($certificateId)
+            ->where('event_id', $event->id)
+            ->where('status', 'active')
+            ->firstOrFail();
 
-        if (!file_exists($bgPath) || !file_exists($fontPath)) {
-            abort(404, 'File not found');
+        if (!$certificate->background_image || !$certificate->font_file
+            || !Storage::disk('public')->exists($certificate->background_image)
+            || !Storage::disk('public')->exists($certificate->font_file)) {
+            abort(404, 'Certificate assets not found');
         }
+
+        $bgPath = Storage::disk('public')->path($certificate->background_image);
+        $fontPath = Storage::disk('public')->path($certificate->font_file);
 
         $img = Image::read($bgPath);
 

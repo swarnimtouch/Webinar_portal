@@ -19,7 +19,7 @@ class ChatController
         $this->event = app('event');
     }
 
-    public function getMessages(Request $request, string $slug)
+    public function getMessages(Request $request)
     {
         $thread = Thread::where('event_id', $this->event->id)->first();
         $messages = collect([]);
@@ -34,7 +34,7 @@ class ChatController
                 ->map(fn($m) => [
                     'id' => $m->id,
                     'message' => $m->message,
-                    'userName' => $m->sender->name,
+                    'userName' => $m->sender->name ?? 'Anonymous',
                     'userId' => $m->sender_id,
                     'timestamp' => $m->created_at->format('H:i'),
                 ]);
@@ -43,9 +43,10 @@ class ChatController
         return response()->json(['messages' => array_values($messages->toArray())]);
     }
 
-    public function sendMessage(Request $request, string $slug)
+    public function sendMessage(Request $request)
     {
         $request->validate(['message' => 'required|string|max:1000']);
+        $slug = $this->event->slug;
 
         $thread = Thread::where('event_id', $this->event->id)->first();
 
@@ -88,8 +89,9 @@ class ChatController
         ]);
     }
 
-    public function raiseHand(Request $request, string $slug)
+    public function raiseHand(Request $request)
     {
+        $slug = $this->event->slug;
         $userId = Auth::id();
         $cacheKey = "hand_raised_{$slug}_{$userId}";
         $current = Cache::get($cacheKey, false);
@@ -106,8 +108,9 @@ class ChatController
         return response()->json(['status' => true, 'raised' => $raised]);
     }
 
-    public function handStatus(string $slug)
+    public function handStatus()
     {
+        $slug = $this->event->slug;
         $cacheKey = "hand_raised_{$slug}_" . Auth::id();
         return response()->json(['raised' => Cache::get($cacheKey, false)]);
     }

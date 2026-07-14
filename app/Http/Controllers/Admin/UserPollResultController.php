@@ -2,17 +2,36 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Events;
 use Illuminate\Http\Request;
 use App\Models\UserPollAnswer;
 
-class UserQuizResult
+class UserPollResultController
 {
     public function index()
     {
-        return view('admin.user_quiz_result.index', [
-            'title' => __('User Quiz Result'),
+        $user = auth()->user();
+
+        $eventIds = UserPollAnswer::with('poll')
+            ->get()
+            ->pluck('poll.event_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $events = Events::whereIn('id', $eventIds)
+            ->orderBy('name')
+            ->get();
+
+        if ($user->type === 'sub_admin') {
+            $events = $events->where('id', $user->event_id)->values();
+        }
+
+        return view('admin.user_poll_result.index', [
+            'title' => __('User Poll Result'),
+            'events' => $events,
             'breadcrumb' => breadcrumb([
-                __('User Quiz Result') => route('admin.user_quiz_result')
+                __('User Poll Result') => route('admin.user_poll_result')
             ])
         ]);
     }
@@ -20,8 +39,8 @@ class UserQuizResult
     public function delete($id)
     {
         try {
-            $userQuizAnswer = UserPollAnswer::findOrFail($id);
-            $userQuizAnswer->delete();
+            $userPollAnswer = UserPollAnswer::findOrFail($id);
+            $userPollAnswer->delete();
 
             return response()->json(['success' => true, 'message' => 'User Poll Answer deleted successfully']);
         } catch (\Exception $e) {
@@ -50,7 +69,8 @@ class UserQuizResult
     {
         $user = auth()->user();
 
-        $query = UserPollAnswer::with('user', 'poll');
+        $query = UserPollAnswer::with(['user', 'poll.event', 'pollAnswer']);
+
         if ($user->type === 'sub_admin') {
             $query->whereHas('poll', function ($q) use ($user) {
                 $q->where('event_id', $user->event_id);
@@ -67,6 +87,11 @@ class UserQuizResult
                         $pollQuery->where('question', 'like', "%{$search}%");
                     })
                     ->orWhere('answer', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('event')) {
+            $query->whereHas('poll', function ($q) use ($request) {
+                $q->where('event_id', $request->event);
             });
         }
 
@@ -94,17 +119,19 @@ class UserQuizResult
         $length = $request->input('length', 10);
         $start = $request->input('start', 0);
 
-        $userQuizAnswers = $query->skip($start)->take($length)->get();
+        $userPollAnswers = $query->skip($start)->take($length)->get();
 
-        $data = $userQuizAnswers->map(function ($userQuizAnswer) {
+        $data = $userPollAnswers->map(function ($userPollAnswer) {
             return [
-                'id' => $userQuizAnswer->id,
-                'event' => optional($userQuizAnswer->user)->event->name ?? 'N/A',
-                'user_name' => optional($userQuizAnswer->user)->name ?? 'N/A',
-                'user_email' => optional($userQuizAnswer->user)->email ?? 'N/A',
-                'question' => optional($userQuizAnswer->poll)->question ?? 'N/A',
-                'answer' => $userQuizAnswer->answer ?? 'N/A',
-                'created_at' => $userQuizAnswer->created_at->format('d M Y'),
+                'id' => $userPollAnswer->id,
+                'event' => $userPollAnswer->poll?->event?->name ?? 'N/A',
+                'user_name' => optional($userPollAnswer->user)->name ?? 'N/A',
+                'user_email' => optional($userPollAnswer->user)->email ?? 'N/A',
+                'question' => optional($userPollAnswer->poll)->question ?? 'N/A',
+                'answer' => $userPollAnswer->pollAnswer?->answer
+                    ?? $userPollAnswer->answer
+                        ?? 'N/A',
+                'created_at' => $userPollAnswer->created_at?->format('d M Y') ?? 'N/A',
                 'actions' => '',
             ];
         });
@@ -123,7 +150,7 @@ class UserQuizResult
         $isAdmin = $user->type === 'admin';
         $search = $request->get('search');
 
-        $query = UserPollAnswer::with(['user.event', 'poll'])
+        $query = UserPollAnswer::with(['poll.event', 'user', 'pollAnswer'])
             ->when(!$isAdmin, function ($q) use ($user) {
                 $q->whereHas('poll', function ($pq) use ($user) {
                     $pq->where('event_id', $user->event_id);
@@ -154,11 +181,11 @@ class UserQuizResult
         $esc = fn($val) => '"' . str_replace('"', '""', $val) . '"';
 
         foreach ($query as $answer) {
-            $eventName = optional($answer->user?->event)->name ?? 'N/A';
+            $eventName = $answer->poll?->event?->name ?? 'N/A';
             $userName = optional($answer->user)->name ?? 'N/A';
             $userEmail = optional($answer->user)->email ?? 'N/A';
             $question = optional($answer->poll)->question ?? 'N/A';
-            $ans = $answer->answer ?? 'N/A';
+            $ans = $answer->pollAnswer?->answer ?? $answer->answer ?? 'N/A';
             $date = $answer->created_at?->format('d M Y') ?? 'N/A';
 
             $row = $isAdmin
@@ -169,7 +196,7 @@ class UserQuizResult
         }
 
         $csv = implode("\n", $rows);
-        $filename = 'user_quiz_results_export_' . now()->format('Y-m-d') . '.csv';
+        $filename = 'user_poll_results_export_' . now()->format('Y-m-d') . '.csv';
 
         return response($csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',

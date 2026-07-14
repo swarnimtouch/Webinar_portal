@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'event_base_domain' => env('EVENT_BASE_DOMAIN', 'doctorly.in'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

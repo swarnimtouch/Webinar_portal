@@ -12,7 +12,8 @@ class BannerController extends Controller
 {
     public function index()
     {
-        return view('admin.banners.index', ['title' => __('Banners'), 'breadcrumb' => breadcrumb([__('Banners') => route('admin.banners')])]);
+        $banner = Banner::with('event')->get()->unique('event_id')->values();
+        return view('admin.banners.index', ['banner' => $banner, 'title' => __('Banners'), 'breadcrumb' => breadcrumb([__('Banners') => route('admin.banners')])]);
     }
 
     public function addEditForm($id = null)
@@ -147,10 +148,12 @@ class BannerController extends Controller
         $user = auth()->user();
 
         $query = Banner::with('event');
+
         if ($user->type === 'sub_admin') {
             $query->where('event_id', $user->event_id);
         }
-        if ($request->has('search')) {
+
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
@@ -158,42 +161,46 @@ class BannerController extends Controller
                     ->orWhereHas('event', function ($q2) use ($search) {
                         $q2->where('name', 'like', "%{$search}%");
                     });
-
             });
         }
-        if ($request->has('type') && !empty($request->type)) {
-            $type = $request->type;
-            $query->where('type', $type);
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
         }
-        if ($request->has('status') && !empty($request->status)) {
-            $status = $request->status;
-            $query->where('status', $status);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
+
+        if ($request->filled('event')) {
+            $query->where('event_id', $request->event);
+        }
+
         $total = $query->count();
+
         if ($request->has('order')) {
             $columns = $request->columns;
             foreach ($request->order as $order) {
-                $columnIndex = $order['column'];
-                $columnName = $columns[$columnIndex]['data'];
-                $direction = $order['dir'];
-                $dbColumn = match ($columnName) {
+                $dbColumn = match ($columns[$order['column']]['data']) {
                     'title' => 'title',
                     'type' => 'type',
                     default => 'id'
                 };
-                $query->orderBy($dbColumn, $direction);
+                $query->orderBy($dbColumn, $order['dir']);
             }
         } else {
             $query->orderBy('id', 'desc');
         }
+
         $length = $request->input('length', 10);
         $start = $request->input('start', 0);
         $banners = $query->skip($start)->take($length)->get();
+
         $data = $banners->map(function ($banner) {
             return [
                 'id' => $banner->id,
                 'title' => $banner->title,
-                'event' => $banner->event->name ?? 'N/A',
+                'event' => optional($banner->event)->name ?? 'N/A',
                 'media_url' => $banner->media_url,
                 'created_at' => $banner->created_at->format('d M Y'),
                 'status' => $banner->status,
@@ -201,6 +208,7 @@ class BannerController extends Controller
                 'actions' => '',
             ];
         });
+
         return response()->json([
             'draw' => $request->input('draw', 1),
             'recordsTotal' => $total,

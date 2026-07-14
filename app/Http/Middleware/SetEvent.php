@@ -19,8 +19,18 @@ class SetEvent
         $slug = $request->route('slug')
             ?? $request->header('X-Event-Slug');
 
+        $companySlug = $request->route('company');
+
         if ($slug) {
-            $event = Events::where('slug', $slug)->firstOrFail();
+            $event = Events::with('company')
+                ->where('slug', $slug)
+                ->when($companySlug, function ($query) use ($companySlug) {
+                    $query->where(function ($eventQuery) use ($companySlug) {
+                        $eventQuery->where('domain', $companySlug)
+                            ->orWhereHas('company', fn($company) => $company->where('slug', $companySlug));
+                    });
+                })
+                ->firstOrFail();
             app()->instance('event', $event);
         }
 

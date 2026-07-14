@@ -13,7 +13,7 @@
           crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    @if(Route::is('home'))
+    @if(Route::is('home', 'company.local.home', 'company.live.home'))
         <link rel="stylesheet" href="{{ asset('website/css/style.css') }}">
     @else
         <link rel="stylesheet" href="{{ asset('website/css/dashboard.css') }}">
@@ -30,7 +30,7 @@
 <body class="webinar-app">
 @include('partials.website.header')
 @yield('body')
-@if(Route::is('home'))
+@if(Route::is('home', 'company.local.home', 'company.live.home'))
     @include('partials.website.footer')
 @endif
 

@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardController
 {
@@ -28,21 +29,33 @@ class DashboardController
         $feedback = Feedback::where('user_id', Auth::guard('web')->id())
             ->where('event_id', $this->event->id ?? null)
             ->first();
+        $resources = $this->event->resources()->orderBy('slot')->get();
 
         return view('website.dashboard', [
             'polls' => $polls,
             'active_certificate' => $activeCertificate,
             'feedback' => $feedback,
+            'resources' => $resources,
             'is_log_attendance' => $this->event->is_log_attendance ?? false,
             'title' => __('Dashboard'),
         ]);
     }
 
-    public function attendanceJoin(Request $request, string $slug)
+    public function downloadResource(Request $request)
+    {
+        $resourceId = $request->route('resourceId');
+        $resource = $this->event->resources()->findOrFail($resourceId);
+
+        abort_unless(Storage::disk('public')->exists($resource->file_path), 404);
+
+        return Storage::disk('public')->download($resource->file_path, $resource->original_name);
+    }
+
+    public function attendanceJoin(Request $request)
     {
         try {
 
-            if ($this->event->is_log_attendance !== 1) {
+            if (!$this->event->is_log_attendance) {
                 return response()->json(['success' => false], 400);
             }
 
@@ -76,7 +89,7 @@ class DashboardController
         }
     }
 
-    public function attendanceLeave(Request $request, string $slug)
+    public function attendanceLeave(Request $request)
     {
         try {
             $userId = Auth::id();
@@ -186,11 +199,7 @@ class DashboardController
         $start = $this->event->start_time ? Carbon::parse($this->event->start_time, 'Asia/Kolkata') : null;
         $end = $this->event->end_time ? Carbon::parse($this->event->end_time, 'Asia/Kolkata') : null;
 
-        if ($start && $end) {
-            $todayStart = Carbon::today('Asia/Kolkata')->setHour($start->hour)->setMinute($start->minute)->setSecond(0);
-            $todayEnd = Carbon::today('Asia/Kolkata')->setHour($end->hour)->setMinute($end->minute)->setSecond(0);
-            if ($now->lt($todayStart) || $now->gt($todayEnd)) return false;
-        }
+        if ($start && $end && ($now->lt($start) || $now->gt($end))) return false;
 
         return true;
     }

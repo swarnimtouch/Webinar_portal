@@ -90,8 +90,6 @@
                             </div>
 
                             <!-- Banner Type -->
-
-                            <!-- Banner Type -->
                             <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Type</label>
                                 <div class="col-lg-8">
@@ -126,14 +124,12 @@
                                     <div class="image-input image-input-outline" data-kt-image-input="true"
                                          style="background-image: url('{{ asset('assets/media/no_image.png') }}')"
                                     >
-
                                         <!--begin::Preview existing/new image-->
                                         <div class="image-input-wrapper w-125px h-125px" id="bannerImagePreview"
                                              style="background-image: url('{{ $banner->filename && $banner->type === 'image' ? asset('storage/banners/'.$banner->filename) : asset('assets/media/no_image.png') }}')"
                                         >
                                         </div>
                                         <!--end::Preview existing/new image-->
-
                                         <!--begin::Label-->
                                         <label
                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
@@ -144,7 +140,6 @@
                                             <input type="hidden" name="image_remove"/>
                                         </label>
                                         <!--end::Label-->
-
                                         <!--begin::Cancel-->
                                         <span
                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
@@ -153,7 +148,6 @@
                                             <i class="bi bi-x fs-2"></i>
                                         </span>
                                         <!--end::Cancel-->
-
                                         <!--begin::Remove-->
                                         <span
                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
@@ -258,213 +252,244 @@
                 </div>
             </div>
         </div>
-        @endsection
+    </div>
+@endsection
 
-        @push('scripts')
-            <script>
-                "use strict";
+@push('scripts')
+    <script>
+        "use strict";
 
-                const KTBannerEdit = (() => {
+        const KTBannerEdit = (() => {
 
-                    let form, submitBtn, validator;
-                    const isEdit = {{ $banner->exists ? 'true' : 'false' }};
-                    const originalType = "{{ $banner->type ?? '' }}";
-                    const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
+            let form, submitBtn, validator;
 
-                    let imageRemoved = false;
-                    let videoRemoved = false;
+            const isEdit = {{ $banner->exists ? 'true' : 'false' }};
+            const originalType = "{{ $banner->type ?? '' }}";
+            const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
 
-                    const blankImage = "{{ asset('assets/media/no_image.png') }}";
-                    const originalImage = "{{ $banner->filename && $banner->type === 'image'
-                    ? asset('storage/banners/'.$banner->filename)
-                    : asset('assets/media/no_image.png') }}";
+            const blankImage = "{{ asset('assets/media/no_image.png') }}";
+            const originalImage = "{{ $banner->filename && $banner->type === 'image'
+                ? asset('storage/banners/' . $banner->filename)
+                : asset('assets/media/no_image.png') }}";
+
+            let imageRemoved = false;
 
 
-                    const showImageSection = () => {
-                        $('#imageUploadSection').removeClass('d-none');
-                        $('#videoUploadSection').addClass('d-none');
-                    };
+            /**
+             * Show image upload section, hide video section.
+             */
+            const showImageSection = () => {
+                $('#imageUploadSection').removeClass('d-none');
+                $('#videoUploadSection').addClass('d-none');
+            };
 
-                    const showVideoSection = () => {
-                        $('#videoUploadSection').removeClass('d-none');
-                        $('#imageUploadSection').addClass('d-none');
-                    };
+            /**
+             * Show video upload section, hide image section.
+             */
+            const showVideoSection = () => {
+                $('#videoUploadSection').removeClass('d-none');
+                $('#imageUploadSection').addClass('d-none');
+            };
 
-                    const syncTypeValidation = (type) => {
+            /**
+             * Update the banner image preview div background.
+             * @param {string} url
+             */
+            const showImagePreview = (url) => {
+                $('#bannerImagePreview').css('background-image', `url('${url}')`);
+            };
 
-                        if (type === 'image') {
+            /**
+             * Read a File object and show it as the image preview.
+             * @param {File} file
+             */
+            const previewImage = (file) => {
+                const reader = new FileReader();
+                reader.onload = (e) => showImagePreview(e.target.result);
+                reader.readAsDataURL(file);
+            };
 
-                            $('#imageUploadSection').removeClass('d-none');
-                            $('#videoUploadSection').addClass('d-none');
 
-                            validator.disableValidator('video_file');
-                            validator.resetField('video_file', true);
+            /**
+             * Enable / disable the correct file validators based on selected type.
+             * Called on page load and every time the type select changes.
+             * @param {string} type  'image' | 'video'
+             */
+            const syncTypeValidation = (type) => {
 
-                            if (!isEdit || originalType !== 'image' || imageRemoved) {
-                                validator.enableValidator('image_file', 'notEmpty');
-                            } else {
-                                validator.disableValidator('image_file', 'notEmpty');
+                if (type === 'image') {
+                    showImageSection();
+
+                    validator.disableValidator('video_file');
+                    validator.resetField('video_file', true);
+
+                    if (!isEdit || originalType !== 'image' || imageRemoved) {
+                        validator.enableValidator('image_file', 'notEmpty');
+                    } else {
+                        validator.disableValidator('image_file', 'notEmpty');
+                    }
+                }
+
+                if (type === 'video') {
+                    showVideoSection();
+
+                    validator.disableValidator('image_file');
+                    validator.resetField('image_file', true);
+
+
+                    if (!isEdit || originalType !== 'video') {
+                        validator.enableValidator('video_file', 'notEmpty');
+                    } else {
+                        validator.disableValidator('video_file', 'notEmpty');
+                    }
+                }
+            };
+
+
+            const init = () => {
+                form = document.getElementById('kt_banner_form');
+                submitBtn = document.getElementById('kt_banner_submit');
+
+                if (!form) return;
+
+                if ($('#type').length) {
+                    $('#type').select2({minimumResultsForSearch: Infinity});
+                }
+
+                validator = FormValidation.formValidation(form, {
+                    fields: {
+                        title: {
+                            validators: {
+                                notEmpty: {message: 'Title is required'}
                             }
-                        }
+                        },
 
-                        if (type === 'video') {
-
-                            $('#videoUploadSection').removeClass('d-none');
-                            $('#imageUploadSection').addClass('d-none');
-
-                            validator.disableValidator('image_file');
-                            validator.resetField('image_file', true);
-
-                            if (!isEdit || originalType !== 'video' || videoRemoved) {
-                                validator.enableValidator('video_file', 'notEmpty');
-                            } else {
-                                validator.disableValidator('video_file', 'notEmpty');
-                            }
-                        }
-                    };
-
-                    const init = () => {
-                        form = document.getElementById('kt_banner_form');
-                        submitBtn = document.getElementById('kt_banner_submit');
-
-                        if (!form) return;
-
-                        if ($('#type').length) {
-                            $('#type').select2({minimumResultsForSearch: Infinity});
-                        }
-
-
-                        validator = FormValidation.formValidation(form, {
-                            fields: {
-                                title: {
-                                    validators: {
-                                        notEmpty: {message: 'Title is required'}
-                                    }
-                                },
-                                ...(isAdmin && {
-                                    event_id: {
-                                        validators: {
-                                            notEmpty: {message: 'Event is required'}
-                                        }
-                                    }
-                                }),
-                                type: {
-                                    validators: {
-                                        notEmpty: {message: 'Type is required'}
-                                    }
-                                },
-                                image_file: {
-                                    validators: {
-                                        notEmpty: {message: 'Image is required'},
-                                        file: {
-                                            extension: 'jpg,jpeg,png,webp',
-                                            type: 'image/jpeg,image/png,image/webp',
-                                            maxSize: 5242880,
-                                            message: 'Invalid image (max 5MB)'
-                                        }
-                                    }
-                                },
-                                video_file: {
-                                    validators: {
-                                        notEmpty: {message: 'Video is required'},
-                                        file: {
-                                            extension: 'mp4,mov,webm',
-                                            type: 'video/mp4,video/quicktime,video/webm',
-                                            maxSize: 20971520,
-                                            message: 'Invalid video (max 20MB)'
-                                        }
-                                    }
+                        ...(isAdmin && {
+                            event_id: {
+                                validators: {
+                                    notEmpty: {message: 'Event is required'}
                                 }
-                            },
-                            plugins: {
-                                trigger: new FormValidation.plugins.Trigger(),
-                                bootstrap5: new FormValidation.plugins.Bootstrap5({
-                                    rowSelector: '.row'
-                                })
                             }
-                        });
-                        if (isAdmin && $('#event_id').length) {
-                            $('#event_id').select2();
+                        }),
 
-                            $('#event_id').on('change', function () {
-                                validator.revalidateField('event_id');
-                            });
+                        type: {
+                            validators: {
+                                notEmpty: {message: 'Type is required'}
+                            }
+                        },
+
+                        image_file: {
+                            validators: {
+                                notEmpty: {message: 'Image is required'},
+                                file: {
+                                    extension: 'jpg,jpeg,png,webp',
+                                    type: 'image/jpeg,image/png,image/webp',
+                                    maxSize: 5 * 1024 * 1024,
+                                    message: 'Invalid image (max 5 MB, types: jpg, jpeg, png, webp)'
+                                }
+                            }
+                        },
+
+                        video_file: {
+                            validators: {
+                                notEmpty: {message: 'Video is required'},
+                                file: {
+                                    extension: 'mp4,mov,webm',
+                                    type: 'video/mp4,video/quicktime,video/webm',
+                                    maxSize: 20 * 1024 * 1024,  // 20 MB
+                                    message: 'Invalid video (max 20 MB, types: mp4, mov, webm)'
+                                }
+                            }
                         }
-
-
-                        if (isEdit) {
-                            validator.disableValidator('image_file', 'notEmpty');
-                            validator.disableValidator('video_file', 'notEmpty');
-                        }
-
-                        syncTypeValidation($('#type').val());
-                        $('#type').on('change', function () {
-                            syncTypeValidation(this.value);
-                        });
-
-                        $('#image_file').on('change', function () {
-                            if (!this.files.length) return;
-
-                            imageRemoved = false;
-                            previewImage(this.files[0]);
-                            validator.revalidateField('image_file');
-                        });
-
-                        $(document).on(
-                            'click',
-                            '[data-kt-image-input-action="remove"], [data-kt-image-input-action="cancel"]',
-                            () => {
-                                imageRemoved = true;
-                                showImagePreview(blankImage);
-                                validator.revalidateField('image_file');
-                            }
-                        );
-
-                        $('#video_file').on('change', function () {
-                            if (!this.files.length) return;
-
-                            const url = URL.createObjectURL(this.files[0]);
-                            $('#videoSource').attr('src', url);
-                            $('#videoPlayer')[0].load();
-                            $('#videoPreview').removeClass('d-none');
-
-                            validator.revalidateField('video_file');
-                        });
-
-                        submitBtn.addEventListener('click', e => {
-                            e.preventDefault();
-
-                            if (isEdit && $('#type').val() === 'image' && imageRemoved && !$('#image_file')[0].files.length) {
-                                validator.enableValidator('image_file', 'notEmpty');
-                            }
-
-                            validator.validate().then(status => {
-                                if (status !== 'Valid') return;
-
-                                submitBtn.setAttribute('data-kt-indicator', 'on');
-                                submitBtn.disabled = true;
-                                form.submit();
-                            });
-                        });
-                    };
-
-                    const previewImage = file => {
-                        const reader = new FileReader();
-                        reader.onload = e => showImagePreview(e.target.result);
-                        reader.readAsDataURL(file);
-                    };
-
-                    const showImagePreview = url => {
-                        $('#bannerImagePreview').css('background-image', `url('${url}')`);
-                        syncTypeValidation($('#type').val());
-                    };
-
-                    return {init};
-
-                })();
-
-                KTUtil.onDOMContentLoaded(() => {
-                    KTBannerEdit.init();
+                    },
+                    plugins: {
+                        trigger: new FormValidation.plugins.Trigger(),
+                        bootstrap5: new FormValidation.plugins.Bootstrap5({
+                            rowSelector: '.row'
+                        })
+                    }
                 });
-            </script>
-    @endpush
+
+                if (isAdmin && $('#event_id').length) {
+                    $('#event_id').select2();
+                    $('#event_id').on('change', () => validator.revalidateField('event_id'));
+                }
+
+                if (isEdit) {
+                    validator.disableValidator('image_file', 'notEmpty');
+                    validator.disableValidator('video_file', 'notEmpty');
+                }
+
+                syncTypeValidation($('#type').val());
+
+                $('#type').on('change', function () {
+                    syncTypeValidation(this.value);
+                });
+
+                $('#image_file').on('change', function () {
+                    if (!this.files.length) return;
+
+                    imageRemoved = false;
+                    $('input[name="image_remove"]').val('');
+
+                    previewImage(this.files[0]);
+                    validator.revalidateField('image_file');
+                });
+
+                $(document).on(
+                    'click',
+                    '[data-kt-image-input-action="remove"], [data-kt-image-input-action="cancel"]',
+                    () => {
+                        imageRemoved = true;
+                        $('input[name="image_remove"]').val('1');
+                        showImagePreview(blankImage);
+                        syncTypeValidation($('#type').val());
+                        validator.revalidateField('image_file');
+                    }
+                );
+
+                $('#video_file').on('change', function () {
+                    if (!this.files.length) return;
+
+                    const objectUrl = URL.createObjectURL(this.files[0]);
+                    $('#videoSource').attr('src', objectUrl);
+                    $('#videoPlayer')[0].load();
+                    $('#videoPreview').removeClass('d-none');
+
+                    validator.revalidateField('video_file');
+                });
+
+                $('#videoPlayer').on('click', function () {
+                    this.paused ? this.play() : this.pause();
+                    $('#playIconOverlay').toggleClass('d-none', !this.paused);
+                });
+
+                $('#currentVideoPlayer').on('click', function () {
+                    this.paused ? this.play() : this.pause();
+                    $('#currentPlayIcon').toggleClass('d-none', !this.paused);
+                });
+
+                submitBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    if (isEdit && $('#type').val() === 'image' && imageRemoved && !$('#image_file')[0].files.length) {
+                        validator.enableValidator('image_file', 'notEmpty');
+                    }
+
+                    validator.validate().then((status) => {
+                        if (status !== 'Valid') return;
+
+                        submitBtn.setAttribute('data-kt-indicator', 'on');
+                        submitBtn.disabled = true;
+                        form.submit();
+                    });
+                });
+            };
+
+            return {init};
+
+        })();
+
+        KTUtil.onDOMContentLoaded(() => KTBannerEdit.init());
+    </script>
+@endpush

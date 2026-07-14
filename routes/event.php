@@ -14,12 +14,13 @@ Route::post('login', [HomeController::class, 'login'])->name('login');
 Route::post('register', [HomeController::class, 'register'])->name('register');
 Route::get('logout', [HomeController::class, 'logout'])->name('logout');
 
-Route::get('/get-countries', [HomeController::class, 'countries']);
-Route::get('/get-states/{country}', [HomeController::class, 'states']);
-Route::get('/get-cities/{state}', [HomeController::class, 'cities']);
+Route::get('/get-countries', [HomeController::class, 'countries'])->name('countries');
+Route::get('/get-states/{country}', [HomeController::class, 'states'])->name('states');
+Route::get('/get-cities/{state}', [HomeController::class, 'cities'])->name('cities');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/resources/{resourceId}/download', [DashboardController::class, 'downloadResource'])->name('resource.download');
     Route::post('/dashboard/attendance/update', [DashboardController::class, 'updateSessionTime'])->name('dashboard.attendance.update');
     Route::post('/feedback/save', [DashboardController::class, 'feedbackSave'])->name('feedback.save');
     Route::get('/poll', [DashboardController::class, 'getPoll'])->name('poll');
@@ -33,4 +34,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('certificate/generate/{certificateId}/{userId}', [CertificateController::class, 'generate'])->name('certificate.generate');
 });
 
-Route::get('/{slug}', [ContentController::class, 'show']);
+Route::get('/{contentSlug}', [ContentController::class, 'show']);

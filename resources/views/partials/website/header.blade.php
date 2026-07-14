@@ -1,4 +1,4 @@
-@if(Route::is('home'))
+@if(Route::is('home', 'company.local.home', 'company.live.home'))
     <nav class="navbar">
         <div class="logo">
             <img src="{{app('event')->logo}}"
@@ -26,7 +26,13 @@
         <nav class="main-nav">
             <a href="#"><i class="fa-solid fa-table-columns"></i> Dashboard</a>
             <a href="#" class="active"><i class="fa-solid fa-video"></i> Webinars</a>
-            <a href="#"><i class="fa-solid fa-book"></i> Resources</a>
+            @if($resources->isNotEmpty())
+                <a href="#session-resources">
+                    <i class="fa-solid fa-book"></i> Resources
+                </a>
+            @else
+                <a href="#"><i class="fa-solid fa-book"></i> Resources</a>
+            @endif
         </nav>
 
         <div class="dropdown user-menu">
@@ -56,7 +62,7 @@
                         </li>
                         <li>
                             <a class="dropdown-item d-flex align-items-center text-danger px-3 py-2"
-                               href="{{ route('logout',['slug'=>request()->route('slug')]) }}">
+                               href="{{ event_route('logout') }}">
                                 <i class="fa-solid fa-right-from-bracket me-3"></i> Logout
                             </a>
                         </li>

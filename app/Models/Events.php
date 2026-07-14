@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Events extends Model
@@ -13,6 +14,7 @@ class Events extends Model
         'end_time' => 'datetime',
         'active_user_from' => 'datetime',
         'active_user_to' => 'datetime',
+        'is_log_attendance' => 'boolean',
     ];
 
     public function getFaviconAttribute($value)
@@ -28,5 +30,23 @@ class Events extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function resources(): HasMany
+    {
+        return $this->hasMany(EventResource::class, 'event_id');
+    }
+
+    public function getPublicUrlAttribute(): string
+    {
+        $companySlug = $this->domain ?: $this->company?->slug;
+        $baseDomain = config('app.event_base_domain', 'doctorly.in');
+
+        return "https://{$companySlug}.{$baseDomain}/{$this->slug}";
     }
 }

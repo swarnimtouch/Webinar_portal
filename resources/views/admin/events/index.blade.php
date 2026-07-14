@@ -113,7 +113,7 @@
                                 </th>
                                 <th>Logo</th>
                                 <th>Name</th>
-                                <th>Domain</th>
+                                <th>Company / Live URL</th>
                                 <th>Email</th>
                                 <th>Phone</th>
                                 <th>Status</th>
@@ -174,7 +174,12 @@
                                 : '<span class="text-muted">—</span>'
                     },
                     {data: 'name'},
-                    {data: 'domain'},
+                    {
+                        data: 'company',
+                        render: (company, type, row) => `
+                            <div class="fw-bold">${company ?? '—'}</div>
+                            <a href="${row.public_url}" target="_blank" class="text-muted fs-7">${row.public_url}</a>`
+                    },
                     {data: 'email'},
                     {data: 'phone'},
                     {

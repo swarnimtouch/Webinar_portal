@@ -15,7 +15,9 @@ class CertificateController
      */
     public function index()
     {
+        $certificate = Certificate::with('event')->get()->unique('event_id')->values();
         return view('admin.certificate.index', [
+            'certificate' => $certificate,
             'title' => __('Certificate'),
             'breadcrumb' => breadcrumb([
                 __('Certificate') => route('admin.certificate')
@@ -209,7 +211,9 @@ class CertificateController
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-
+        if ($request->filled('event')) {
+            $query->where('event_id', $request->event);
+        }
         $recordsTotal = Certificate::count();
         $recordsFiltered = $query->count();
 
