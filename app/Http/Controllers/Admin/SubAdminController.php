@@ -36,7 +36,13 @@ class SubAdminController
         $request->validate([
             'event_id' => ['required', 'exists:events,id'],
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email'],
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')
+                    ->where(fn ($query) => $query->whereIn('type', ['admin', 'sub_admin']))
+                    ->ignore($id),
+            ],
             'mobile' => ['required', 'string', 'max:255'],
             'avatar' => [
                 Rule::requiredIf(fn() => !$id),

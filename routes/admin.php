@@ -41,7 +41,7 @@ Route::controller(LoginController::class)->group(function () {
 | Admin Routes (STRUCTURED ONLY)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth:admin'])->group(function () {
+Route::middleware(['auth:admin', 'sub_admin.menu'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

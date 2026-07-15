@@ -13,6 +13,7 @@ class Banner extends Model
     protected $fillable = [
         'title',
         'filename',
+        'video_url',
         'type',
         'status'
     ];
@@ -35,6 +36,10 @@ class Banner extends Model
 
     public function getMediaUrlAttribute()
     {
+        if ($this->type === 'video' && $this->video_url) {
+            return $this->video_url;
+        }
+
         return $this->filename
             ? EventStorage::url($this->filename, 'banners/' . $this->filename)
             : asset('assets/media/avatars/blank.png');
@@ -44,7 +49,7 @@ class Banner extends Model
     {
         $data = [
             'type' => $this->type ?? 'image',
-            'src' => EventStorage::url($this->filename, 'banners/' . $this->filename),
+            'src' => $this->media_url,
         ];
 
         if ($this->type === 'video' && !empty($this->poster)) {

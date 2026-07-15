@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -104,7 +105,7 @@ class UserController extends Controller
 
             if ($field->is_required) {
                 if ($fieldName === 'email') {
-                    $rules[$dbFieldName] = 'required|email|unique:users,email' . ($id ? ",$id" : '');
+                    $rules[$dbFieldName] = ['required', 'email', Rule::unique('users', 'email')->where('event_id', $eventId)->ignore($id)];
                 } elseif ($fieldName === 'password') {
                     $rules['password'] = $id ? 'nullable|min:6' : 'required|min:6';
                 } elseif ($fieldName === 'avatar') {
@@ -116,17 +117,17 @@ class UserController extends Controller
                             : 'required|image|mimes:jpg,jpeg,png,gif|max:5120';
                     }
                 } elseif ($fieldName === 'mobile_number') {
-                    $rules[$dbFieldName] = 'required|digits:10';
+                    $rules[$dbFieldName] = ['required', 'digits:10', Rule::unique('users', 'mobile')->where('event_id', $eventId)->ignore($id)];
                 } else {
                     $rules[$dbFieldName] = 'required';
                 }
             } else {
                 if ($fieldName === 'email' && $request->has($dbFieldName)) {
-                    $rules[$dbFieldName] = 'nullable|email|unique:users,email' . ($id ? ",$id" : '');
+                    $rules[$dbFieldName] = ['nullable', 'email', Rule::unique('users', 'email')->where('event_id', $eventId)->ignore($id)];
                 } elseif ($fieldName === 'avatar' && $request->hasFile('avatar')) {
                     $rules['avatar'] = 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120';
                 } elseif ($fieldName === 'mobile_number' && $request->has($dbFieldName)) {
-                    $rules[$dbFieldName] = 'nullable|digits:10';
+                    $rules[$dbFieldName] = ['nullable', 'digits:10', Rule::unique('users', 'mobile')->where('event_id', $eventId)->ignore($id)];
                 }
             }
 

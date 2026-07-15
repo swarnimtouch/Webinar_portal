@@ -450,6 +450,31 @@
                                 </div>
                             </div>
 
+                            <div class="separator separator-dashed my-10"></div>
+                            <div class="row mb-6">
+                                <div class="col-lg-4">
+                                    <h3 class="fw-bolder mb-2">Sub-admin Login</h3>
+                                    <div class="text-muted fs-7">This account can manage only this event.</div>
+                                </div>
+                                <div class="col-lg-8">
+                                    <div class="mb-6">
+                                        <label class="form-label required fw-bold">Admin Email</label>
+                                        <input type="email" name="admin_email" id="admin_email"
+                                               class="form-control form-control-lg form-control-solid"
+                                               value="{{ old('admin_email', $eventSubAdmin?->email) }}"
+                                               placeholder="Enter sub-admin email" autocomplete="off">
+                                    </div>
+                                    <div>
+                                        <label class="form-label {{ $eventSubAdmin ? '' : 'required' }} fw-bold">Admin Password</label>
+                                        <input type="password" name="admin_password" id="admin_password"
+                                               class="form-control form-control-lg form-control-solid"
+                                               placeholder="{{ $eventSubAdmin ? 'Leave blank to keep current password' : 'Enter sub-admin password' }}"
+                                               autocomplete="new-password">
+                                        <div class="form-text">Minimum 8 characters. {{ $eventSubAdmin ? 'Enter a value only when changing the password.' : '' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </form>
                     </div>
 
@@ -484,12 +509,12 @@
                                maxlength="255" autocomplete="organization">
                     </div>
                     <div class="mb-5">
-                        <label class="form-label required fw-bold">Email</label>
+                        <label class="form-label fw-bold">Email <span class="text-muted fw-normal">(optional)</span></label>
                         <input type="email" id="new_company_email" class="form-control form-control-solid"
                                maxlength="255" placeholder="company@example.com" autocomplete="email">
                     </div>
                     <div>
-                        <label class="form-label required fw-bold">Phone Number</label>
+                        <label class="form-label fw-bold">Contact Number <span class="text-muted fw-normal">(optional)</span></label>
                         <input type="text" id="new_company_phone" class="form-control form-control-solid"
                                maxlength="30" placeholder="Enter phone number" autocomplete="tel">
                     </div>
@@ -656,8 +681,8 @@
                 const email = $('#new_company_email').val().trim();
                 const phone = $('#new_company_phone').val().trim();
 
-                if (!name || !email || !phone) {
-                    toastr.warning('Company name, email and phone number are required.');
+                if (!name) {
+                    toastr.warning('Company name is required.');
                     return;
                 }
 
@@ -829,6 +854,7 @@
             const form = document.getElementById('kt_event_form');
             const submitBtn = document.getElementById('kt_event_submit');
             const isEdit = {{ isset($event->id) ? 'true' : 'false' }};
+            const hasEventSubAdmin = {{ $eventSubAdmin ? 'true' : 'false' }};
 
             validator = FormValidation.formValidation(form, {
                 fields: {
@@ -855,6 +881,24 @@
                     phone: {
                         validators: {
                             notEmpty: {message: 'Phone is required'}
+                        }
+                    },
+
+                    admin_email: {
+                        validators: {
+                            notEmpty: {message: 'Admin email is required'},
+                            emailAddress: {message: 'Enter a valid admin email address'}
+                        }
+                    },
+
+                    admin_password: {
+                        validators: {
+                            callback: {
+                                message: 'Admin password must contain at least 8 characters',
+                                callback: input => hasEventSubAdmin
+                                    ? input.value === '' || input.value.length >= 8
+                                    : input.value.length >= 8
+                            }
                         }
                     },
 
