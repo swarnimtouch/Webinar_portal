@@ -6,9 +6,11 @@ use App\Models\Company;
 use App\Models\DynamicFields;
 use App\Models\EventResource;
 use App\Models\Events;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -24,11 +26,15 @@ class EventsController
         $event = $id ? Events::with(['company', 'resources'])->findOrFail($id) : new Events();
         $selectedCompanyId = session()->getOldInput('company_id', $event->company_id);
         $selectedCompany = $selectedCompanyId ? Company::find($selectedCompanyId) : null;
+        $eventSubAdmin = $event->exists
+            ? User::where('type', 'sub_admin')->where('event_id', $event->id)->oldest()->first()
+            : null;
 
         $response = [
             'event' => $event,
             'selectedCompany' => $selectedCompany,
             'eventResources' => $event->exists ? $event->resources->sortBy('slot')->values() : collect(),
+            'eventSubAdmin' => $eventSubAdmin,
             'title' => __('Event'),
             'breadcrumb' => breadcrumb([__('Events') => route('admin.events'), ($id ? 'Edit' : 'Add' . ' Event') => '']),
         ];
@@ -39,11 +45,31 @@ class EventsController
     public function save(Request $request, $id = null)
     {
         $event = $id ? Events::findOrFail($id) : new Events();
+        $eventSubAdmin = $id
+            ? User::where('type', 'sub_admin')->where('event_id', $id)->oldest()->first()
+            : null;
         $request->validate([
             'company_id' => ['required', 'integer', 'exists:companies,id'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email'],
             'phone' => ['required', 'string', 'max:255'],
+            'admin_email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')
+                    ->where(fn ($query) => $query->whereIn('type', ['admin', 'sub_admin']))
+                    ->ignore($eventSubAdmin?->id),
+                Rule::unique('users', 'email')
+                    ->where(fn ($query) => $query->where('event_id', $id ?? 0))
+                    ->ignore($eventSubAdmin?->id),
+            ],
+            'admin_password' => [
+                Rule::requiredIf(fn () => !$eventSubAdmin),
+                'nullable',
+                'string',
+                'min:8',
+            ],
             'favicon' => [
                 Rule::requiredIf(fn() => !$id),
                 'file',
@@ -121,6 +147,18 @@ class EventsController
         $event->active_user_to = $request->active_user_to ? Carbon::parse($request->active_user_to)->format('Y-m-d H:i:s') : null;
         $event->is_log_attendance = $request->is_log_attendance ?? 0;
         $event->save();
+
+        $subAdmin = $eventSubAdmin ?: new User();
+        $subAdmin->type = 'sub_admin';
+        $subAdmin->event_id = $event->id;
+        $subAdmin->email = $request->admin_email;
+        $subAdmin->name = $subAdmin->name ?: Str::before($request->admin_email, '@');
+        $subAdmin->status = 'active';
+        if ($request->filled('admin_password')) {
+            $subAdmin->password = Hash::make($request->admin_password);
+        }
+        $subAdmin->save();
+
         $this->saveResources($request, $event);
         $isDynamicFieldsExist = DynamicFields::where('event_id', $event->id)->count();
         if ($isDynamicFieldsExist == 0) {
@@ -286,8 +324,8 @@ class EventsController
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
         ]);
 
         $name = trim($validated['name']);
@@ -306,8 +344,8 @@ class EventsController
         $company = Company::create([
             'name' => $name,
             'slug' => $slug,
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
+            'email' => $validated['email'] ?? null,
+            'phone' => $validated['phone'] ?? null,
         ]);
 
         return response()->json(['company' => $company], 201);
