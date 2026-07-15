@@ -745,7 +745,14 @@
 
 
             $('#mobileChatBtn').on('click', function () {
-                $('.chat-sidebar').toggleClass('mobile-open');
+                const chatTab = document.querySelector('.tab-link[data-tab="chat"]');
+                const chatSidebar = document.querySelector('.chat-sidebar');
+
+                chatTab?.click();
+                chatSidebar?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
             });
 
             $('#scrollToBottomBtn').on('click', function () {

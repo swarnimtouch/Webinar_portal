@@ -1682,6 +1682,7 @@ img {
   .chat-sidebar {
     background-color: var(--bg-dark-secondary);
     border-top: 1px solid var(--border-color);
+    scroll-margin-top: 72px;
   }
 
   .mobile-chat-button-container {
