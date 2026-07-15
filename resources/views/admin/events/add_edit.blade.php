@@ -351,10 +351,27 @@
                                                                class="form-control form-control-lg form-control-solid resource-file"
                                                                accept=".pdf,application/pdf">
                                                         <div class="text-muted fs-7 mt-2 resource-file-note">
-                                                            @if($savedResource)
-                                                                Current file: {{ $savedResource->original_name }} &middot;
-                                                            @endif
                                                             PDF only, maximum 10 MB.
+                                                        </div>
+                                                        <div class="resource-file-preview mt-3 {{ $savedResource ? '' : 'd-none' }}">
+                                                            <div class="d-flex align-items-center justify-content-between border border-dashed rounded p-3 bg-light-primary">
+                                                                <div class="d-flex align-items-center min-w-0">
+                                                                    <i class="bi bi-file-earmark-pdf fs-2 text-danger me-3"></i>
+                                                                    <div class="min-w-0">
+                                                                        <div class="fw-bold text-gray-800 resource-preview-name text-truncate">
+                                                                            {{ $savedResource?->original_name }}
+                                                                        </div>
+                                                                        <div class="text-muted fs-8 resource-preview-status">
+                                                                            {{ $savedResource ? 'Currently saved PDF' : 'Selected PDF' }}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <a class="btn btn-sm btn-light-primary resource-preview-link {{ $savedResource ? '' : 'd-none' }}"
+                                                                   href="{{ $savedResource ? \App\Support\EventStorage::downloadUrl($savedResource->file_path) : '#' }}"
+                                                                   target="_blank" rel="noopener">
+                                                                    <i class="bi bi-eye me-1"></i> View PDF
+                                                                </a>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <button type="button"
@@ -385,6 +402,21 @@
                                                    class="form-control form-control-lg form-control-solid resource-file"
                                                    accept=".pdf,application/pdf">
                                             <div class="text-muted fs-7 mt-2 resource-file-note">PDF only, maximum 10 MB.</div>
+                                            <div class="resource-file-preview mt-3 d-none">
+                                                <div class="d-flex align-items-center justify-content-between border border-dashed rounded p-3 bg-light-primary">
+                                                    <div class="d-flex align-items-center min-w-0">
+                                                        <i class="bi bi-file-earmark-pdf fs-2 text-danger me-3"></i>
+                                                        <div class="min-w-0">
+                                                            <div class="fw-bold text-gray-800 resource-preview-name text-truncate"></div>
+                                                            <div class="text-muted fs-8 resource-preview-status">Selected PDF</div>
+                                                        </div>
+                                                    </div>
+                                                    <a class="btn btn-sm btn-light-primary resource-preview-link d-none"
+                                                       href="#" target="_blank" rel="noopener">
+                                                        <i class="bi bi-eye me-1"></i> View PDF
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                         <button type="button" class="btn btn-icon btn-light-danger remove-resource-btn"
                                                 title="Remove resource">
@@ -760,10 +792,39 @@
                     row.querySelector('.resource-title').value = '';
                     row.querySelector('.resource-file').value = '';
                     row.querySelector('.resource-file-note').textContent = 'PDF only, maximum 10 MB.';
+                    row.querySelector('.resource-file-preview').classList.add('d-none');
                 } else {
                     row.remove();
                     reindexResources();
                 }
+            });
+
+            resourcesList.addEventListener('change', event => {
+                if (!event.target.classList.contains('resource-file')) return;
+
+                const row = event.target.closest('.resource-input-row');
+                const preview = row.querySelector('.resource-file-preview');
+                const previewName = row.querySelector('.resource-preview-name');
+                const previewStatus = row.querySelector('.resource-preview-status');
+                const previewLink = row.querySelector('.resource-preview-link');
+                const file = event.target.files[0];
+
+                if (previewLink.dataset.objectUrl) {
+                    URL.revokeObjectURL(previewLink.dataset.objectUrl);
+                    delete previewLink.dataset.objectUrl;
+                }
+
+                if (!file) return;
+
+                const objectUrl = URL.createObjectURL(file);
+                previewName.textContent = file.name;
+                previewStatus.textContent = row.querySelector('.resource-id').value
+                    ? 'Replacement PDF selected'
+                    : 'New PDF selected';
+                previewLink.href = objectUrl;
+                previewLink.dataset.objectUrl = objectUrl;
+                previewLink.classList.remove('d-none');
+                preview.classList.remove('d-none');
             });
 
             reindexResources();
