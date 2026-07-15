@@ -618,6 +618,18 @@
             });
             echo.channel(`webinar.${slug}.poll`)
                 .listen('.poll.updated', function (data) {
+                    const pollIsLive = data.poll
+                        && data.poll.status === 'active'
+                        && !Boolean(Number(data.poll.is_hidden));
+
+                    if (pollIsLive) {
+                        toastr.info('Poll is live!', 'Live Poll', {
+                            closeButton: true,
+                            timeOut: 8000,
+                            extendedTimeOut: 2000
+                        });
+                    }
+
                     renderPoll(data.poll, null);
                     loadPoll();
                 });
