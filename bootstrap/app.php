@@ -56,6 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'event' => \App\Http\Middleware\SetEvent::class,
+            'sub_admin.menu' => \App\Http\Middleware\SubAdminMenuAccess::class,
         ]);
         $middleware->redirectGuestsTo(function (Request $request) {
 

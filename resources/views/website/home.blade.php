@@ -650,7 +650,7 @@
                             mediaElement = `<img src="${item.src}" alt="Event Banner">`;
                         } else if (item.type === 'video') {
                             mediaElement = `<video poster="${item.poster || ''}" muted playsinline loop>
-                                    <source src="${item.src}" type="video/mp4">
+                                    <source src="${item.src}">
                                 </video>`;
                         }
                         $track.append(`<div class="slide">${mediaElement}</div>`);

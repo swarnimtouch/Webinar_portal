@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class HomeController
 {
@@ -127,15 +128,22 @@ class HomeController
         $rules = [];
 
         foreach ($fields as $field) {
-            if ($field->is_required == 1) {
+            $required = $field->is_required == 1 ? 'required' : 'nullable';
 
-                if ($field->field_name === 'mobile_number') {
-                    $rules['mobile_number'] = 'required|digits:10|unique:users,mobile';
-                } elseif (str_contains($field->field_name, 'email')) {
-                    $rules['email'] = 'required|email|unique:users,email';
-                } else {
-                    $rules[$field->field_name] = 'required';
-                }
+            if ($field->field_name === 'mobile_number') {
+                $rules['mobile_number'] = [
+                    $required,
+                    'digits:10',
+                    Rule::unique('users', 'mobile')->where('event_id', $event->id),
+                ];
+            } elseif (str_contains($field->field_name, 'email')) {
+                $rules[$field->field_name] = [
+                    $required,
+                    'email',
+                    Rule::unique('users', 'email')->where('event_id', $event->id),
+                ];
+            } elseif ($field->is_required == 1) {
+                $rules[$field->field_name] = 'required';
             }
         }
 

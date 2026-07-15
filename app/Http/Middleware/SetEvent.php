@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Events;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetEvent
@@ -42,6 +43,14 @@ class SetEvent
                 })
                 ->firstOrFail();
             app()->instance('event', $event);
+
+            // Website sessions are event-specific. A registration from one
+            // event must not authenticate the visitor in another event.
+            $websiteUser = Auth::guard('web')->user();
+            if ($websiteUser && (int) $websiteUser->event_id !== (int) $event->id) {
+                Auth::guard('web')->logout();
+                $request->session()->regenerateToken();
+            }
         }
 
         return $next($request);

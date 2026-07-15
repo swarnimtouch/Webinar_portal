@@ -234,13 +234,6 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.user.index', 'admin.user.add_edit_form']
             ],
             [
-                'route' => route('admin.dynamic_fields'),
-                'name' => 'Dynamic Fields',
-                'icon' => 'bi bi-sliders',
-                'child' => [],
-                'all_routes' => ['admin.dynamic_fields', 'admin.dynamic_fields.save']
-            ],
-            [
                 'route' => route('admin.user_attendance'),
                 'name' => 'User Attendance',
                 'icon' => 'bi-calendar-check',
@@ -255,13 +248,6 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.feedback.index']
             ],
             [
-                'route' => route('admin.poll'),
-                'name' => 'Polls',
-                'icon' => 'bi-bar-chart',
-                'child' => [],
-                'all_routes' => ['admin.poll', 'admin.poll.add_edit_form']
-            ],
-            [
                 'route' => route('admin.user_poll_result'),
                 'name' => 'User Poll Answers',
                 'icon' => 'bi-patch-question',
@@ -274,13 +260,6 @@ function getModules($user_type = 'admin'): array
                 'icon' => 'bi-chat-dots',
                 'child' => [],
                 'all_routes' => ['admin.chat_log']
-            ],
-            [
-                'route' => route('admin.certificate'),
-                'name' => 'Certificate',
-                'icon' => 'bi-award',
-                'child' => [],
-                'all_routes' => ['admin.certificate', 'admin.certificate.add_edit_form']
             ],
             [
                 'route' => route('admin.certificate_log'),
@@ -338,6 +317,62 @@ function getModules($user_type = 'admin'): array
     }
 
     return $module;
+}
+
+/**
+ * Server-side equivalent of the sub-admin menu.
+ *
+ * Menu visibility is only presentation; this list is also consumed by the
+ * SubAdminMenuAccess middleware so a hidden module cannot be opened by URL.
+ * Keep module route prefixes here when changing the sub-admin menu above.
+ */
+function sub_admin_can_access_route(?string $routeName): bool
+{
+    if (!$routeName || !str_starts_with($routeName, 'admin.')) {
+        return false;
+    }
+
+    $routeName = substr($routeName, strlen('admin.'));
+
+    $allowedRoutes = [
+        'dashboard',
+        'profile',
+        'profile.update',
+        'password',
+        'password.update',
+        'check-email-exists',
+        'check-mobile-exists',
+        'get-event-fields',
+    ];
+
+    $allowedPrefixes = [
+        'user.',
+        'users.',
+        'event_setting',
+        'user_attendance',
+        'feedback.',
+        'user_poll_result',
+        'chat_log',
+        'certificate_log',
+        'banners',
+        'banner.',
+        'speakers',
+        'speaker.',
+        'brand',
+        'content',
+    ];
+
+    if (in_array($routeName, $allowedRoutes, true)) {
+        return true;
+    }
+
+    foreach ($allowedPrefixes as $prefix) {
+        if ($routeName === rtrim($prefix, '.') || str_starts_with($routeName, $prefix)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function get_route($route)
