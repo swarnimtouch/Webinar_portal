@@ -81,7 +81,7 @@
 
                                             <!--begin::Preview existing image-->
                                             <div class="image-input-wrapper w-125px h-125px" id="imagePreview"
-                                                 style="background-image: url('{{ isset($speaker) && $speaker->filename ? asset('storage/speakers/' . $speaker->filename) : asset('assets/media/avatars/blank.png') }}')">
+                                                 style="background-image: url('{{ isset($speaker) && $speaker->filename ? $speaker->media_url : asset('assets/media/avatars/blank.png') }}')">
                                             </div>
                                             <!--end::Preview existing image-->
 

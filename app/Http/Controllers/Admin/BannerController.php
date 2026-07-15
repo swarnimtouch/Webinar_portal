@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Banner;
 use App\Models\Events;
+use App\Support\EventStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -40,7 +41,7 @@ class BannerController extends Controller
                 'required',
                 Rule::in(['image', 'video']),
             ],
-            'event_id' => 'nullable|exists:events,id',
+            'event_id' => 'required|exists:events,id',
 
             'image_file' => [
                 Rule::requiredIf(fn() => !$id && $request->type === 'image'),
@@ -65,20 +66,21 @@ class BannerController extends Controller
         $banner->title = $request->title ?? null;
         $banner->type = $request->type ?? 'image';
         $banner->event_id = $request->event_id;
+        $event = Events::findOrFail($request->integer('event_id'));
 
         if ($request->type === 'image' && $request->hasFile('image_file')) {
 
             $file = $request->file('image_file');
             $name = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('banners', $name, 'public');
-            $banner->filename = $name;
+            EventStorage::delete($banner->filename, 'banners/' . $banner->filename);
+            $banner->filename = EventStorage::store($file, $event, 'banners', $name);
         }
 
         if ($request->type === 'video' && $request->hasFile('video_file')) {
             $file = $request->file('video_file');
             $name = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('banners', $name, 'public');
-            $banner->filename = $name;
+            EventStorage::delete($banner->filename, 'banners/' . $banner->filename);
+            $banner->filename = EventStorage::store($file, $event, 'banners', $name);
         }
 
         $banner->save();
@@ -92,9 +94,7 @@ class BannerController extends Controller
     {
         try {
             $banner = Banner::findOrFail($id);
-            if (Storage::exists('public/banners/' . $banner->filename)) {
-                Storage::delete('public/banners/' . $banner->filename);
-            }
+            EventStorage::delete($banner->filename, 'banners/' . $banner->filename);
             $banner->delete();
 
             return response()->json(['success' => true, 'message' => 'Banner deleted successfully']);
@@ -113,9 +113,7 @@ class BannerController extends Controller
             }
             $banners = Banner::whereIn('id', $ids)->get();
             foreach ($banners as $banner) {
-                if (Storage::exists('public/banners/' . $banner->filename)) {
-                    Storage::delete('public/banners/' . $banner->filename);
-                }
+                EventStorage::delete($banner->filename, 'banners/' . $banner->filename);
                 $banner->delete();
             }
             return response()->json(['success' => true, 'message' => 'Banners deleted successfully']);

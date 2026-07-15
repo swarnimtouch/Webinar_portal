@@ -216,9 +216,9 @@
                     {
                         data: 'file_path',
                         orderable: false,
-                        render: path => {
+                        render: (path, type, row) => {
                             if (!path) return `<span class="badge badge-light-warning">No File</span>`;
-                            return `<a href="/storage/${path}" target="_blank" class="btn btn-sm btn-light-success">
+                            return `<a href="${row.file_url}" target="_blank" class="btn btn-sm btn-light-success">
                             <i class="bi bi-download me-1"></i>Download
                         </a>`;
                         }

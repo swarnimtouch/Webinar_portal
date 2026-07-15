@@ -15,6 +15,10 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    'event_assets_disk' => env('EVENT_ASSETS_DISK', 's3'),
+    'event_assets_root' => env('EVENT_ASSETS_ROOT', 'webinar_portal'),
+    'event_assets_visibility' => env('EVENT_ASSETS_VISIBILITY', 'public'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks

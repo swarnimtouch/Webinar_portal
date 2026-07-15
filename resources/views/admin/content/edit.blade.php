@@ -135,6 +135,15 @@
 
                     const validator = FormValidation.formValidation(form, {
                         fields: {
+                            @if(auth()->user()->type === 'admin')
+                            event_id: {
+                                validators: {
+                                    notEmpty: {
+                                        message: 'Event is required'
+                                    }
+                                }
+                            },
+                            @endif
                             title: {
                                 validators: {
                                     notEmpty: {

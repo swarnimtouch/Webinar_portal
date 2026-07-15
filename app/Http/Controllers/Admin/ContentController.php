@@ -93,7 +93,9 @@ class ContentController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%");
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhereHas('event', fn($eventQuery) => $eventQuery->where('name', 'like', "%{$search}%"));
             });
         }
 
@@ -110,6 +112,7 @@ class ContentController extends Controller
                 $dbColumn = match ($columnName) {
                     'title' => 'title',
                     'slug' => 'slug',
+                    'created_at' => 'created_at',
                     default => 'id'
                 };
 
@@ -126,6 +129,7 @@ class ContentController extends Controller
         $data = $contents->map(function ($content) {
             return [
                 'id' => $content->id,
+                'event_name' => $content->event?->name ?? '-',
                 'title' => $content->title,
                 'slug' => $content->slug,
                 'content' => $content->content,

@@ -83,7 +83,7 @@
                                 <div class="col-lg-8">
                                     @if($certificate->exists && $certificate->background_image)
                                         <div class="mb-3">
-                                            <img src="{{ asset('storage/' . $certificate->background_image) }}"
+                                            <img src="{{ \App\Support\EventStorage::url($certificate->background_image) }}"
                                                  alt="Current Background"
                                                  class="rounded border"
                                                  style="height: 120px; object-fit: cover;">
@@ -114,7 +114,7 @@
                                     @endif
                                     <input type="file" name="font_file" id="font_file"
                                            class="form-control form-control-lg form-control-solid"
-                                           accept=".ttf,.otf,.woff,.woff2"/>
+                                           accept=".ttf,.otf"/>
                                     <div class="form-text">Accepted: TTF, OTF, WOFF, WOFF2. Leave empty to keep
                                         current.
                                     </div>
@@ -299,11 +299,11 @@
                                         const file = document.getElementById('font_file').files[0];
                                         if (isEdit && !file) return true;
                                         if (!isEdit && !file) return {valid: false, message: 'Font file is required'};
-                                        const allowed = ['ttf', 'otf', 'woff', 'woff2'];
+                                        const allowed = ['ttf', 'otf'];
                                         const ext = file.name.split('.').pop().toLowerCase();
                                         if (!allowed.includes(ext)) return {
                                             valid: false,
-                                            message: 'Only TTF, OTF, WOFF, WOFF2 allowed'
+                                            message: 'Only TTF and OTF files are allowed'
                                         };
                                         return true;
                                     }

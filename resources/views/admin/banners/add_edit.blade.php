@@ -126,7 +126,7 @@
                                     >
                                         <!--begin::Preview existing/new image-->
                                         <div class="image-input-wrapper w-125px h-125px" id="bannerImagePreview"
-                                             style="background-image: url('{{ $banner->filename && $banner->type === 'image' ? asset('storage/banners/'.$banner->filename) : asset('assets/media/no_image.png') }}')"
+                                             style="background-image: url('{{ $banner->filename && $banner->type === 'image' ? $banner->media_url : asset('assets/media/no_image.png') }}')"
                                         >
                                         </div>
                                         <!--end::Preview existing/new image-->
@@ -269,7 +269,7 @@
 
             const blankImage = "{{ asset('assets/media/no_image.png') }}";
             const originalImage = "{{ $banner->filename && $banner->type === 'image'
-                ? asset('storage/banners/' . $banner->filename)
+                ? $banner->media_url
                 : asset('assets/media/no_image.png') }}";
 
             let imageRemoved = false;

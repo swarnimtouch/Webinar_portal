@@ -99,7 +99,7 @@
 
                                             <!--begin::Preview-->
                                             <div class="image-input-wrapper w-125px h-125px" id="brandImagePreview"
-                                                 style="background-image: url('{{ $brand->filename && $brand->type === 'image' ? asset('storage/brands/'.$brand->filename) : asset('assets/media/no_image.png') }}')"
+                                                 style="background-image: url('{{ $brand->filename && $brand->type === 'image' ? $brand->media_url : asset('assets/media/no_image.png') }}')"
                                             >
                                             </div>
                                             <!--end::Preview-->
@@ -174,7 +174,7 @@
                     const isEdit = {{ $brand->exists ? 'true' : 'false' }};
                     const blankImage = "{{ asset('assets/media/no_image.png') }}";
                     const originalImage = "{{ $brand->filename && $brand->type === 'image'
-                        ? asset('storage/brands/'.$brand->filename)
+                        ? $brand->media_url
                         : asset('assets/media/no_image.png') }}";
                     const isAdmin = {{ auth()->user()->type === 'admin' ? 'true' : 'false' }};
 

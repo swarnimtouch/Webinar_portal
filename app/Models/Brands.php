@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\EventStorage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -30,17 +31,15 @@ class Brands extends Model
     public function getMediaUrlAttribute()
     {
         return $this->filename
-            ? asset('storage/brands/' . $this->filename)
+            ? EventStorage::url($this->filename, 'brands/' . $this->filename)
             : null;
     }
 
     public function getImageUrlAttribute()
     {
-        return asset(
-            $this->filename
-                ? 'storage/brands/' . $this->filename
-                : 'assets/images/default-brand.png'
-        );
+        return $this->filename
+            ? EventStorage::url($this->filename, 'brands/' . $this->filename)
+            : asset('assets/images/default-brand.png');
     }
 
     public function event()

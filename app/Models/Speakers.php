@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\EventStorage;
 use Illuminate\Database\Eloquent\Model;
 
 class Speakers extends Model
@@ -28,17 +29,15 @@ class Speakers extends Model
     public function getMediaUrlAttribute()
     {
         return $this->filename
-            ? asset('storage/speakers/' . $this->filename)
+            ? EventStorage::url($this->filename, 'speakers/' . $this->filename)
             : null;
     }
 
     public function getImageUrlAttribute()
     {
-        return asset(
-            $this->filename
-                ? 'storage/speakers/' . $this->filename
-                : 'assets/images/default-user.png'
-        );
+        return $this->filename
+            ? EventStorage::url($this->filename, 'speakers/' . $this->filename)
+            : asset('assets/images/default-user.png');
     }
 
     public function getStatusBadgeAttribute()

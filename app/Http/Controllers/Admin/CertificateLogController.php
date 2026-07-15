@@ -6,6 +6,7 @@ use App\Models\CertificateLogs;
 use App\Models\Events;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Support\EventStorage;
 
 class CertificateLogController
 {
@@ -41,11 +42,7 @@ class CertificateLogController
 
             $download = CertificateLogs::findOrFail($id);
 
-            if ($download->file_path &&
-                Storage::disk('public')->exists($download->file_path)) {
-
-                Storage::disk('public')->delete($download->file_path);
-            }
+            EventStorage::delete($download->file_path);
 
             $download->delete();
 
@@ -80,11 +77,7 @@ class CertificateLogController
 
             foreach ($downloads as $download) {
 
-                if ($download->file_path &&
-                    Storage::disk('public')->exists($download->file_path)) {
-
-                    Storage::disk('public')->delete($download->file_path);
-                }
+                EventStorage::delete($download->file_path);
             }
 
             CertificateLogs::whereIn('id', $ids)->delete();
@@ -157,6 +150,7 @@ class CertificateLogController
                 'user_name' => $download->user?->name ?? 'N/A',
                 'user_email' => $download->user?->email ?? 'N/A',
                 'file_path' => $download->file_path,
+                'file_url' => EventStorage::downloadUrl($download->file_path),
                 'downloaded_at' => $download->created_at
                     ? $download->created_at->format('d M, Y H:i')
                     : '-',
@@ -209,7 +203,7 @@ class CertificateLogController
         $esc = fn($val) => '"' . str_replace('"', '""', $val) . '"';
 
         foreach ($query as $log) {
-            $filePath = $log->file_path ? url("storage/{$log->file_path}") : 'No File';
+            $filePath = EventStorage::downloadUrl($log->file_path) ?? 'No File';
             $eventName = optional($log->certificate?->event)->name ?? 'N/A';
 
             $userName = optional($log->user)->name ?? 'N/A';

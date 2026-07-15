@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\EventStorage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,22 +35,20 @@ class Banner extends Model
 
     public function getMediaUrlAttribute()
     {
-        return asset(
-            $this->filename
-                ? 'storage/banners/' . $this->filename
-                : 'assets/media/avatars/blank.png'
-        );
+        return $this->filename
+            ? EventStorage::url($this->filename, 'banners/' . $this->filename)
+            : asset('assets/media/avatars/blank.png');
     }
 
     public function getSliderDataAttribute()
     {
         $data = [
             'type' => $this->type ?? 'image',
-            'src' => asset('storage/banners/' . $this->filename),
+            'src' => EventStorage::url($this->filename, 'banners/' . $this->filename),
         ];
 
         if ($this->type === 'video' && !empty($this->poster)) {
-            $data['poster'] = asset('storage/banners/' . $this->poster);
+            $data['poster'] = EventStorage::url($this->poster, 'banners/' . $this->poster);
         }
 
         return $data;

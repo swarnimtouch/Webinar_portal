@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Events;
 use Illuminate\Http\Request;
 use App\Models\Certificate;
+use App\Support\EventStorage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
@@ -55,8 +56,10 @@ class CertificateController
             'background_image' => $certificate->exists
                 ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
                 : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'event_id' => 'nullable|exists:events,id',
-            'font_file' => 'nullable|file',
+            'event_id' => 'required|exists:events,id',
+            'font_file' => $certificate->exists
+                ? 'nullable|file|extensions:ttf,otf|max:5120'
+                : 'required|file|extensions:ttf,otf|max:5120',
             'font_size' => 'required|integer|min:1|max:300',
             'font_color' => 'required|string|max:20',
             'is_bold' => 'nullable|boolean',
@@ -69,22 +72,24 @@ class CertificateController
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        $event = Events::findOrFail($request->integer('event_id'));
+
         if ($request->hasFile('background_image')) {
             if ($certificate->exists && $certificate->background_image) {
-                Storage::disk('public')->delete($certificate->background_image);
+                EventStorage::delete($certificate->background_image);
             }
             $bgImage = $request->file('background_image');
-            $originalName = $bgImage->getClientOriginalName();
-            $certificate->background_image = $bgImage->storeAs('certificates/backgrounds', $originalName, 'public');
+            $originalName = uniqid() . '-' . $bgImage->getClientOriginalName();
+            $certificate->background_image = EventStorage::store($bgImage, $event, 'certificates/raw-images', $originalName);
         }
 
         if ($request->hasFile('font_file')) {
             if ($certificate->exists && $certificate->font_file) {
-                Storage::disk('public')->delete($certificate->font_file);
+                EventStorage::delete($certificate->font_file);
             }
             $fontFile = $request->file('font_file');
-            $originalName = $fontFile->getClientOriginalName();
-            $certificate->font_file = $fontFile->storeAs('certificates/fonts', $originalName, 'public');
+            $originalName = uniqid() . '-' . $fontFile->getClientOriginalName();
+            $certificate->font_file = EventStorage::store($fontFile, $event, 'certificates/fonts', $originalName);
         }
 
         $certificate->event_id = $request->event_id;
@@ -111,8 +116,9 @@ class CertificateController
             $certificate = Certificate::findOrFail($id);
 
             if ($certificate->background_image) {
-                Storage::disk('public')->delete($certificate->background_image);
+                EventStorage::delete($certificate->background_image);
             }
+            EventStorage::delete($certificate->font_file);
 
             $certificate->delete();
 
@@ -145,8 +151,9 @@ class CertificateController
 
             Certificate::whereIn('id', $ids)->each(function ($certificate) {
                 if ($certificate->background_image) {
-                    Storage::disk('public')->delete($certificate->background_image);
+                    EventStorage::delete($certificate->background_image);
                 }
+                EventStorage::delete($certificate->font_file);
             });
 
             Certificate::whereIn('id', $ids)->delete();
@@ -242,7 +249,7 @@ class CertificateController
                 'name' => $certificate->name,
                 'event' => $certificate->event->name ?? 'N/A',
                 'background_image' => $certificate->background_image
-                    ? asset('storage/' . $certificate->background_image)
+                    ? EventStorage::url($certificate->background_image)
                     : null,
                 'font_file' => $certificate->font_file,
                 'font_size' => $certificate->font_size,

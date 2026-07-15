@@ -50,6 +50,7 @@
                             <thead>
                             <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
                                 <th>ID</th>
+                                <th>Event Name</th>
                                 <th>Title</th>
                                 <th>Slug</th>
                                 <th>Created At</th>
@@ -94,10 +95,11 @@
                         d.search = qs('[data-kt-user-table-filter="search"]')?.value ?? '';
                     }
                 },
-                order: [[2, 'desc']],
+                order: [[4, 'desc']],
                 pageLength: 10,
                 columns: [
                     {data: 'id'},
+                    {data: 'event_name', orderable: false, defaultContent: '-'},
                     {data: 'title'},
                     {data: 'slug'},
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\EventStorage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,12 +21,12 @@ class Events extends Model
 
     public function getFaviconAttribute($value)
     {
-        return !empty($value) ? asset('storage/events/' . $value) : asset('assets/media/no_image.png');
+        return !empty($value) ? EventStorage::url($value, 'events/' . $value) : asset('assets/media/no_image.png');
     }
 
     public function getLogoAttribute($value)
     {
-        return !empty($value) ? asset('storage/events/' . $value) : asset('assets/media/no_image.png');
+        return !empty($value) ? EventStorage::url($value, 'events/' . $value) : asset('assets/media/no_image.png');
     }
 
     public function scopeActive($query)

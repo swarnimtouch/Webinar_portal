@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Brands;
 use App\Models\Events;
+use App\Support\EventStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -46,7 +47,7 @@ class BrandsController extends Controller
 
         $rules = [
             'title' => 'required|string|max:255',
-            'event_id' => 'nullable|exists:events,id',
+            'event_id' => 'required|exists:events,id',
         ];
 
         if (!$isUpdate) {
@@ -59,19 +60,17 @@ class BrandsController extends Controller
 
         $brand->title = $request->title;
         $brand->event_id = $request->event_id;
+        $event = Events::findOrFail($request->integer('event_id'));
         $brand->status = $brand->status ?? 'active';
 
         if ($request->hasFile('filename')) {
 
-            if ($brand->filename && Storage::disk('public')->exists('brands/' . $brand->filename)) {
-                Storage::disk('public')->delete('brands/' . $brand->filename);
-            }
+            EventStorage::delete($brand->filename, 'brands/' . $brand->filename);
             $file = $request->file('filename');
             $mimeType = $file->getMimeType();
             $type = str_starts_with($mimeType, 'image/') ? 'image' : 'video';
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('brands', $filename, 'public');
-            $brand->filename = $filename;
+            $brand->filename = EventStorage::store($file, $event, 'brands', $filename);
             $brand->type = $type;
         }
         $brand->save();
@@ -83,9 +82,7 @@ class BrandsController extends Controller
     {
         try {
             $brands = Brands::findOrFail($id);
-            if (Storage::exists('public/brands/' . $brands->filename)) {
-                Storage::delete('public/brands/' . $brands->filename);
-            }
+            EventStorage::delete($brands->filename, 'brands/' . $brands->filename);
             $brands->delete();
             return response()->json(['success' => true, 'message' => 'Brand deleted successfully']);
         } catch (\Exception $e) {
@@ -105,9 +102,7 @@ class BrandsController extends Controller
             }
             $brands = Brands::whereIn('id', $ids)->get();
             foreach ($brands as $brand) {
-                if (Storage::exists('public/brands/' . $brand->filename)) {
-                    Storage::delete('public/brands/' . $brand->filename);
-                }
+                EventStorage::delete($brand->filename, 'brands/' . $brand->filename);
                 $brand->delete();
             }
             return response()->json(['success' => true, 'message' => 'Brands deleted successfully']);

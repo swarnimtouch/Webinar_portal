@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Banner;
 use App\Models\Events;
 use App\Models\Speakers;
+use App\Support\EventStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -44,7 +45,7 @@ class SpeakersController extends Controller
     {
         $speaker = $id ? Speakers::findOrFail($id) : new Speakers();
         $validated = $request->validate([
-            'event_id' => 'nullable|exists:events,id',
+            'event_id' => 'required|exists:events,id',
             'name' => 'required|string|max:255',
             'line1' => 'required|string|max:255',
             'filename' => $id
@@ -53,23 +54,19 @@ class SpeakersController extends Controller
             'status' => 'required|in:active,inactive'
         ]);
         $speaker->event_id = $request->event_id;
+        $event = Events::findOrFail($request->integer('event_id'));
         $speaker->name = $request->name;
         $speaker->line1 = $request->line1;
         $speaker->line2 = $request->line2;
         $speaker->line3 = $request->line3;
         $speaker->status = $request->status ?? 'active';
         if ($request->hasFile('filename')) {
-            if ($speaker->filename && Storage::disk('public')->exists('speakers/' . $speaker->filename)) {
-                Storage::disk('public')->delete('speakers/' . $speaker->filename);
-            }
+            EventStorage::delete($speaker->filename, 'speakers/' . $speaker->filename);
             $file = $request->file('filename');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('speakers', $filename, 'public');
-            $speaker->filename = $filename;
+            $speaker->filename = EventStorage::store($file, $event, 'speakers', $filename);
         } elseif ($request->input('image_removed') == '1' && $speaker->exists) {
-            if ($speaker->filename && Storage::disk('public')->exists('speakers/' . $speaker->filename)) {
-                Storage::disk('public')->delete('speakers/' . $speaker->filename);
-            }
+            EventStorage::delete($speaker->filename, 'speakers/' . $speaker->filename);
             $speaker->filename = null;
         }
         $speaker->save();
@@ -84,9 +81,7 @@ class SpeakersController extends Controller
     {
         try {
             $speaker = Speakers::findOrFail($id);
-            if (Storage::exists('public/speakers/' . $speaker->filename)) {
-                Storage::delete('public/speakers/' . $speaker->filename);
-            }
+            EventStorage::delete($speaker->filename, 'speakers/' . $speaker->filename);
             $speaker->delete();
 
             return response()->json(['success' => true, 'message' => 'Speaker deleted successfully']);
@@ -109,9 +104,7 @@ class SpeakersController extends Controller
         $speakers = Speakers::whereIn('id', $ids)->get();
 
         foreach ($speakers as $speaker) {
-            if ($speaker->filename && Storage::disk('public')->exists('speakers/' . $speaker->filename)) {
-                Storage::disk('public')->delete('speakers/' . $speaker->filename);
-            }
+            EventStorage::delete($speaker->filename, 'speakers/' . $speaker->filename);
         }
         Speakers::whereIn('id', $ids)->delete();
         return response()->json(['success' => true, 'message' => 'Speakers deleted successfully!']);

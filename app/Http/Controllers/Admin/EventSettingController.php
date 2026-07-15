@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\DynamicFields;
 use App\Models\Events;
 use App\Models\HomeSetting;
+use App\Support\EventStorage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,15 +64,15 @@ class EventSettingController extends Controller
         if ($request->hasFile('favicon')) {
             $file = $request->file('favicon');
             $name = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('events', $name, 'public');
-            $event->favicon = $name;
+            EventStorage::delete($event->getRawOriginal('favicon'), 'events/' . $event->getRawOriginal('favicon'));
+            $event->favicon = EventStorage::store($file, $event, 'event-assets', $name);
         }
 
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $name = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('events', $name, 'public');
-            $event->logo = $name;
+            EventStorage::delete($event->getRawOriginal('logo'), 'events/' . $event->getRawOriginal('logo'));
+            $event->logo = EventStorage::store($file, $event, 'event-assets', $name);
         }
 
         $event->footer_text = $request->footer_text ?? null;

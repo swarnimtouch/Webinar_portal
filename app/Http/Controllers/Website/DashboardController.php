@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Support\EventStorage;
 
 class DashboardController
 {
@@ -46,9 +47,12 @@ class DashboardController
         $resourceId = $request->route('resourceId');
         $resource = $this->event->resources()->findOrFail($resourceId);
 
-        abort_unless(Storage::disk('public')->exists($resource->file_path), 404);
+        abort_unless(EventStorage::exists($resource->file_path), 404);
 
-        return Storage::disk('public')->download($resource->file_path, $resource->original_name);
+        return response(EventStorage::contents($resource->file_path), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . addslashes($resource->original_name) . '"',
+        ]);
     }
 
     public function attendanceJoin(Request $request)

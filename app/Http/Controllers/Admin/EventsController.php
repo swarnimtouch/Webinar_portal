@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\DynamicFields;
 use App\Models\EventResource;
 use App\Models\Events;
+use App\Support\EventStorage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -96,18 +97,21 @@ class EventsController
                 'status' => $item['status'] ?? 'upcoming',
             ])->values()->all();
 
+        // An ID is required before building the event-scoped S3 key.
+        $event->save();
+
         if ($request->hasFile('favicon')) {
             $file = $request->file('favicon');
             $name = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('events', $name, 'public');
-            $event->favicon = $name;
+            EventStorage::delete($event->getRawOriginal('favicon'), 'events/' . $event->getRawOriginal('favicon'));
+            $event->favicon = EventStorage::store($file, $event, 'event-assets', $name);
         }
 
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $name = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('events', $name, 'public');
-            $event->logo = $name;
+            EventStorage::delete($event->getRawOriginal('logo'), 'events/' . $event->getRawOriginal('logo'));
+            $event->logo = EventStorage::store($file, $event, 'event-assets', $name);
         }
 
         $event->footer_text = $request->footer_text ?? null;
@@ -141,12 +145,8 @@ class EventsController
     {
         try {
             $event = Events::findOrFail($id);
-            if (Storage::exists('public/events/' . $event->favicon)) {
-                Storage::delete('public/events/' . $event->favicon);
-            }
-            if (Storage::exists('public/events/' . $event->logo)) {
-                Storage::delete('public/events/' . $event->logo);
-            }
+            EventStorage::delete($event->getRawOriginal('favicon'), 'events/' . $event->getRawOriginal('favicon'));
+            EventStorage::delete($event->getRawOriginal('logo'), 'events/' . $event->getRawOriginal('logo'));
             $this->deleteResourceFiles($event);
             $event->delete();
 
@@ -166,12 +166,8 @@ class EventsController
             }
             $events = Events::whereIn('id', $ids)->get();
             foreach ($events as $event) {
-                if (Storage::exists('public/events/' . $event->favicon)) {
-                    Storage::delete('public/events/' . $event->favicon);
-                }
-                if (Storage::exists('public/events/' . $event->logo)) {
-                    Storage::delete('public/events/' . $event->logo);
-                }
+                EventStorage::delete($event->getRawOriginal('favicon'), 'events/' . $event->getRawOriginal('favicon'));
+                EventStorage::delete($event->getRawOriginal('logo'), 'events/' . $event->getRawOriginal('logo'));
                 $this->deleteResourceFiles($event);
                 $event->delete();
             }
@@ -324,7 +320,7 @@ class EventsController
             ->whereNotIn('id', $submittedIds)
             ->get()
             ->each(function (EventResource $resource) {
-                Storage::disk('public')->delete($resource->file_path);
+                EventStorage::delete($resource->file_path);
                 $resource->delete();
             });
 
@@ -351,14 +347,15 @@ class EventsController
 
             if ($file) {
                 $slot = $resource?->slot ?? $nextSlot++;
-                $storedPath = $file->storeAs(
-                    "events/{$event->id}/resources",
-                    "resource-{$slot}-" . Str::uuid() . '.pdf',
-                    'public'
+                $storedPath = EventStorage::store(
+                    $file,
+                    $event,
+                    'resource',
+                    "resource-{$slot}-" . Str::uuid() . '.pdf'
                 );
 
                 if ($resource) {
-                    Storage::disk('public')->delete($resource->file_path);
+                    EventStorage::delete($resource->file_path);
                 }
 
                 ($resource ?: new EventResource([
@@ -378,7 +375,7 @@ class EventsController
     private function deleteResourceFiles(Events $event): void
     {
         $event->resources()->each(function (EventResource $resource) {
-            Storage::disk('public')->delete($resource->file_path);
+            EventStorage::delete($resource->file_path);
         });
     }
 }
