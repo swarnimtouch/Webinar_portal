@@ -58,6 +58,24 @@
 
         $(this).trigger('click');
     });
+
+    // DataTable action menus can be clipped below the card when only one or
+    // a few rows are present. Open the last row (or low viewport rows) upward
+    // across every admin listing.
+    document.addEventListener('show.bs.dropdown', function (event) {
+        const toggle = event.target.closest?.('[data-bs-toggle="dropdown"]');
+        const row = toggle?.closest('tbody tr');
+
+        if (!toggle || !row) return;
+
+        const wrapper = toggle.closest('.dropdown, .dropup') || toggle.parentElement;
+        const isLastVisibleRow = row === row.parentElement?.lastElementChild;
+        const availableBelow = window.innerHeight - toggle.getBoundingClientRect().bottom;
+        const shouldOpenUp = isLastVisibleRow || availableBelow < 180;
+
+        wrapper?.classList.toggle('dropup', shouldOpenUp);
+        toggle.setAttribute('data-bs-boundary', 'viewport');
+    });
 </script>
 @stack('scripts')
 </body>
