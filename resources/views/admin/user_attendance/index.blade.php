@@ -465,6 +465,12 @@
                     handleSearchDatatable();
                     handleExport();
 
+                    window.setInterval(() => {
+                        if (!document.hidden && datatable) {
+                            datatable.ajax.reload(null, false);
+                        }
+                    }, 30000);
+
                     document.querySelector('[data-kt-user-table-filter="filter"]')
                         ?.addEventListener('click', () => datatable.draw());
 

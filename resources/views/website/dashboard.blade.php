@@ -180,6 +180,10 @@
 
                 attendanceJoin();
 
+                const attendanceHeartbeat = window.setInterval(function () {
+                    if (!document.hidden) attendanceJoin();
+                }, 30000);
+
                 document.addEventListener('visibilitychange', function () {
                     if (document.hidden) {
                         attendanceLeave();
@@ -189,6 +193,12 @@
                 });
 
                 window.addEventListener('beforeunload', function () {
+                    window.clearInterval(attendanceHeartbeat);
+                    attendanceLeave();
+                });
+
+                window.addEventListener('pagehide', function () {
+                    window.clearInterval(attendanceHeartbeat);
                     attendanceLeave();
                 });
             }

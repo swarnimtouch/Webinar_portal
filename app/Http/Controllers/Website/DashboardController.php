@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Support\EventStorage;
 
@@ -70,22 +71,36 @@ class DashboardController
             $userId = Auth::guard('web')->id();
             $now = Carbon::now();
 
-            $attendance = UserAttendance::where('user_id', $userId)
-                ->whereDate('joined_at', $now->toDateString())
-                ->first();
+            $attendance = DB::transaction(function () use ($userId, $now) {
+                // Lock the user row so simultaneous heartbeat requests cannot
+                // add the same seconds twice or create duplicate attendance.
+                \App\Models\User::whereKey($userId)->lockForUpdate()->firstOrFail();
 
-            if (!$attendance) {
-                UserAttendance::create([
-                    'user_id' => $userId,
-                    'joined_at' => $now,
-                    'last_ping_at' => $now,
-                    'session_time' => 0,
-                ]);
-            } else {
-                $attendance->update(['last_ping_at' => $now]);
-            }
+                $attendance = UserAttendance::firstOrCreate(
+                    ['user_id' => $userId],
+                    ['joined_at' => $now, 'last_ping_at' => null, 'session_time' => 0]
+                );
 
-            return response()->json(['success' => true]);
+                if ($attendance->last_ping_at) {
+                    $elapsed = Carbon::parse($attendance->last_ping_at)->diffInSeconds($now);
+
+                    // Heartbeats run every 30 seconds. A larger gap means the
+                    // previous browser session disappeared without a leave ping.
+                    if ($elapsed > 0 && $elapsed <= 90) {
+                        $attendance->session_time += $elapsed;
+                    }
+                }
+
+                $attendance->last_ping_at = $now;
+                $attendance->save();
+
+                return $attendance;
+            });
+
+            return response()->json([
+                'success' => true,
+                'session_time' => $attendance->session_time,
+            ]);
 
         } catch (\Exception $e) {
             Log::error('Attendance Join: ' . $e->getMessage());
@@ -96,20 +111,25 @@ class DashboardController
     public function attendanceLeave(Request $request)
     {
         try {
-            $userId = Auth::id();
+            $userId = Auth::guard('web')->id();
             $now = Carbon::now();
 
-            $attendance = UserAttendance::where('user_id', $userId)
-                ->whereDate('joined_at', $now->toDateString())
-                ->first();
+            DB::transaction(function () use ($userId, $now) {
+                \App\Models\User::whereKey($userId)->lockForUpdate()->first();
+                $attendance = UserAttendance::where('user_id', $userId)->first();
 
-            if ($attendance && $attendance->last_ping_at) {
-                $diff = Carbon::parse($attendance->last_ping_at)->diffInSeconds($now);
-                if ($diff > 0 && $diff < 7200) {
-                    $attendance->increment('session_time', $diff);
+                if (!$attendance || !$attendance->last_ping_at) return;
+
+                $elapsed = Carbon::parse($attendance->last_ping_at)->diffInSeconds($now);
+                if ($elapsed > 0 && $elapsed <= 90) {
+                    $attendance->session_time += $elapsed;
                 }
-                $attendance->update(['last_ping_at' => $now]);
-            }
+
+                // Null marks the session closed, so time away is never counted
+                // when this user comes back to the event later.
+                $attendance->last_ping_at = null;
+                $attendance->save();
+            });
 
             return response()->json(['success' => true]);
 

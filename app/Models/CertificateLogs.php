@@ -14,6 +14,13 @@ class CertificateLogs extends Model
         'file_path',
     ];
 
+    public function scopeLatestPerUserCertificate($query)
+    {
+        return $query->whereIn('id', static::query()
+            ->selectRaw('MAX(id)')
+            ->groupBy('user_id', 'certificate_id'));
+    }
+
     public function certificate()
     {
         return $this->belongsTo(Certificate::class);

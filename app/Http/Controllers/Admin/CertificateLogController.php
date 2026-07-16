@@ -99,7 +99,8 @@ class CertificateLogController
     public function datatable(Request $request)
     {
         $user = auth()->user();
-        $query = CertificateLogs::with(['certificate', 'user']);
+        $query = CertificateLogs::latestPerUserCertificate()
+            ->with(['certificate', 'user']);
         if ($user->type === 'sub_admin') {
             $query->whereHas('certificate', function ($q) use ($user) {
                 $q->where('event_id', $user->event_id);
@@ -118,7 +119,13 @@ class CertificateLogController
             });
         }
 
-        $recordsTotal = CertificateLogs::count();
+        $totalQuery = CertificateLogs::latestPerUserCertificate();
+        if ($user->type === 'sub_admin') {
+            $totalQuery->whereHas('certificate', function ($q) use ($user) {
+                $q->where('event_id', $user->event_id);
+            });
+        }
+        $recordsTotal = $totalQuery->count();
         $recordsFiltered = $query->count();
 
         if ($request->has('order')) {
@@ -172,6 +179,7 @@ class CertificateLogController
         $search = $request->get('search');
 
         $query = CertificateLogs::query()
+            ->latestPerUserCertificate()
             ->with([
                 'user',
                 'certificate.event',
