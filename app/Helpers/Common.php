@@ -231,7 +231,7 @@ function getModules($user_type = 'admin'): array
                 'name' => 'Users',
                 'icon' => 'bi bi-people fs-3',
                 'child' => [],
-                'all_routes' => ['admin.user.index', 'admin.user.add_edit_form']
+                'all_routes' => ['admin.user.index', 'admin.user.add_edit_form','admin.user.show']
             ],
             [
                 'route' => route('admin.user_attendance'),
@@ -259,7 +259,7 @@ function getModules($user_type = 'admin'): array
                 'name' => 'Chat Log',
                 'icon' => 'bi-chat-dots',
                 'child' => [],
-                'all_routes' => ['admin.chat_log']
+                'all_routes' => ['admin.chat_log','admin.chat_log.show']
             ],
             [
                 'route' => route('admin.certificate_log'),
