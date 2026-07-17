@@ -82,12 +82,27 @@
                                 </div>
                                 <div class="card-body pt-2 table-responsive">
                                     <table class="table align-middle table-row-dashed gy-3">
-                                        <thead><tr class="text-muted fw-bolder fs-7 text-uppercase"><th>{{ ucfirst($dimension) }}</th><th class="text-end">Registered</th></tr></thead>
+                                        <thead>
+                                        <tr class="text-muted fw-bolder fs-7 text-uppercase">
+                                            <th>{{ ucfirst($dimension) }}</th>
+                                            <th class="text-end">Registered</th>
+                                            @if($showLiveUsers)<th class="text-end">Live users</th>@endif
+                                        </tr>
+                                        </thead>
                                         <tbody>
                                         @forelse($rows as $row)
-                                            <tr><td class="fw-bold text-dark">{{ $row->location }}</td><td class="text-end fw-bolder">{{ number_format($row->total) }}</td></tr>
+                                            <tr>
+                                                <td class="fw-bold text-dark">{{ $row->location }}</td>
+                                                <td class="text-end fw-bolder">{{ number_format($row->total) }}</td>
+                                                @if($showLiveUsers)
+                                                    <td class="text-end">
+                                                        <span class="live-dot me-2"></span>
+                                                        <span class="fw-bolder text-success">{{ number_format($row->live_total) }}</span>
+                                                    </td>
+                                                @endif
+                                            </tr>
                                         @empty
-                                            <tr><td colspan="2" class="text-center text-muted py-6">No registration data.</td></tr>
+                                            <tr><td colspan="{{ $showLiveUsers ? 3 : 2 }}" class="text-center text-muted py-6">No registration data.</td></tr>
                                         @endforelse
                                         </tbody>
                                     </table>

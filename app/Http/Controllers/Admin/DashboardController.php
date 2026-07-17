@@ -65,9 +65,18 @@ class DashboardController extends Controller
         $assignedEvent = $isSubAdmin ? Events::find($eventId) : null;
         $locationReports = collect(['country', 'state', 'city'])
             ->filter(fn (string $dimension) => $isSubAdmin && $assignedEvent?->{"show_{$dimension}_report"})
-            ->mapWithKeys(function (string $dimension) use ($users) {
+            ->mapWithKeys(function (string $dimension) use ($users, $liveCutoff) {
+                $liveUsers = UserAttendance::query()
+                    ->select('user_id')
+                    ->where('last_ping_at', '>=', $liveCutoff)
+                    ->groupBy('user_id');
+
                 $rows = (clone $users)
-                    ->selectRaw("COALESCE(NULLIF(TRIM({$dimension}), ''), 'Not specified') as location, COUNT(*) as total")
+                    ->leftJoinSub($liveUsers, 'live_attendance', function ($join) {
+                        $join->on('live_attendance.user_id', '=', 'users.id');
+                    })
+                    ->selectRaw("COALESCE(NULLIF(TRIM(users.{$dimension}), ''), 'Not specified') as location")
+                    ->selectRaw('COUNT(users.id) as total, COUNT(live_attendance.user_id) as live_total')
                     ->groupBy('location')
                     ->orderByDesc('total')
                     ->orderBy('location')
@@ -114,19 +123,30 @@ class DashboardController extends Controller
         $event = Events::findOrFail($authUser->event_id);
         abort_unless($event->{"show_{$dimension}_report"}, 403);
 
+        $liveUsers = UserAttendance::query()
+            ->select('user_id')
+            ->where('last_ping_at', '>=', now()->subMinutes(2))
+            ->groupBy('user_id');
+
         $rows = User::query()
             ->where('type', 'doctor')
             ->where('event_id', $event->id)
-            ->selectRaw("COALESCE(NULLIF(TRIM({$dimension}), ''), 'Not specified') as location, COUNT(*) as total")
+            ->leftJoinSub($liveUsers, 'live_attendance', function ($join) {
+                $join->on('live_attendance.user_id', '=', 'users.id');
+            })
+            ->selectRaw("COALESCE(NULLIF(TRIM(users.{$dimension}), ''), 'Not specified') as location")
+            ->selectRaw('COUNT(users.id) as total, COUNT(live_attendance.user_id) as live_total')
             ->groupBy('location')
             ->orderByDesc('total')
             ->orderBy('location')
             ->get();
 
         $escape = fn ($value) => '"' . str_replace('"', '""', (string) $value) . '"';
-        $csv = [ucfirst($dimension) . ',Registered Users'];
+        $showLiveUsers = (bool) $event->show_live_users;
+        $csv = [ucfirst($dimension) . ',Registered Users' . ($showLiveUsers ? ',Live Users' : '')];
         foreach ($rows as $row) {
-            $csv[] = $escape($row->location) . ',' . $row->total;
+            $csv[] = $escape($row->location) . ',' . $row->total
+                . ($showLiveUsers ? ',' . $row->live_total : '');
         }
 
         $filename = "{$dimension}_wise_registered_users_" . now()->format('Y-m-d') . '.csv';
