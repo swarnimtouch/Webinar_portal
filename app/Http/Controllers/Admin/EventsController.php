@@ -86,7 +86,7 @@ class EventsController
             'player_iframe' => ['nullable', 'string'],
             'publish_date' => ['required', 'date'],
             'start_time' => ['required'],
-            'end_time' => ['required'],
+            'end_time' => ['nullable', 'date', 'after:start_time'],
             'active_user_from' => [Rule::requiredIf($request->boolean('is_log_attendance')), 'nullable', 'date'],
             'active_user_to' => [Rule::requiredIf($request->boolean('is_log_attendance')), 'nullable', 'date', 'after:active_user_from'],
             'session_agenda' => ['nullable', 'array'],
