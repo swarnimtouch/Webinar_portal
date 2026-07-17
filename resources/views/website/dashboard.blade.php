@@ -12,11 +12,7 @@
                 <h1>{{ app('event')->name }}</h1>
 
 
-                @if($enable_live_chat)<div class="mobile-chat-button-container">
-                    <button class="mobile-chat-btn" id="mobileChatBtn">
-                        <i class="fa-solid fa-comments"></i> Live Chat
-                    </button>
-                </div>@endif
+
                 @php $hasAbout = filled(strip_tags((string) app('event')->description)); @endphp
                 @if($hasAbout || $resources->isNotEmpty())
                 <div class="webinar-info-container {{ $hasAbout ? '' : 'no-about' }}">
