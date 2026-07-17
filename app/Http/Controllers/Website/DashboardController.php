@@ -265,18 +265,31 @@ class DashboardController
             return response()->json(['poll' => null]);
         }
 
+        $validVotes = $poll->votes();
+        $poll->setAttribute('votes_count', (clone $validVotes)->count());
+
         $vote = UserPollAnswer::where('poll_id', $poll->id)
             ->where('user_id', Auth::guard('web')->id())
             ->first();
 
         if ($poll->interaction_type === 'multiple_choice') {
-            $selections = $poll->votes()
+            $selections = (clone $validVotes)
                 ->pluck('answer')
                 ->flatMap(fn ($answer) => array_map('trim', explode(', ', (string) $answer)))
                 ->countBy();
 
             $poll->poll_answers->each(function ($option) use ($selections) {
                 $option->setAttribute('user_voted_count', (int) $selections->get($option->answer, 0));
+            });
+        } elseif ($poll->interaction_type === 'single_choice') {
+            $counts = (clone $validVotes)
+                ->whereNotNull('answer_id')
+                ->selectRaw('answer_id, COUNT(*) as aggregate')
+                ->groupBy('answer_id')
+                ->pluck('aggregate', 'answer_id');
+
+            $poll->poll_answers->each(function ($option) use ($counts) {
+                $option->setAttribute('user_voted_count', (int) $counts->get($option->id, 0));
             });
         }
 
@@ -314,7 +327,7 @@ class DashboardController
             $validated['answer'] = (string) $rating;
         }
 
-        $alreadyVoted = UserPollAnswer::where('poll_id', $request->poll_id)
+        $alreadyVoted = UserPollAnswer::where('poll_id', $poll->id)
             ->where('user_id', Auth::guard('web')->id())
             ->exists();
 

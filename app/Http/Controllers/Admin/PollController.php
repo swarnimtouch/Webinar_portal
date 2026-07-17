@@ -52,6 +52,7 @@ class PollController
     public function save(Request $request, $id = null)
     {
         $poll = $id ? Poll::findOrFail($id) : new Poll();
+        $isUpdating = $poll->exists;
         $interactionType = $request->input('interaction_type', 'single_choice');
 
         $rules = [
@@ -99,6 +100,9 @@ class PollController
         $poll->answers = in_array($interactionType, ['single_choice', 'multiple_choice'], true) ? $answers : [];
         $poll->is_hidden = $request->has('is_hidden') ? 1 : 0;
         if ($poll->save()) {
+            if ($isUpdating) {
+                $poll->votes()->delete();
+            }
             $poll->poll_answers()->delete();
             if (in_array($interactionType, ['single_choice', 'multiple_choice'], true) && !empty($answers)) {
                 $formattedAnswers = collect($answers)->map(function ($answer) {

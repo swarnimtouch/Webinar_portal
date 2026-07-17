@@ -640,7 +640,7 @@
                         const ratings = Array.from({length: ratingMax}, (_, index) => index + 1)
                             .map(value => `<button class="poll-rating-btn" data-poll="${poll.id}" data-rating="${value}" aria-label="Rate ${value} out of ${ratingMax}"><i class="fa-solid fa-star"></i></button>`)
                             .join('');
-                        $options.append(`<div class="poll-rating-options" data-rating-max="${ratingMax}">${ratings}</div><p class="poll-rating-text">Select your rating</p>`);
+                        $options.append(`<div class="poll-rating-options" data-rating-max="${ratingMax}" data-selected-rating="0">${ratings}</div><p class="poll-rating-text">Select your rating</p><button class="poll-submit-rating" data-poll="${poll.id}" disabled>Submit Rating</button>`);
                     }
                     $footer.text(voted ? 'Rating submitted' : `Select a rating from 1 to ${ratingMax}`);
                     return;
@@ -737,6 +737,7 @@
                         }
                     },
                     error: function (xhr) {
+                        $('.poll-submit-rating').prop('disabled', false);
                         toastr.warning(xhr.responseJSON?.message || 'Already voted');
                     },
                 });
@@ -747,7 +748,13 @@
             });
 
             $(document).on('click', '.poll-rating-btn', function () {
-                submitPollVote($(this).data('poll'), String($(this).data('rating')));
+                const rating = Number($(this).data('rating'));
+                const container = $(this).closest('.poll-rating-options').attr('data-selected-rating', rating);
+                container.find('.poll-rating-btn').each(function () {
+                    $(this).toggleClass('active', Number($(this).data('rating')) <= rating);
+                });
+                $('.poll-rating-text').text(`${rating} out of ${container.data('rating-max')}`);
+                $('.poll-submit-rating').prop('disabled', false).data('rating', rating);
             });
 
             $(document).on('mouseenter focus', '.poll-rating-btn', function () {
@@ -757,8 +764,18 @@
                 });
                 $('.poll-rating-text').text(`${rating} out of ${$(this).parent().data('rating-max')}`);
             }).on('mouseleave', '.poll-rating-options', function () {
-                $(this).find('.poll-rating-btn').removeClass('active');
-                $('.poll-rating-text').text('Select your rating');
+                const selectedRating = Number($(this).attr('data-selected-rating') || 0);
+                $(this).find('.poll-rating-btn').each(function () {
+                    $(this).toggleClass('active', Number($(this).data('rating')) <= selectedRating);
+                });
+                $('.poll-rating-text').text(selectedRating ? `${selectedRating} out of ${$(this).data('rating-max')}` : 'Select your rating');
+            });
+
+            $(document).on('click', '.poll-submit-rating', function () {
+                const rating = Number($(this).data('rating'));
+                if (!rating) return toastr.warning('Please select a rating');
+                $(this).prop('disabled', true);
+                submitPollVote($(this).data('poll'), String(rating));
             });
 
             $(document).on('click', '.poll-submit-response', function () {

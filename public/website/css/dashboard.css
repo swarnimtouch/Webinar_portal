@@ -2686,7 +2686,8 @@ img {
  resize: none;
 }
 
-.poll-submit-response {
+.poll-submit-response,
+.poll-submit-rating {
  width: 100%;
  margin-top: 10px;
  padding: 11px 16px;
@@ -2700,8 +2701,15 @@ img {
 }
 
 .poll-submit-response:hover,
+.poll-submit-rating:hover,
 .poll-submit-multiple:hover {
  background: #2563eb;
+}
+
+.poll-submit-response:disabled,
+.poll-submit-rating:disabled {
+ cursor: not-allowed;
+ opacity: 0.55;
 }
 
 .poll-rating-options {
