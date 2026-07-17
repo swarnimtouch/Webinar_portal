@@ -8,7 +8,7 @@
                 {!! app('event')->player_iframe !!}
             </div>
 
-            <div class="webinar-details">
+            <div class="webinar-details mobile-info-panel" id="webinarInfo">
                 <h1>{{ app('event')->name }}</h1>
 
 
@@ -388,12 +388,28 @@
             $('#chatInputArea').toggle(initialTab === 'chat');
             $('#commentInputArea').toggle(initialTab === 'comments');
 
+            function updateMobileTabLayout(tab) {
+                const isMobile = window.matchMedia('(max-width: 767px) and (orientation: portrait)').matches;
+
+                if (!isMobile) {
+                    $('#webinarInfo, .sidebar-scrollable-content').show();
+                    return;
+                }
+
+                const isInfo = tab === 'info';
+                $('#webinarInfo').toggle(isInfo);
+                $('.sidebar-scrollable-content').toggle(!isInfo);
+            }
+
+            updateMobileTabLayout(initialTab);
+
             $('.tab-link').on('click', function () {
                 const tab = $(this).data('tab');
                 $('.tab-link').removeClass('active');
                 $(this).addClass('active');
                 $('.tab-content').hide();
                 $('#' + tab).show();
+                updateMobileTabLayout(tab);
 
                 $('#chatInputArea').toggle(tab === 'chat');
                 $('#commentInputArea').toggle(tab === 'comments');
@@ -401,6 +417,10 @@
                 if (tab === 'chat') loadChatMessages();
                 if (tab === 'comments') loadComments();
                 if (tab === 'polls') loadPoll();
+            });
+
+            $(window).on('resize orientationchange', function () {
+                updateMobileTabLayout($('.tab-link.active').data('tab'));
             });
 
             function renderComments(comments) {

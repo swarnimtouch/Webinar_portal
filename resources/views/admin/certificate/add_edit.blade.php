@@ -2,13 +2,34 @@
 @push('styles')
     <style>
         @font-face { font-family: 'CertificatePoppins'; src: url('{{ asset('storage/certificates/fonts/Poppins-Bold.ttf') }}') format('truetype'); font-weight: 700; }
-        .certificate-preview-stage { position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; background: #fff; border: 2px dashed #d8dbe2; border-radius: .75rem; }
+        .certificate-builder-form { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(460px, .95fr); column-gap: 2.5rem; align-items: start; }
+        .certificate-builder-form > .row, .certificate-builder-form > .separator { grid-column: 1; }
+        .certificate-preview-column { grid-column: 2 !important; grid-row: 1 / span 20; position: sticky; top: 90px; margin: 0 !important; padding: 1.5rem; background: #f8f9fb; border: 1px solid #e4e6ef; border-radius: 1rem; }
+        .certificate-preview-column > label, .certificate-preview-column > div { width: 100%; max-width: none; }
+        .certificate-preview-column > label { display: none; }
+        .certificate-preview-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+        .certificate-preview-heading .preview-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; color: #009ef7; background: #e8f6ff; border-radius: .75rem; }
+        .certificate-preview-stage { position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; background-color: #fff; background-image: linear-gradient(45deg, #f5f7fa 25%, transparent 25%), linear-gradient(-45deg, #f5f7fa 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f5f7fa 75%), linear-gradient(-45deg, transparent 75%, #f5f7fa 75%); background-size: 24px 24px; background-position: 0 0, 0 12px, 12px -12px, -12px 0; border: 1px solid #d8dbe2; border-radius: .85rem; box-shadow: 0 8px 24px rgba(31, 41, 55, .08); }
         .certificate-preview-stage img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
-        .certificate-preview-field { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; cursor: move; user-select: none; font-family: 'CertificatePoppins', Poppins, sans-serif; line-height: 1; }
+        .certificate-preview-field { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; cursor: grab; user-select: none; touch-action: none; font-family: 'CertificatePoppins', Poppins, sans-serif; line-height: 1; z-index: 3; }
+        .certificate-preview-field:active { cursor: grabbing; }
         .certificate-preview-modal { position: fixed; inset: 0; z-index: 1100; background: rgba(0,0,0,.58); padding: 2vh 5vw; overflow: auto; }
         .certificate-preview-modal-card { max-width: 780px; max-height: 96vh; overflow: auto; margin: auto; background: #fff; border-radius: .85rem; padding: 1.25rem; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
-        .empty-position-box { min-width: 180px; min-height: 35px; border: 2px dashed #f59e0b; }
-        #certificate_editor_wrap { display: none; }
+        .empty-position-box { display: flex; align-items: center; justify-content: center; min-width: 180px; min-height: 42px; padding: .55rem 1rem; color: #7c2d12 !important; background: rgba(255, 247, 237, .92); border: 2px dashed #f59e0b; border-radius: .5rem; box-shadow: 0 0 0 4px rgba(245, 158, 11, .12); }
+        .empty-position-box::before, .empty-position-box::after { content: ''; position: absolute; background: rgba(245, 158, 11, .55); pointer-events: none; }
+        .empty-position-box::before { width: 1px; height: 1000px; left: 50%; top: 50%; transform: translateY(-50%); }
+        .empty-position-box::after { height: 1px; width: 1000px; left: 50%; top: 50%; transform: translateX(-50%); }
+        .position-resize-handle { position: absolute; top: 50%; width: 14px; height: 34px; z-index: 5; transform: translateY(-50%); background: #fff; border: 2px solid #f59e0b; border-radius: 5px; cursor: ew-resize; box-shadow: 0 2px 6px rgba(0, 0, 0, .18); }
+        .position-resize-handle::after { content: ''; position: absolute; inset: 7px 4px; border-left: 1px solid #f59e0b; border-right: 1px solid #f59e0b; }
+        .position-resize-handle.start { left: -8px; }
+        .position-resize-handle.end { right: -8px; }
+        .preview-coordinate-bar { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+        .preview-coordinate-bar span { padding: .45rem .7rem; color: #5e6278; background: #fff; border: 1px solid #e4e6ef; border-radius: .5rem; font-size: .85rem; font-weight: 600; }
+        #certificate_editor_wrap { display: block; }
+        @media (max-width: 1199.98px) {
+            .certificate-builder-form { grid-template-columns: 1fr; }
+            .certificate-preview-column { grid-column: 1 !important; grid-row: auto; position: static; margin-top: 1rem !important; }
+        }
     </style>
 @endpush
 @section('content')
@@ -40,7 +61,7 @@
                     <div class="card-body border-top p-9">
                         <form method="POST"
                               action="{{ route('admin.certificate.save', $certificate->id ?? null) }}"
-                              id="kt_certificate_form"
+                              id="kt_certificate_form" class="certificate-builder-form"
                               enctype="multipart/form-data">
 
                             @csrf
@@ -215,15 +236,34 @@
                             </div>
 
                             <div class="separator separator-dashed my-8"></div>
-                            <div class="row mb-6">
+                            <div class="row mb-6 certificate-preview-column">
                                 <label class="col-lg-4 col-form-label fw-bold fs-6">Certificate Preview</label>
                                 <div class="col-lg-8">
+                                    <div class="certificate-preview-heading">
+                                        <div class="d-flex gap-3">
+                                            <span class="preview-icon"><i class="bi bi-person-bounding-box fs-2"></i></span>
+                                            <div>
+                                                <h3 class="mb-1">Participant Name Placement</h3>
+                                                <p class="text-muted mb-0">Drag the marked name area to position it on the certificate.</p>
+                                            </div>
+                                        </div>
+                                        <span class="badge badge-light-primary">Live preview</span>
+                                    </div>
                                     <div id="certificate_editor_wrap" class="mb-4">
                                         <div class="certificate-preview-stage" id="certificate_editor_stage">
                                             <img id="certificate_editor_image" alt="Certificate background">
-                                            <div class="certificate-preview-field empty-position-box" id="certificate_editor_position"></div>
+                                            <div class="certificate-preview-field empty-position-box" id="certificate_editor_position">
+                                                <span class="position-resize-handle start" id="position_resize_start" title="Drag to resize from the left"></span>
+                                                Participant Name
+                                                <span class="position-resize-handle end" id="position_resize_end" title="Drag to resize from the right"></span>
+                                            </div>
                                         </div>
-                                        <div class="form-text mt-2">Orange box ko drag karke participant name ki X/Y position set karein.</div>
+                                        <div class="preview-coordinate-bar">
+                                            <span>Start X: <strong id="preview_start_x">0</strong></span>
+                                            <span>End X: <strong id="preview_end_x">0</strong></span>
+                                            <span>Y: <strong id="preview_y">0</strong></span>
+                                        </div>
+                                        <div class="form-text mt-2"><i class="bi bi-arrows-move me-1"></i>Drag the orange marker. The X and Y fields update automatically.</div>
                                     </div>
                                     <div id="certificate_preview_wrap" class="d-none certificate-preview-modal">
                                         <div class="certificate-preview-modal-card">
@@ -311,13 +351,35 @@
                 const editorStage = document.getElementById('certificate_editor_stage');
                 const editorImage = document.getElementById('certificate_editor_image');
                 const editorPosition = document.getElementById('certificate_editor_position');
+                const resizeStart = document.getElementById('position_resize_start');
+                const resizeEnd = document.getElementById('position_resize_end');
                 const startXInput = form.querySelector('[name="start_x"]');
                 const endXInput = form.querySelector('[name="end_x"]');
                 const yInput = form.querySelector('[name="y"]');
                 const fontSizeInput = form.querySelector('[name="font_size"]');
+                const boldInput = document.getElementById('is_bold');
+                const previewStartX = document.getElementById('preview_start_x');
+                const previewEndX = document.getElementById('preview_end_x');
+                const previewY = document.getElementById('preview_y');
                 const currentBackground = @json($certificate->exists && $certificate->background_image ? \App\Support\EventStorage::url($certificate->background_image) : null);
                 let logicalWidth = 1200;
                 let logicalHeight = 800;
+
+                const normalizeCoordinates = () => {
+                    let startX = Math.max(0, Math.min(logicalWidth - 1, Number(startXInput.value) || 0));
+                    let endX = Number(endXInput.value) || logicalWidth;
+                    let y = Number(yInput.value);
+
+                    if (endX <= startX || endX > logicalWidth) endX = logicalWidth;
+                    if (!Number.isFinite(y) || y <= 0 || y > logicalHeight) y = Math.round(logicalHeight / 2);
+
+                    startXInput.max = Math.round(logicalWidth - 1);
+                    endXInput.max = Math.round(logicalWidth);
+                    yInput.max = Math.round(logicalHeight);
+                    startXInput.value = Math.round(startX);
+                    endXInput.value = Math.round(endX);
+                    yInput.value = Math.round(y);
+                };
 
                 const renderEditorPosition = () => {
                     const startX = Number(startXInput.value) || 0;
@@ -327,6 +389,11 @@
                     editorPosition.style.left = `${((startX + endX) / 2 / logicalWidth) * 100}%`;
                     editorPosition.style.top = `${(y / logicalHeight) * 100}%`;
                     editorPosition.style.width = `${Math.max(100, ((endX - startX) / logicalWidth) * editorStage.clientWidth)}px`;
+                    editorPosition.style.fontSize = `${Math.max(10, (Number(fontSizeInput.value) || 30) * (editorStage.clientWidth / logicalWidth))}px`;
+                    editorPosition.style.fontWeight = boldInput.checked ? '700' : '600';
+                    previewStartX.textContent = Math.round(startX);
+                    previewEndX.textContent = Math.round(endX);
+                    previewY.textContent = Math.round(y);
                 };
 
                 const setEditorBackground = source => {
@@ -335,6 +402,8 @@
                     editorImage.onload = () => {
                         logicalWidth = editorImage.naturalWidth || 1200;
                         logicalHeight = editorImage.naturalHeight || 800;
+                        editorStage.style.aspectRatio = `${logicalWidth} / ${logicalHeight}`;
+                        normalizeCoordinates();
                         renderEditorPosition();
                     };
                     editorImage.src = source;
@@ -368,6 +437,7 @@
                     previewImage.onload = () => {
                         logicalWidth = previewImage.naturalWidth || 1200;
                         logicalHeight = previewImage.naturalHeight || 800;
+                        previewStage.style.aspectRatio = `${logicalWidth} / ${logicalHeight}`;
                         renderPreviewText();
                     };
                     previewImage.src = source;
@@ -414,6 +484,7 @@
                 });
 
                 editorPosition.addEventListener('pointerdown', event => {
+                    if (event.target.closest('.position-resize-handle')) return;
                     event.preventDefault(); editorPosition.setPointerCapture(event.pointerId);
                 });
                 editorPosition.addEventListener('pointermove', event => {
@@ -428,8 +499,44 @@
                     renderEditorPosition();
                 });
 
-                [startXInput, endXInput, yInput].forEach(input => input.addEventListener('input', renderEditorPosition));
-                if (currentBackground) setEditorBackground(currentBackground);
+                const bindResizeHandle = (handle, edge) => {
+                    handle.addEventListener('pointerdown', event => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handle.setPointerCapture(event.pointerId);
+                    });
+
+                    handle.addEventListener('pointermove', event => {
+                        if (!handle.hasPointerCapture(event.pointerId)) return;
+
+                        const rect = editorStage.getBoundingClientRect();
+                        const x = Math.max(0, Math.min(
+                            logicalWidth,
+                            ((event.clientX - rect.left) / rect.width) * logicalWidth
+                        ));
+
+                        if (edge === 'start') {
+                            const endX = Number(endXInput.value) || logicalWidth;
+                            startXInput.value = Math.round(Math.min(x, endX - 1));
+                        } else {
+                            const startX = Number(startXInput.value) || 0;
+                            endXInput.value = Math.round(Math.max(x, startX + 1));
+                        }
+
+                        renderEditorPosition();
+                    });
+                };
+
+                bindResizeHandle(resizeStart, 'start');
+                bindResizeHandle(resizeEnd, 'end');
+
+                [startXInput, endXInput, yInput, fontSizeInput, boldInput]
+                    .forEach(input => input.addEventListener('input', renderEditorPosition));
+                if (currentBackground) {
+                    setEditorBackground(currentBackground);
+                } else {
+                    renderEditorPosition();
+                }
 
                 document.getElementById('certificate_preview_download').addEventListener('click', () => {
                     const canvas = document.createElement('canvas');

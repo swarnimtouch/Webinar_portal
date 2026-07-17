@@ -554,6 +554,10 @@ img {
   border-bottom: 1px solid var(--border-color);
 }
 
+.mobile-info-tab {
+  display: none;
+}
+
 .tab-link {
   flex: 1;
   padding: 1rem;
@@ -1920,8 +1924,13 @@ img {
     border-top: 0;
   }
 
+  .mobile-info-tab {
+    display: block;
+  }
+
   .webinar-details {
     order: 3;
+    display: none;
     width: 100%;
     padding: 1rem;
   }

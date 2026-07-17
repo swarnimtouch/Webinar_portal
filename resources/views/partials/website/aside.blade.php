@@ -1,6 +1,9 @@
 <aside class="chat-sidebar">
     <div class="chat-sidebar-container">
         <div class="tab-navigation">
+            <button class="tab-link mobile-info-tab" data-tab="info">
+                <i class="fa-solid fa-circle-info"></i> Info
+            </button>
             @if($enable_live_chat)<button class="tab-link active" data-tab="chat">
                 <i class="fa-solid fa-comments"></i> Live Chat
             </button>@endif
