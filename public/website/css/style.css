@@ -266,7 +266,7 @@ main {
 
 .info-bar {
  display: grid;
- grid-template-columns: 1fr 1fr 1.5fr 1fr;
+ grid-template-columns: 1.15fr 1fr 1.65fr;
  margin-top: 0;
  padding: 25px;
  width: 100%;
@@ -321,6 +321,72 @@ main {
  display: none;
 }
 
+.registration-info-content {
+ width: 100%;
+}
+
+.registration-status-row {
+ display: flex;
+ align-items: center;
+ gap: 12px;
+ width: 100%;
+}
+
+.registration-status-row > span {
+ flex-shrink: 0;
+ font-size: 15px;
+ font-weight: 700;
+ color: var(--text-primary);
+}
+
+.home-event-countdown {
+ display: inline-flex;
+ align-items: stretch;
+ gap: 6px;
+ margin-left: 16px;
+ padding: 6px;
+ color: var(--text-primary);
+ background: rgba(190, 42, 171, .06);
+ border: 1px solid rgba(190, 42, 171, .18);
+ border-radius: 10px;
+ white-space: nowrap;
+ font-variant-numeric: tabular-nums;
+}
+
+.home-countdown-unit {
+ display: flex;
+ min-width: 45px;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ padding: 5px 7px;
+ background: #fff;
+ border-radius: 7px;
+ box-shadow: 0 1px 4px rgba(26, 34, 55, .08);
+}
+
+.home-event-countdown strong {
+ font-size: 15px;
+ line-height: 1;
+ color: var(--btn-gold);
+}
+
+.home-event-countdown small {
+ margin-top: 4px;
+ color: var(--text-secondary);
+ font-size: 8px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: .04em;
+}
+
+.home-countdown-live {
+ color: var(--btn-gold);
+ font-size: 12px;
+ font-weight: 700;
+ text-transform: uppercase;
+}
+
 @media (max-width: 768px) {
  .registration-header-button {
   display: none;
@@ -339,12 +405,24 @@ main {
   gap: 15px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--btn-gold);
+  flex-wrap: wrap;
  }
 
  .registration-status-row span {
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
+ }
+
+ .home-event-countdown {
+  width: 100%;
+  margin: 4px 0 0;
+  justify-content: space-between;
+ }
+
+ .home-countdown-unit {
+  flex: 1;
+  min-width: 0;
  }
 
  .mobile-register-button {
@@ -1024,7 +1102,7 @@ main {
  }
 
  .info-bar {
-  grid-template-columns: 1fr 1fr 1.5fr 1fr;
+  grid-template-columns: 1.15fr 1fr 1.65fr;
   gap: 0;
   padding: 25px 30px;
   align-items: stretch;
@@ -1042,7 +1120,7 @@ main {
  }
 
  .info-item:nth-child(3) {
-  border-right: 1px solid var(--btn-gold) !important;
+  border-right: none !important;
  }
 
  .info-item:last-child {

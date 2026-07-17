@@ -81,9 +81,9 @@ class EventsController
                 'mimes:jpg,jpeg,png,webp',
                 'max:5120',
             ],
-            'player_id' => ['required', 'string'],
-            'player_type' => ['required', 'string'],
-            'player_iframe' => ['required', 'string'],
+            'player_id' => ['nullable', 'string'],
+            'player_type' => ['nullable', 'required_with:player_id', 'string'],
+            'player_iframe' => ['nullable', 'string'],
             'publish_date' => ['required', 'date'],
             'start_time' => ['required'],
             'end_time' => ['required'],
@@ -99,6 +99,10 @@ class EventsController
             'resource_id.*' => ['nullable', 'integer'],
             'resource_title' => ['nullable', 'array'],
             'resource_title.*' => ['nullable', 'string', 'max:255'],
+            'resource_type' => ['nullable', 'array'],
+            'resource_type.*' => ['nullable', 'in:file,url'],
+            'resource_url' => ['nullable', 'array'],
+            'resource_url.*' => ['nullable', 'url:http,https', 'max:2048'],
             'resource_file' => ['nullable', 'array'],
             'resource_file.*' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
             'show_country_report' => ['nullable', 'boolean'],
@@ -111,6 +115,14 @@ class EventsController
             'enable_polls' => ['nullable', 'boolean'],
             'enable_feedback' => ['nullable', 'boolean'],
         ]);
+
+        foreach ($request->input('resource_type', []) as $index => $resourceType) {
+            if ($resourceType === 'url') {
+                $request->validate([
+                    "resource_url.{$index}" => ['required', 'url:http,https', 'max:2048'],
+                ]);
+            }
+        }
 
         $company = Company::findOrFail($request->integer('company_id'));
 
@@ -377,14 +389,18 @@ class EventsController
             ->whereNotIn('id', $submittedIds)
             ->get()
             ->each(function (EventResource $resource) {
-                EventStorage::delete($resource->file_path);
+                if ($resource->file_path) EventStorage::delete($resource->file_path);
                 $resource->delete();
             });
 
         $titles = $request->input('resource_title', []);
+        $types = $request->input('resource_type', []);
+        $urls = $request->input('resource_url', []);
         $ids = $request->input('resource_id', []);
         $files = $request->file('resource_file', []);
         $indexes = collect(array_keys($titles))
+            ->merge(array_keys($types))
+            ->merge(array_keys($urls))
             ->merge(array_keys($ids))
             ->merge(array_keys($files))
             ->unique();
@@ -396,17 +412,33 @@ class EventsController
                 ? $event->resources()->whereKey($resourceId)->first()
                 : null;
             $title = trim((string) ($titles[$index] ?? ''));
+            $type = ($types[$index] ?? 'file') === 'url' ? 'url' : 'file';
+            $url = trim((string) ($urls[$index] ?? ''));
             $file = $files[$index] ?? null;
 
-            if (!$resource && !$file) {
+            if (!$resource && (($type === 'file' && !$file) || ($type === 'url' && !$url))) {
                 continue;
             }
 
-            if ($file) {
+            if ($type === 'url' && $url) {
+                $slot = $resource?->slot ?? $nextSlot++;
+                if ($resource?->file_path) EventStorage::delete($resource->file_path);
+
+                ($resource ?: new EventResource([
+                    'event_id' => $event->id,
+                    'slot' => $slot,
+                ]))->fill([
+                    'title' => $title ?: "Resource {$slot}",
+                    'resource_type' => 'url',
+                    'url' => $url,
+                    'file_path' => null,
+                    'original_name' => null,
+                ])->save();
+            } elseif ($type === 'file' && $file) {
                 $slot = $resource?->slot ?? $nextSlot++;
                 $storedPath = EventStorage::store($file, $event, 'resource', "resource-{$slot}-" . Str::uuid() . '.pdf');
 
-                if ($resource) {
+                if ($resource?->file_path) {
                     EventStorage::delete($resource->file_path);
                 }
 
@@ -415,10 +447,12 @@ class EventsController
                     'slot' => $slot,
                 ]))->fill([
                     'title' => $title ?: "Resource {$slot}",
+                    'resource_type' => 'file',
+                    'url' => null,
                     'file_path' => $storedPath,
                     'original_name' => $file->getClientOriginalName(),
                 ])->save();
-            } elseif ($resource) {
+            } elseif ($resource && $type === 'file' && $resource->file_path) {
                 $resource->update(['title' => $title ?: "Resource {$resource->slot}"]);
             }
         }
@@ -427,7 +461,7 @@ class EventsController
     private function deleteResourceFiles(Events $event): void
     {
         $event->resources()->each(function (EventResource $resource) {
-            EventStorage::delete($resource->file_path);
+            if ($resource->file_path) EventStorage::delete($resource->file_path);
         });
     }
 }

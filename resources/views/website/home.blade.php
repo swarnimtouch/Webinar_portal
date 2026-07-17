@@ -57,6 +57,18 @@
                                 <div class="registration-status-row">
                                     <i class="fa-solid fa-hourglass-end"></i>
                                     <span>Registration Open</span>
+                                    @if(app('event')->start_time)
+                                        <div class="home-event-countdown" id="homeEventCountdown"
+                                             data-start="{{ app('event')->start_time->toIso8601String() }}"
+                                             aria-label="Time remaining until the event starts">
+                                            @foreach(['days' => 'Days', 'hours' => 'Hours', 'minutes' => 'Mins', 'seconds' => 'Secs'] as $unit => $label)
+                                                <span class="home-countdown-unit">
+                                                    <strong data-home-countdown="{{ $unit }}">00</strong>
+                                                    <small>{{ $label }}</small>
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
                                 <button type="button" class="btn btn-gold mobile-register-button open-register-modal">
                                     Register
@@ -363,6 +375,38 @@
     @push('scripts')
         <script>
             $(function () {
+                const homeCountdown = document.getElementById('homeEventCountdown');
+                if (homeCountdown) {
+                    const startsAt = new Date(homeCountdown.dataset.start).getTime();
+                    const countdownFields = Object.fromEntries(
+                        [...homeCountdown.querySelectorAll('[data-home-countdown]')]
+                            .map(field => [field.dataset.homeCountdown, field])
+                    );
+
+                    const updateHomeCountdown = () => {
+                        if (!Number.isFinite(startsAt)) return;
+
+                        const distance = Math.max(0, startsAt - Date.now());
+                        const values = {
+                            days: Math.floor(distance / 86400000),
+                            hours: Math.floor((distance % 86400000) / 3600000),
+                            minutes: Math.floor((distance % 3600000) / 60000),
+                            seconds: Math.floor((distance % 60000) / 1000),
+                        };
+
+                        Object.entries(values).forEach(([unit, value]) => {
+                            countdownFields[unit].textContent = String(value).padStart(2, '0');
+                        });
+
+                        if (distance === 0) {
+                            homeCountdown.innerHTML = '<span class="home-countdown-live">Starting now</span>';
+                            window.clearInterval(homeCountdownTimer);
+                        }
+                    };
+
+                    const homeCountdownTimer = window.setInterval(updateHomeCountdown, 1000);
+                    updateHomeCountdown();
+                }
 
                 const loginForm = $("#loginForm");
                 const registerForm = $("#registerForm");

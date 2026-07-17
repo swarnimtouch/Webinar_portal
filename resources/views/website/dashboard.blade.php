@@ -5,7 +5,23 @@
 
         <section class="video-section">
             <div class="video-player">
-                {!! app('event')->player_iframe !!}
+                @if(filled(app('event')->player_id) && filled(app('event')->player_iframe))
+                    {!! app('event')->player_iframe !!}
+                @else
+                    <div class="event-countdown" id="eventCountdown"
+                         data-start="{{ app('event')->start_time?->toIso8601String() }}">
+                        <div class="event-countdown-label">Event starts in</div>
+                        <div class="event-countdown-grid">
+                            @foreach(['days' => 'Days', 'hours' => 'Hours', 'minutes' => 'Minutes', 'seconds' => 'Seconds'] as $unit => $label)
+                                <div class="event-countdown-unit">
+                                    <strong data-countdown="{{ $unit }}">00</strong>
+                                    <span>{{ $label }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="event-countdown-message">The live video will be available when the event begins.</p>
+                    </div>
+                @endif
             </div>
 
             <div class="webinar-details mobile-info-panel" id="webinarInfo">
@@ -74,12 +90,13 @@
                                     </div>
                                     <div class="card-body">
                                         <h4>{{ $resource->title }}</h4>
-                                        <p>{{ $resource->original_name }}</p>
+                                        <p>{{ $resource->resource_type === 'url' ? $resource->url : $resource->original_name }}</p>
                                     </div>
                                     <div class="card-footer">
-                                        <a href="{{ event_route('resource.download', ['resourceId' => $resource->id]) }}"
-                                           class="card-link">
-                                            Download <i class="fa-solid fa-arrow-down"></i>
+                                        <a href="{{ $resource->resource_type === 'url' ? $resource->url : event_route('resource.download', ['resourceId' => $resource->id]) }}"
+                                           class="card-link" @if($resource->resource_type === 'url') target="_blank" rel="noopener noreferrer" @endif>
+                                            {{ $resource->resource_type === 'url' ? 'Open Link' : 'Download' }}
+                                            <i class="fa-solid {{ $resource->resource_type === 'url' ? 'fa-arrow-up-right-from-square' : 'fa-arrow-down' }}"></i>
                                         </a>
                                     </div>
                                 </div>
@@ -139,6 +156,46 @@
         ]);
 
         $(function () {
+            const countdown = document.getElementById('eventCountdown');
+            if (countdown) {
+                const startAt = new Date(countdown.dataset.start).getTime();
+                const fields = Object.fromEntries(
+                    [...countdown.querySelectorAll('[data-countdown]')]
+                        .map(field => [field.dataset.countdown, field])
+                );
+
+                const renderCountdown = () => {
+                    if (!Number.isFinite(startAt)) {
+                        countdown.querySelector('.event-countdown-label').textContent = 'Start time unavailable';
+                        countdown.querySelector('.event-countdown-message').textContent =
+                            'The live video will appear here when a player is available.';
+                        window.clearInterval(countdownTimer);
+                        return;
+                    }
+
+                    const distance = Math.max(0, startAt - Date.now());
+                    const values = {
+                        days: Math.floor(distance / 86400000),
+                        hours: Math.floor((distance % 86400000) / 3600000),
+                        minutes: Math.floor((distance % 3600000) / 60000),
+                        seconds: Math.floor((distance % 60000) / 1000),
+                    };
+
+                    Object.entries(values).forEach(([unit, value]) => {
+                        fields[unit].textContent = String(value).padStart(2, '0');
+                    });
+
+                    if (distance === 0) {
+                        countdown.querySelector('.event-countdown-label').textContent = 'Event starting now';
+                        countdown.querySelector('.event-countdown-message').textContent =
+                            'The live video will appear here when a player is available.';
+                        window.clearInterval(countdownTimer);
+                    }
+                };
+
+                const countdownTimer = window.setInterval(renderCountdown, 1000);
+                renderCountdown();
+            }
 
             function csrf() {
                 return {'X-CSRF-TOKEN': window.csrfToken, 'Content-Type': 'application/json'};

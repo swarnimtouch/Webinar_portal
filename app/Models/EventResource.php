@@ -11,6 +11,8 @@ class EventResource extends Model
         'event_id',
         'slot',
         'title',
+        'resource_type',
+        'url',
         'file_path',
         'original_name',
     ];

@@ -202,7 +202,7 @@
                             </div>
 
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Player Type</label>
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Player Type</label>
                                 <div class="col-lg-8">
                                     <select name="player_type" id="player_type"
                                             class="form-select form-select-solid form-select-lg"
@@ -226,17 +226,18 @@
                             </div>
 
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Player ID / URL</label>
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Player ID / URL</label>
                                 <div class="col-lg-8">
                                     <input type="text" name="player_id" id="player_id"
                                            class="form-control form-control-lg form-control-solid"
                                            value="{{ old('player_id', $event->player_id ?? '') }}"
                                            placeholder="Enter YouTube/Vimeo ID or full URL"/>
+                                    <div class="form-text">Optional. If left empty, attendees will see a countdown to the event start time.</div>
                                 </div>
                             </div>
 
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Video Iframe Code</label>
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Video Iframe Code</label>
                                 <div class="col-lg-8">
                                     <textarea name="player_iframe" id="player_iframe"
                                               class="form-control form-control-lg form-control-solid"
@@ -346,28 +347,41 @@
                                                                maxlength="255"
                                                                value="{{ old('resource_title.'.$index, $savedResource?->title) }}"
                                                                placeholder="Resource title">
-                                                        <input type="file"
-                                                               name="resource_file[{{ $index }}]"
-                                                               class="form-control form-control-lg form-control-solid resource-file"
-                                                               accept=".pdf,application/pdf">
-                                                        <div class="text-muted fs-7 mt-2 resource-file-note">
-                                                            PDF only, maximum 10 MB.
+                                                        @php $resourceType = old('resource_type.'.$index, $savedResource?->resource_type ?? 'file'); @endphp
+                                                        <select name="resource_type[{{ $index }}]"
+                                                                class="form-select form-select-lg form-select-solid mb-3 resource-type">
+                                                            <option value="file" @selected($resourceType === 'file')>Upload PDF</option>
+                                                            <option value="url" @selected($resourceType === 'url')>External URL</option>
+                                                        </select>
+                                                        <div class="resource-file-fields {{ $resourceType === 'file' ? '' : 'd-none' }}">
+                                                            <input type="file"
+                                                                   name="resource_file[{{ $index }}]"
+                                                                   class="form-control form-control-lg form-control-solid resource-file"
+                                                                   accept=".pdf,application/pdf">
+                                                            <div class="text-muted fs-7 mt-2 resource-file-note">PDF only, maximum 10 MB.</div>
                                                         </div>
-                                                        <div class="resource-file-preview mt-3 {{ $savedResource ? '' : 'd-none' }}">
+                                                        <div class="resource-url-fields {{ $resourceType === 'url' ? '' : 'd-none' }}">
+                                                            <input type="url" name="resource_url[{{ $index }}]"
+                                                                   class="form-control form-control-lg form-control-solid resource-url"
+                                                                   value="{{ old('resource_url.'.$index, $savedResource?->url) }}"
+                                                                   placeholder="https://example.com/resource">
+                                                            <div class="form-text">Enter a complete HTTP or HTTPS URL.</div>
+                                                        </div>
+                                                        <div class="resource-file-preview mt-3 {{ $savedResource?->file_path && $resourceType === 'file' ? '' : 'd-none' }}">
                                                             <div class="d-flex align-items-center justify-content-between border border-dashed rounded p-3 bg-light-primary">
                                                                 <div class="d-flex align-items-center min-w-0">
                                                                     <i class="bi bi-file-earmark-pdf fs-2 text-danger me-3"></i>
                                                                     <div class="min-w-0">
                                                                         <div class="fw-bold text-gray-800 resource-preview-name text-truncate">
-                                                                            {{ $savedResource?->original_name }}
+                                                                            {{ $savedResource?->original_name ?? '' }}
                                                                         </div>
                                                                         <div class="text-muted fs-8 resource-preview-status">
                                                                             {{ $savedResource ? 'Currently saved PDF' : 'Selected PDF' }}
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <a class="btn btn-sm btn-light-primary resource-preview-link {{ $savedResource ? '' : 'd-none' }}"
-                                                                   href="{{ $savedResource ? \App\Support\EventStorage::downloadUrl($savedResource->file_path) : '#' }}"
+                                                                <a class="btn btn-sm btn-light-primary resource-preview-link {{ $savedResource?->file_path ? '' : 'd-none' }}"
+                                                                   href="{{ $savedResource?->file_path ? \App\Support\EventStorage::downloadUrl($savedResource->file_path) : '#' }}"
                                                                    target="_blank" rel="noopener">
                                                                     <i class="bi bi-eye me-1"></i> View PDF
                                                                 </a>
@@ -398,10 +412,23 @@
                                             <input type="text" name="resource_title[__INDEX__]"
                                                    class="form-control form-control-lg form-control-solid mb-3 resource-title"
                                                    maxlength="255" placeholder="Resource title">
-                                            <input type="file" name="resource_file[__INDEX__]"
-                                                   class="form-control form-control-lg form-control-solid resource-file"
-                                                   accept=".pdf,application/pdf">
-                                            <div class="text-muted fs-7 mt-2 resource-file-note">PDF only, maximum 10 MB.</div>
+                                            <select name="resource_type[__INDEX__]"
+                                                    class="form-select form-select-lg form-select-solid mb-3 resource-type">
+                                                <option value="file">Upload PDF</option>
+                                                <option value="url">External URL</option>
+                                            </select>
+                                            <div class="resource-file-fields">
+                                                <input type="file" name="resource_file[__INDEX__]"
+                                                       class="form-control form-control-lg form-control-solid resource-file"
+                                                       accept=".pdf,application/pdf">
+                                                <div class="text-muted fs-7 mt-2 resource-file-note">PDF only, maximum 10 MB.</div>
+                                            </div>
+                                            <div class="resource-url-fields d-none">
+                                                <input type="url" name="resource_url[__INDEX__]"
+                                                       class="form-control form-control-lg form-control-solid resource-url"
+                                                       placeholder="https://example.com/resource">
+                                                <div class="form-text">Enter a complete HTTP or HTTPS URL.</div>
+                                            </div>
                                             <div class="resource-file-preview mt-3 d-none">
                                                 <div class="d-flex align-items-center justify-content-between border border-dashed rounded p-3 bg-light-primary">
                                                     <div class="d-flex align-items-center min-w-0">
@@ -825,6 +852,8 @@
                 resourcesList.querySelectorAll('.resource-input-row').forEach((row, index) => {
                     row.querySelector('.resource-id').name = `resource_id[${index}]`;
                     row.querySelector('.resource-title').name = `resource_title[${index}]`;
+                    row.querySelector('.resource-type').name = `resource_type[${index}]`;
+                    row.querySelector('.resource-url').name = `resource_url[${index}]`;
                     row.querySelector('.resource-file').name = `resource_file[${index}]`;
                     row.querySelector('.remove-resource-btn').style.display = index === 0 ? 'none' : '';
                 });
@@ -837,6 +866,8 @@
                     resourceTemplate.innerHTML.replaceAll('__INDEX__', index)
                 );
                 reindexResources();
+                resourcesList.lastElementChild.querySelector('.resource-type')
+                    .dispatchEvent(new Event('change', {bubbles: true}));
             });
 
             resourcesList.addEventListener('click', event => {
@@ -849,7 +880,11 @@
                 if (rows.length === 1) {
                     row.querySelector('.resource-id').value = '';
                     row.querySelector('.resource-title').value = '';
+                    row.querySelector('.resource-type').value = 'file';
+                    row.querySelector('.resource-url').value = '';
                     row.querySelector('.resource-file').value = '';
+                    row.querySelector('.resource-file-fields').classList.remove('d-none');
+                    row.querySelector('.resource-url-fields').classList.add('d-none');
                     row.querySelector('.resource-file-note').textContent = 'PDF only, maximum 10 MB.';
                     row.querySelector('.resource-file-preview').classList.add('d-none');
                 } else {
@@ -859,6 +894,16 @@
             });
 
             resourcesList.addEventListener('change', event => {
+                if (event.target.classList.contains('resource-type')) {
+                    const row = event.target.closest('.resource-input-row');
+                    const isUrl = event.target.value === 'url';
+                    row.querySelector('.resource-file-fields').classList.toggle('d-none', isUrl);
+                    row.querySelector('.resource-url-fields').classList.toggle('d-none', !isUrl);
+                    row.querySelector('.resource-file').disabled = isUrl;
+                    row.querySelector('.resource-url').disabled = !isUrl;
+                    return;
+                }
+
                 if (!event.target.classList.contains('resource-file')) return;
 
                 const row = event.target.closest('.resource-input-row');
@@ -887,6 +932,9 @@
             });
 
             reindexResources();
+            resourcesList.querySelectorAll('.resource-type').forEach(input => {
+                input.dispatchEvent(new Event('change', {bubbles: true}));
+            });
 
             const extractYouTubeData = (input) => {
                 if (!input) return null;
@@ -1048,20 +1096,19 @@
 
                     player_type: {
                         validators: {
-                            notEmpty: {message: 'Player type is required'}
+                            callback: {
+                                message: 'Player type is required when a Player ID is entered',
+                                callback: input => !$('#player_id').val()?.trim() || Boolean(input.value)
+                            }
                         }
                     },
 
                     player_id: {
-                        validators: {
-                            notEmpty: {message: 'Player ID is required'}
-                        }
+                        validators: {}
                     },
 
                     player_iframe: {
-                        validators: {
-                            notEmpty: {message: 'Video iframe code is required'}
-                        }
+                        validators: {}
                     },
 
                     publish_date: {
