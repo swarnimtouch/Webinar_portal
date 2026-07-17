@@ -17,7 +17,6 @@
                         <i class="fa-solid fa-comments"></i> Live Chat
                     </button>
                 </div>@endif
-
                 @php $hasAbout = filled(strip_tags((string) app('event')->description)); @endphp
                 @if($hasAbout || $resources->isNotEmpty())
                 <div class="webinar-info-container {{ $hasAbout ? '' : 'no-about' }}">
