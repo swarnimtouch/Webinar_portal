@@ -78,6 +78,17 @@
                                 <input type="hidden" name="event_id" value="{{ auth()->user()->event_id }}">
                             @endif
                             <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Interaction Type</label>
+                                <div class="col-lg-8">
+                                    <select name="interaction_type" id="interaction_type" class="form-select form-select-solid form-select-lg">
+                                        <option value="single_choice" @selected(old('interaction_type', $poll->interaction_type ?? 'single_choice') === 'single_choice')>Single Choice</option>
+                                        <option value="multiple_choice" @selected(old('interaction_type', $poll->interaction_type ?? '') === 'multiple_choice')>Multiple Choice</option>
+                                        <option value="text" @selected(old('interaction_type', $poll->interaction_type ?? '') === 'text')>Typing / Text Response</option>
+                                        <option value="rating" @selected(old('interaction_type', $poll->interaction_type ?? '') === 'rating')>Rating</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-6">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Question</label>
                                 <div class="col-lg-8">
                                     <input type="text" name="question" id="question"
@@ -88,7 +99,7 @@
                             </div>
 
                             <!-- Answers -->
-                            <div class="row mb-6">
+                            <div class="row mb-6" id="multiple-choice-settings">
                                 <label class="col-lg-4 col-form-label required fw-bold fs-6">Answers</label>
                                 <div class="col-lg-8">
                                     <div id="answers-container">
@@ -123,6 +134,18 @@
                                     </button>
                                     <div class="form-text">Minimum 2 answers required. You can add up to 10 answers.
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6" id="rating-settings" style="display:none">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6">Rating Scale</label>
+                                <div class="col-lg-8">
+                                    <select name="rating_max" id="rating_max" class="form-select form-select-solid form-select-lg">
+                                        @foreach([3, 5, 7, 10] as $scale)
+                                            <option value="{{ $scale }}" @selected((int) old('rating_max', $poll->rating_max ?? 5) === $scale)>1 to {{ $scale }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="form-text">Users will select one rating from this scale.</div>
                                 </div>
                             </div>
 
@@ -177,6 +200,15 @@
                 submitBtn = document.getElementById('kt_poll_submit');
 
                 if (!form) return;
+
+                const interactionType = document.getElementById('interaction_type');
+                const toggleTypeSettings = () => {
+                    const hasAnswerOptions = ['single_choice', 'multiple_choice'].includes(interactionType.value);
+                    document.getElementById('multiple-choice-settings').style.display = hasAnswerOptions ? '' : 'none';
+                    document.getElementById('rating-settings').style.display = interactionType.value === 'rating' ? '' : 'none';
+                };
+                interactionType.addEventListener('change', toggleTypeSettings);
+                toggleTypeSettings();
 
                 $('#status').select2({minimumResultsForSearch: Infinity});
 
@@ -265,7 +297,7 @@
                         .map(input => input.value.trim())
                         .filter(val => val !== '');
 
-                    if (answers.length < 2) {
+                    if (['single_choice', 'multiple_choice'].includes(interactionType.value) && answers.length < 2) {
                         Swal.fire({
                             text: "Please provide at least 2 answers",
                             icon: "error",

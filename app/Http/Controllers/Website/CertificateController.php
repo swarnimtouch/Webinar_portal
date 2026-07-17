@@ -57,6 +57,7 @@ class CertificateController
             $font->color($certificate->font_color);
         });
 
+
         $fileName = Str::slug($user->name) . '-certificate-' . time() . '.jpg';
         $jpeg = $img->toJpeg(quality: 95)->toString();
 

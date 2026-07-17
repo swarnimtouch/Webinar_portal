@@ -4,7 +4,7 @@
         <div class="container">
             <div class="header-section">
                 <h1>{{app('event')->name ?? 'Webinar Portal'}}</h1>
-                <button class="btn btn-gold" id="openRegisterModal">Register</button>
+                <button class="btn btn-gold open-register-modal {{ app('event') && (app('event')->start_time || app('event')->end_time) ? 'registration-header-button' : '' }}" id="openRegisterModal">Register</button>
             </div>
 
             <div class="intro-card">
@@ -52,10 +52,15 @@
                             </div>
                         @endif
 
-                        <div class="info-item no-border">
-                            <i class="fa-solid fa-hourglass-end"></i>
-                            <div class="info-text">
-                                <span>Registration Open</span>
+                        <div class="info-item no-border registration-info-item">
+                            <div class="registration-info-content">
+                                <div class="registration-status-row">
+                                    <i class="fa-solid fa-hourglass-end"></i>
+                                    <span>Registration Open</span>
+                                </div>
+                                <button type="button" class="btn btn-gold mobile-register-button open-register-modal">
+                                    Register
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -259,7 +264,7 @@
                             }
                         @endphp
 
-                        <div class="{{ $col_class }} col-12">
+                        <div class="{{ $col_class }} col-12" data-register-field="{{ $field->field_name }}">
                             <div class="email-input-group mb-3">
                                 <div class="icon-box">
                                     <i class="{{ $icon_class }}"></i>
@@ -483,6 +488,10 @@
                                 $.each(res.errors, function (field, messages) {
                                     toastr.error(messages[0]);
                                 });
+                            } else if (xhr.status === 401 && res?.type === 'registration_required') {
+                                toastr.info(res.message || "Please complete your registration");
+                                closeLoginModal();
+                                openRegisterModal(res.registration_data || {});
                             } else if (xhr.status === 401) {
                                 toastr.error(res.message || "Invalid credentials");
                             } else {
@@ -593,7 +602,7 @@
             const loginModal = document.getElementById("loginModal");
             const registerModal = document.getElementById("registerModal");
             const loginBtn = document.getElementById("openLoginModal");
-            const registerBtn = document.getElementById("openRegisterModal");
+            const registerButtons = document.querySelectorAll(".open-register-modal");
             const closeLoginBtn = document.querySelector(".close-modal-btn");
             const closeRegisterBtn = document.querySelector(".close-register-btn");
 
@@ -611,8 +620,31 @@
                 }
             }
 
-            function openRegisterModal() {
+            function resetTransferredRegistrationFields() {
+                if (!registerModal) return;
+
+                registerModal.querySelectorAll('[data-login-prefilled="true"]').forEach(function (field) {
+                    const input = field.querySelector('input, select, textarea');
+                    if (input) input.value = '';
+                    field.removeAttribute('data-login-prefilled');
+                });
+            }
+
+            function openRegisterModal(registrationData = null) {
                 if (registerModal) {
+                    resetTransferredRegistrationFields();
+
+                    if (registrationData && !(registrationData instanceof Event)) {
+                        Object.entries(registrationData).forEach(function ([name, value]) {
+                            const input = registerModal.querySelector(`[name="${CSS.escape(name)}"]`);
+                            const field = registerModal.querySelector(`[data-register-field="${CSS.escape(name)}"]`);
+                            if (!input || !field) return;
+
+                            input.value = value;
+                            field.setAttribute('data-login-prefilled', 'true');
+                        });
+                    }
+
                     registerModal.style.display = "flex";
                     body.style.overflow = "hidden";
                 }
@@ -626,7 +658,7 @@
             }
 
             if (loginBtn) loginBtn.addEventListener("click", openLoginModal);
-            if (registerBtn) registerBtn.addEventListener("click", openRegisterModal);
+            registerButtons.forEach(button => button.addEventListener("click", () => openRegisterModal()));
             if (closeLoginBtn) closeLoginBtn.addEventListener("click", closeLoginModal);
             if (closeRegisterBtn) closeRegisterBtn.addEventListener("click", closeRegisterModal);
             window.addEventListener("click", function (event) {

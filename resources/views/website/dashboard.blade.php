@@ -12,11 +12,11 @@
                 <h1>{{ app('event')->name }}</h1>
 
 
-                <div class="mobile-chat-button-container">
+                @if($enable_live_chat)<div class="mobile-chat-button-container">
                     <button class="mobile-chat-btn" id="mobileChatBtn">
                         <i class="fa-solid fa-comments"></i> Live Chat
                     </button>
-                </div>
+                </div>@endif
 
                 @php $hasAbout = filled(strip_tags((string) app('event')->description)); @endphp
                 @if($hasAbout || $resources->isNotEmpty())
@@ -122,6 +122,10 @@
         window.csrfToken = "{{ csrf_token() }}";
         window.eventSlug = "{{ request()->route('slug') }}";
         window.trackingEnabled = @json((bool) $is_log_attendance);
+        window.liveChatEnabled = @json($enable_live_chat);
+        window.commentsEnabled = @json($enable_comments);
+        window.pollsEnabled = @json($enable_polls);
+        window.feedbackEnabled = @json($enable_feedback);
         window.chatMessagesUrl = "{{ event_route('chat.messages') }}";
         window.chatSendUrl = "{{ event_route('chat.send') }}";
         window.raiseHandUrl = "{{ event_route('raise.hand') }}";
@@ -129,6 +133,9 @@
         window.pollUrl = "{{ event_route('poll') }}";
         window.pollVoteUrl = "{{ event_route('poll.vote') }}";
         window.feedbackStoreUrl = "{{ event_route('feedback.save') }}";
+        window.commentStoreUrl = "{{ event_route('comments.save') }}";
+        window.commentsListUrl = "{{ event_route('comments.list') }}";
+        window.commentVoteUrl = @json(event_route('comments.vote', ['comment' => '__ID__']));
         window.attendanceJoinUrl = "{{ event_route('attendance.join') }}";
         window.attendanceLeaveUrl = "{{ event_route('attendance.leave') }}";
         window.initialFeedback = @json([
@@ -240,7 +247,6 @@
                 .joining(function (user) {
                     onlineUsers[user.id] = user;
                     renderParticipants();
-                    showJoinToast(user.name);
                 })
 
                 .leaving(function (user) {
@@ -381,15 +387,11 @@
                 window._handToastTimer = setTimeout(() => $('#handToast').fadeOut(400), 3500);
             }
 
-            function showJoinToast(name) {
-                toastr.info(`${escHtml(name)} joined`, '', {
-                    timeOut: 2000, positionClass: 'toast-bottom-right',
-                });
-            }
-
             $('.tab-content').hide();
-            $('#chat').show();
-            $('#chatInputArea').show();
+            const initialTab = $('.tab-link.active').data('tab') || 'polls';
+            $('#' + initialTab).show();
+            $('#chatInputArea').toggle(initialTab === 'chat');
+            $('#commentInputArea').toggle(initialTab === 'comments');
 
             $('.tab-link').on('click', function () {
                 const tab = $(this).data('tab');
@@ -399,9 +401,60 @@
                 $('#' + tab).show();
 
                 $('#chatInputArea').toggle(tab === 'chat');
+                $('#commentInputArea').toggle(tab === 'comments');
 
                 if (tab === 'chat') loadChatMessages();
+                if (tab === 'comments') loadComments();
                 if (tab === 'polls') loadPoll();
+            });
+
+            function renderComments(comments) {
+                const list = $('#eventCommentsList').empty();
+                if (!comments.length) {
+                    list.html('<div class="chat-empty-state comments-empty-state"><i class="fa-regular fa-comments"></i><p>No comments yet.<br>Be the first to add a comment!</p></div>');
+                    return;
+                }
+                comments.sort((a, b) => Number(a.is_approved) - Number(b.is_approved) || Number(b.votes_count) - Number(a.votes_count) || new Date(b.created_at) - new Date(a.created_at));
+                comments.forEach(comment => list.append(`
+                    <article class="event-comment-card" data-comment-id="${comment.id}">
+                        <div class="event-comment-avatar">${escHtml(avatarInitials(comment.user_name))}</div>
+                        <div class="event-comment-body">
+                            <div class="event-comment-meta"><strong>${escHtml(comment.user_name)}</strong><span>${escHtml(comment.time_ago)}</span></div>
+                            <p>${escHtml(comment.comment)}</p>
+                            ${comment.is_approved ? `<button class="comment-upvote-btn ${comment.voted_by_me ? 'voted' : ''}" data-id="${comment.id}" ${comment.voted_by_me ? 'disabled' : ''}>
+                                <i class="fa-solid fa-arrow-up"></i><span>Upvote</span><strong>${Number(comment.votes_count) || 0}</strong>
+                            </button>` : '<span class="comment-pending-label"><i class="fa-regular fa-clock"></i> Pending</span>'}
+                        </div>
+                    </article>`));
+            }
+
+            function loadComments() {
+                if (!window.commentsEnabled) return;
+                $.get(window.commentsListUrl).done(response => renderComments(response.comments || []));
+            }
+
+            $('#submitEventCommentBtn').on('click', function () {
+                const comment = $.trim($('#eventCommentText').val());
+                if (!comment) return toastr.error('Please enter a comment');
+                const $button = $(this).prop('disabled', true);
+                $.ajax({url: window.commentStoreUrl, method: 'POST', headers: csrf(), data: JSON.stringify({comment})})
+                    .done(response => { $('#eventCommentText').val(''); loadComments(); toastr.success(response.message || 'Comment is waiting for approval'); })
+                    .fail(() => toastr.error('Failed to submit comment'))
+                    .always(() => $button.prop('disabled', false));
+            });
+
+            $('#eventCommentText').on('keydown', function (event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    $('#submitEventCommentBtn').trigger('click');
+                }
+            });
+
+            $(document).on('click', '.comment-upvote-btn', function () {
+                const button = $(this).prop('disabled', true);
+                $.ajax({url: window.commentVoteUrl.replace('__ID__', button.data('id')), method: 'POST', headers: csrf(), data: '{}'})
+                    .done(() => loadComments())
+                    .fail(() => { button.prop('disabled', false); toastr.error('Unable to upvote comment'); });
             });
 
             function buildMessageHtml(msg) {
@@ -420,6 +473,7 @@
             }
 
             function loadChatMessages(silent = false) {
+                if (!window.liveChatEnabled) return;
                 if (!silent) $('#chatSkeleton').show();
                 $.get(window.chatMessagesUrl, function (res) {
                     $('#chatSkeleton').hide();
@@ -499,6 +553,7 @@
             });
 
             function sendChatMessage() {
+                if (!window.liveChatEnabled) return;
                 const msg = $.trim($('#chatInput').val());
                 if (!msg) return;
 
@@ -528,7 +583,7 @@
                 });
             }
 
-            echo.channel(`webinar.${slug}.chat`)
+            if (window.liveChatEnabled) echo.channel(`webinar.${slug}.chat`)
                 .listen('.message.sent', function (data) {
                     if (data.senderType === 'user' && data.userId === window.currentUser.id) return;
                     $('#chatMessages .chat-empty-state').remove();
@@ -539,6 +594,7 @@
             loadChatMessages();
 
             function loadPoll() {
+                if (!window.pollsEnabled) return;
                 $.get(window.pollUrl, function (res) {
                     renderPoll(res.poll, res.voted);
                 });
@@ -564,8 +620,75 @@
                 $question.text(poll.question).show();
                 $options.show();
 
+                const interactionType = poll.interaction_type || 'single_choice';
+
+                if (interactionType === 'text') {
+                    if (voted) {
+                        $options.append(`<textarea class="poll-text-response submitted" readonly>${escHtml(voted.answer)}</textarea>`);
+                    } else {
+                        $options.append(`<textarea class="poll-text-response" id="pollTextResponse" maxlength="2000" placeholder="Type your response..."></textarea>
+                            <button class="poll-submit-response" data-poll="${poll.id}">Submit Response</button>`);
+                    }
+                    $footer.text(voted ? 'Response submitted' : 'Maximum 2000 characters');
+                    return;
+                }
+
+                if (interactionType === 'rating') {
+                    const ratingMax = Number(poll.rating_max || 5);
+                    if (voted) {
+                        const selectedRating = Number(voted.answer);
+                        const selectedStars = Array.from({length: ratingMax}, (_, index) => index + 1)
+                            .map(value => `<button class="poll-rating-btn ${value <= selectedRating ? 'active' : ''}" type="button" disabled aria-label="Rated ${selectedRating} out of ${ratingMax}"><i class="fa-solid fa-star"></i></button>`)
+                            .join('');
+                        $options.append(`<div class="poll-rating-options submitted">${selectedStars}</div><p class="poll-rating-text">${selectedRating} out of ${ratingMax}</p>`);
+                    } else {
+                        const ratings = Array.from({length: ratingMax}, (_, index) => index + 1)
+                            .map(value => `<button class="poll-rating-btn" data-poll="${poll.id}" data-rating="${value}" aria-label="Rate ${value} out of ${ratingMax}"><i class="fa-solid fa-star"></i></button>`)
+                            .join('');
+                        $options.append(`<div class="poll-rating-options" data-rating-max="${ratingMax}">${ratings}</div><p class="poll-rating-text">Select your rating</p>`);
+                    }
+                    $footer.text(voted ? 'Rating submitted' : `Select a rating from 1 to ${ratingMax}`);
+                    return;
+                }
+
                 const answers = typeof poll.poll_answers === 'string' ? JSON.parse(poll.poll_answers) : (poll.poll_answers || []);
                 const totalVotes = poll.votes_count || 0;
+
+                if (interactionType === 'multiple_choice') {
+                    if (voted) {
+                        const selectedAnswers = String(voted.answer).split(', ').map(answer => answer.trim());
+                        answers.forEach(function (opt) {
+                            const optText = typeof opt === 'object' ? opt.answer : opt;
+                            const count = typeof opt === 'object' ? Number(opt.user_voted_count || 0) : 0;
+                            const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                            const isSelected = selectedAnswers.includes(optText);
+                            $options.append(`
+                                <div class="poll-result-item ${isSelected ? 'selected' : ''}">
+                                    <div class="poll-result-label ${isSelected ? 'selected' : ''}">
+                                        <span>${escHtml(optText)}</span>
+                                        <span>${pct}%</span>
+                                    </div>
+                                    <div class="poll-result-track">
+                                        <div class="poll-result-fill" style="width:0%" data-width="${pct}%"></div>
+                                    </div>
+                                </div>`);
+                        });
+                        setTimeout(function () {
+                            $('.poll-result-fill').each(function () {
+                                $(this).css('width', $(this).data('width'));
+                            });
+                        }, 50);
+                    } else {
+                        const checkboxes = answers.map(opt => {
+                            const optText = typeof opt === 'object' ? opt.answer : opt;
+                            const optId = typeof opt === 'object' ? opt.id : opt;
+                            return `<label class="poll-multiple-option"><input type="checkbox" class="poll-multiple-checkbox" value="${optId}"><span>${escHtml(optText)}</span></label>`;
+                        }).join('');
+                        $options.append(`${checkboxes}<button class="poll-submit-multiple" data-poll="${poll.id}">Submit Selection</button>`);
+                    }
+                    $footer.text(voted ? `${totalVotes} total response${totalVotes !== 1 ? 's' : ''}` : 'Select one or more options');
+                    return;
+                }
 
                 answers.forEach(function (opt) {
                     const optText = typeof opt === 'object' ? opt.answer : opt;
@@ -604,15 +727,12 @@
                 }
             }
 
-            $(document).on('click', '.poll-option-btn', function () {
-                const pollId = $(this).data('poll');
-                const answer = $(this).data('answer');
-                const answerId = $(this).data('answer-id');
+            function submitPollVote(pollId, answer, answerId = null, answerIds = null) {
                 $.ajax({
                     url: window.pollVoteUrl,
                     method: 'POST',
                     headers: csrf(),
-                    data: JSON.stringify({poll_id: pollId, answer: answer, answer_id: answerId}),
+                    data: JSON.stringify({poll_id: pollId, answer: answer, answer_id: answerId, answer_ids: answerIds}),
                     success: function (res) {
                         if (res.status) {
                             toastr.success('Vote submitted!');
@@ -625,9 +745,41 @@
                         toastr.warning(xhr.responseJSON?.message || 'Already voted');
                     },
                 });
+            }
+
+            $(document).on('click', '.poll-option-btn', function () {
+                submitPollVote($(this).data('poll'), $(this).data('answer'), $(this).data('answer-id'));
+            });
+
+            $(document).on('click', '.poll-rating-btn', function () {
+                submitPollVote($(this).data('poll'), String($(this).data('rating')));
+            });
+
+            $(document).on('mouseenter focus', '.poll-rating-btn', function () {
+                const rating = Number($(this).data('rating'));
+                $(this).siblings().addBack().each(function () {
+                    $(this).toggleClass('active', Number($(this).data('rating')) <= rating);
+                });
+                $('.poll-rating-text').text(`${rating} out of ${$(this).parent().data('rating-max')}`);
+            }).on('mouseleave', '.poll-rating-options', function () {
+                $(this).find('.poll-rating-btn').removeClass('active');
+                $('.poll-rating-text').text('Select your rating');
+            });
+
+            $(document).on('click', '.poll-submit-response', function () {
+                const response = $.trim($('#pollTextResponse').val());
+                if (!response) return toastr.warning('Please type your response');
+                submitPollVote($(this).data('poll'), response);
+            });
+
+            $(document).on('click', '.poll-submit-multiple', function () {
+                const answerIds = $('.poll-multiple-checkbox:checked').map((_, input) => Number(input.value)).get();
+                if (!answerIds.length) return toastr.warning('Please select at least one option');
+                submitPollVote($(this).data('poll'), 'Multiple selections', null, answerIds);
             });
             echo.channel(`webinar.${slug}.poll`)
                 .listen('.poll.updated', function (data) {
+                    if (!window.pollsEnabled) return;
                     const pollIsLive = data.poll
                         && data.poll.status === 'active'
                         && !Boolean(Number(data.poll.is_hidden));
@@ -644,14 +796,22 @@
                     loadPoll();
                 });
 
+            if (window.commentsEnabled) {
+                echo.channel(`webinar.${slug}.comments`)
+                    .listen('.comment.updated', function () {
+                        loadComments();
+                    });
+                loadComments();
+            }
+
             loadPoll();
 
-            // Keep chat and polls usable when the WebSocket proxy is temporarily
-            // unavailable. Reverb still provides instant updates when connected.
+            // Chat/comments retain a lightweight fallback refresh. Polls are
+            // WebSocket-driven so an in-progress text response is never reset.
             window.setInterval(function () {
                 if (!document.hidden) {
                     loadChatMessages(true);
-                    loadPoll();
+                    loadComments();
                 }
             }, 5000);
 

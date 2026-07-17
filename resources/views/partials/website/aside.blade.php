@@ -1,21 +1,22 @@
 <aside class="chat-sidebar">
     <div class="chat-sidebar-container">
         <div class="tab-navigation">
-            <button class="tab-link active" data-tab="chat">
+            @if($enable_live_chat)<button class="tab-link active" data-tab="chat">
                 <i class="fa-solid fa-comments"></i> Live Chat
-            </button>
+            </button>@endif
+            @if($enable_comments)<button class="tab-link {{ !$enable_live_chat ? 'active' : '' }}" data-tab="comments"><i class="fa-solid fa-message"></i> Comments</button>@endif
             <button class="tab-link d-none" data-tab="qa">
                 <i class="fa-solid fa-circle-question"></i> Q&A
             </button>
-            <button class="tab-link" data-tab="polls">
+            @if($enable_polls)<button class="tab-link {{ !$enable_live_chat && !$enable_comments ? 'active' : '' }}" data-tab="polls">
                 <i class="fa-solid fa-poll"></i> Polls
-            </button>
-            <button class="tab-link" data-tab="feedback">
+            </button>@endif
+            @if($enable_feedback)<button class="tab-link {{ !$enable_live_chat && !$enable_comments && !$enable_polls ? 'active' : '' }}" data-tab="feedback">
                 <i class="fa-solid fa-star"></i> Feedback
-            </button>
+            </button>@endif
         </div>
         <div class="sidebar-scrollable-content">
-            <div class="tab-content" id="chat">
+            @if($enable_live_chat)<div class="tab-content" id="chat">
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-skeleton" id="chatSkeleton">
                         <div class="skeleton-row">
@@ -39,7 +40,20 @@
                     </div>
                     <span id="typingText">Someone is typing…</span>
                 </div>
-            </div>
+            </div>@endif
+
+            @if($enable_comments)
+                <div class="tab-content" id="comments" style="display:none">
+                    <div class="event-comments-panel">
+                        <div class="event-comments-list" id="eventCommentsList">
+                            <div class="chat-empty-state comments-empty-state">
+                                <i class="fa-regular fa-comments"></i>
+                                <p>No comments yet.<br>Be the first to add a comment!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <div class="tab-content" id="qa" style="display:none">
                 <div class="qa-list" id="qaList">
@@ -54,16 +68,16 @@
                 </div>
             </div>
 
-            <div class="tab-content" id="polls" style="display:none">
+            @if($enable_polls)<div class="tab-content" id="polls" style="display:none">
                 <div class="poll-container" id="pollBox">
                     <p class="poll-question" id="pollQuestion"></p>
                     <div class="poll-options" id="pollOptions"></div>
                     <p class="poll-message" id="pollMessage">Poll is not active right now.</p>
                     <p class="poll-footer" id="pollFooter"></p>
                 </div>
-            </div>
+            </div>@endif
 
-            <div class="tab-content" id="feedback" style="display:none">
+            @if($enable_feedback)<div class="tab-content" id="feedback" style="display:none">
                 <div class="feedback-container">
                     <div class="feedback-header">
                         <h3>Rate this Session</h3>
@@ -91,9 +105,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>@endif
 
-            <div class="chat-input-area" id="chatInputArea">
+            @if($enable_live_chat)<div class="chat-input-area" id="chatInputArea">
                 <button class="chat-scroll-chip" id="chatScrollChip">
                     <i class="fa-solid fa-arrow-down"></i> New messages
                 </button>
@@ -105,7 +119,16 @@
                     </button>
                 </div>
                 <div class="chat-char-count" id="chatCharCount">0 / 500</div>
-            </div>
+            </div>@endif
+            @if($enable_comments)<div class="chat-input-area event-comment-input-area" id="commentInputArea" style="display:none">
+                <div class="chat-input-wrapper">
+                    <input id="eventCommentText" type="text" placeholder="Write a comment..." maxlength="2000" autocomplete="off">
+                    <button id="submitEventCommentBtn" class="chat-send-btn" type="button" aria-label="Send comment">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="event-comment-note">Comments appear after admin approval.</div>
+            </div>@endif
             <div class="sidebar-extra-content">
 
                 <div class="quick-actions-panel">

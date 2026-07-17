@@ -66,6 +66,14 @@ class HomeController
             ->orderBy('index_no')
             ->get();
 
+        if ($loginFields->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'type' => 'auth',
+                'message' => 'Login is not enabled for this event.',
+            ], 401);
+        }
+
         $rules = [];
         foreach ($loginFields as $field) {
             if (str_contains($field->field_name, 'mobile')) {
@@ -103,7 +111,20 @@ class HomeController
 
         $user = $query->first();
 
-        if (!$user || $user->type !== 'doctor') {
+        if (!$user) {
+            $registrationData = collect($validated)
+                ->filter(fn ($value, $field) => str_contains($field, 'email'))
+                ->all();
+
+            return response()->json([
+                'status' => false,
+                'type' => 'registration_required',
+                'message' => 'Please complete your registration to access this event.',
+                'registration_data' => $registrationData,
+            ], 401);
+        }
+
+        if ($user->type !== 'doctor') {
             return response()->json([
                 'status' => false,
                 'type' => 'auth',

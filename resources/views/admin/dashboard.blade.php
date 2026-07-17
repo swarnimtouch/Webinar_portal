@@ -22,22 +22,35 @@
                         {{ $isSubAdmin ? 'Statistics are limited to your assigned event.' : 'Live performance across all events.' }}
                     </div>
                 </div>
-                <div class="badge badge-light-success fs-7 px-4 py-3 mt-3 mt-sm-0">
-                    <span class="live-dot me-2"></span> Live updates use the last 2 minutes
-                </div>
+                @if(!$isSubAdmin || $assignedEvent?->show_live_users)
+                    <div class="badge badge-light-success fs-7 px-4 py-3 mt-3 mt-sm-0">
+                        <span class="live-dot me-2"></span> Live updates use the last 2 minutes
+                    </div>
+                @endif
             </div>
 
             @php
+                $showAttendance = !$isSubAdmin || $assignedEvent?->is_log_attendance;
+                $showLiveUsers = !$isSubAdmin || $assignedEvent?->show_live_users;
+                $showLiveChat = !$isSubAdmin || $assignedEvent?->enable_live_chat;
+                $showComments = !$isSubAdmin || $assignedEvent?->enable_comments;
+                $showPolls = !$isSubAdmin || $assignedEvent?->enable_polls;
+                $showFeedback = !$isSubAdmin || $assignedEvent?->enable_feedback;
+
                 $cards = [
                     ['label' => 'Events', 'value' => $stats['events'], 'icon' => 'bi-calendar-event', 'color' => 'primary'],
                     ['label' => 'Registered users', 'value' => $stats['registrations'], 'icon' => 'bi-people', 'color' => 'info'],
                     ['label' => 'New today', 'value' => $stats['new_today'], 'icon' => 'bi-person-plus', 'color' => 'warning'],
-                    ['label' => 'Live now', 'value' => $stats['live_users'], 'icon' => 'bi-broadcast', 'color' => 'success'],
-                    ['label' => 'Total attendees', 'value' => $stats['attendees'], 'icon' => 'bi-person-check', 'color' => 'primary'],
-                    ['label' => 'Polls', 'value' => $stats['polls'], 'icon' => 'bi-bar-chart', 'color' => 'danger'],
-                    ['label' => 'Poll voters', 'value' => $stats['voters'], 'icon' => 'bi-check2-square', 'color' => 'success'],
-                    ['label' => 'Votes submitted', 'value' => $stats['votes'], 'icon' => 'bi-ui-checks', 'color' => 'info'],
                 ];
+                if ($showAttendance) $cards[] = ['label' => 'Total attendees', 'value' => $stats['attendees'], 'icon' => 'bi-person-check', 'color' => 'primary'];
+                if ($showLiveUsers) $cards[] = ['label' => 'Live now', 'value' => $stats['live_users'], 'icon' => 'bi-broadcast', 'color' => 'success'];
+                if ($showLiveChat) $cards[] = ['label' => 'Chat threads', 'value' => $stats['chat_threads'], 'icon' => 'bi-chat-dots', 'color' => 'primary'];
+                if ($showComments) $cards[] = ['label' => 'Total comments', 'value' => $stats['comments'], 'icon' => 'bi-chat-square-text', 'color' => 'warning'];
+                if ($showPolls) {
+                    $cards[] = ['label' => 'Polls', 'value' => $stats['polls'], 'icon' => 'bi-bar-chart', 'color' => 'danger'];
+                    $cards[] = ['label' => 'Poll voters', 'value' => $stats['voters'], 'icon' => 'bi-check2-square', 'color' => 'success'];
+                    $cards[] = ['label' => 'Votes submitted', 'value' => $stats['votes'], 'icon' => 'bi-ui-checks', 'color' => 'info'];
+                }
             @endphp
             <div class="row g-5 mb-8">
                 @foreach($cards as $card)
@@ -55,6 +68,36 @@
                 @endforeach
             </div>
 
+            @if($isSubAdmin && $locationReports->isNotEmpty())
+                <div class="row g-5 mb-8">
+                    @foreach($locationReports as $dimension => $rows)
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header border-0 pt-5 align-items-center">
+                                    <h3 class="card-title fw-bolder text-dark">{{ ucfirst($dimension) }}-wise registrations</h3>
+                                    <a class="btn btn-sm btn-light-primary"
+                                       href="{{ route('admin.dashboard.location_report.export', ['dimension' => $dimension]) }}">
+                                        <i class="bi bi-download me-1"></i>Export CSV
+                                    </a>
+                                </div>
+                                <div class="card-body pt-2 table-responsive">
+                                    <table class="table align-middle table-row-dashed gy-3">
+                                        <thead><tr class="text-muted fw-bolder fs-7 text-uppercase"><th>{{ ucfirst($dimension) }}</th><th class="text-end">Registered</th></tr></thead>
+                                        <tbody>
+                                        @forelse($rows as $row)
+                                            <tr><td class="fw-bold text-dark">{{ $row->location }}</td><td class="text-end fw-bolder">{{ number_format($row->total) }}</td></tr>
+                                        @empty
+                                            <tr><td colspan="2" class="text-center text-muted py-6">No registration data.</td></tr>
+                                        @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
             <div class="row g-5 g-xl-8 mb-8">
                 <div class="col-xl-8">
                     <div class="card h-100">
@@ -70,12 +113,14 @@
                         <div class="card-header border-0 pt-5"><h3 class="card-title fw-bolder text-dark">Engagement summary</h3></div>
                         <div class="card-body pt-2">
                             @php
-                                $engagement = [
-                                    ['Feedback received', $stats['feedback'], 'bi-chat-square-heart', 'danger'],
-                                    ['Chat threads', $stats['chat_threads'], 'bi-chat-dots', 'primary'],
-                                    ['Total watch time', number_format($stats['session_seconds'] / 3600, 1).' hrs', 'bi-clock-history', 'warning'],
-                                    ['Attendance rate', $stats['registrations'] ? round(($stats['attendees'] / $stats['registrations']) * 100).'%' : '0%', 'bi-graph-up-arrow', 'success'],
-                                ];
+                                $engagement = [];
+                                if ($showFeedback) $engagement[] = ['Feedback received', $stats['feedback'], 'bi-chat-square-heart', 'danger'];
+                                if ($showLiveChat) $engagement[] = ['Chat threads', $stats['chat_threads'], 'bi-chat-dots', 'primary'];
+                                if ($showComments) $engagement[] = ['Comments received', $stats['comments'], 'bi-chat-square-text', 'info'];
+                                if ($showAttendance) {
+                                    $engagement[] = ['Total watch time', number_format($stats['session_seconds'] / 3600, 1).' hrs', 'bi-clock-history', 'warning'];
+                                    $engagement[] = ['Attendance rate', $stats['registrations'] ? round(($stats['attendees'] / $stats['registrations']) * 100).'%' : '0%', 'bi-graph-up-arrow', 'success'];
+                                }
                             @endphp
                             @foreach($engagement as [$label, $value, $icon, $color])
                                 <div class="d-flex align-items-center py-4 {{ !$loop->last ? 'border-bottom' : '' }}">
@@ -95,17 +140,19 @@
                         <div class="card-header border-0 pt-5"><h3 class="card-title fw-bolder text-dark">Event performance</h3></div>
                         <div class="card-body pt-2 table-responsive">
                             <table class="table align-middle table-row-dashed gy-4">
-                                <thead><tr class="text-muted fw-bolder fs-7 text-uppercase"><th>Event</th><th>Registered</th><th>Live</th><th>Attended</th><th>Polls</th><th>Votes</th></tr></thead>
+                                <thead><tr class="text-muted fw-bolder fs-7 text-uppercase"><th>Event</th><th>Registered</th>@if(!$isSubAdmin || $assignedEvent?->show_live_users)<th>Live</th>@endif<th>Attended</th><th>Polls</th><th>Votes</th></tr></thead>
                                 <tbody>
                                 @forelse($eventRows as $row)
                                     <tr>
                                         <td><div class="d-flex align-items-center"><img class="event-logo me-3" src="{{ $row['event']->logo }}" alt=""><div><div class="fw-bolder text-dark">{{ $row['event']->name }}</div><span class="badge badge-light-{{ $row['event']->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($row['event']->status) }}</span></div></div></td>
                                         <td class="fw-bold">{{ number_format($row['registrations']) }}</td>
-                                        <td><span class="live-dot me-2"></span><span class="fw-bold">{{ number_format($row['live']) }}</span></td>
+                                        @if(!$isSubAdmin || $assignedEvent?->show_live_users)
+                                            <td><span class="live-dot me-2"></span><span class="fw-bold">{{ number_format($row['live']) }}</span></td>
+                                        @endif
                                         <td class="fw-bold">{{ number_format($row['attendees']) }}</td><td class="fw-bold">{{ number_format($row['polls']) }}</td><td class="fw-bold">{{ number_format($row['votes']) }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="text-center text-muted py-10">No event data is available.</td></tr>
+                                    <tr><td colspan="{{ (!$isSubAdmin || $assignedEvent?->show_live_users) ? 6 : 5 }}" class="text-center text-muted py-10">No event data is available.</td></tr>
                                 @endforelse
                                 </tbody>
                             </table>

@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Storage;
 
 class CertificateController
 {
+    private const DEFAULT_FONT = 'certificates/fonts/Poppins-Bold.ttf';
+
     /**
      * Display a listing of the resource.
      */
@@ -57,9 +59,7 @@ class CertificateController
                 ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
                 : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
             'event_id' => 'required|exists:events,id',
-            'font_file' => $certificate->exists
-                ? 'nullable|file|extensions:ttf,otf|max:5120'
-                : 'required|file|extensions:ttf,otf|max:5120',
+            'font_file' => 'nullable|file|extensions:ttf,otf|max:5120',
             'font_size' => 'required|integer|min:1|max:300',
             'font_color' => 'required|string|max:20',
             'is_bold' => 'nullable|boolean',
@@ -84,12 +84,14 @@ class CertificateController
         }
 
         if ($request->hasFile('font_file')) {
-            if ($certificate->exists && $certificate->font_file) {
+            if ($certificate->exists && $certificate->font_file && $certificate->font_file !== self::DEFAULT_FONT) {
                 EventStorage::delete($certificate->font_file);
             }
             $fontFile = $request->file('font_file');
             $originalName = uniqid() . '-' . $fontFile->getClientOriginalName();
             $certificate->font_file = EventStorage::store($fontFile, $event, 'certificates/fonts', $originalName);
+        } elseif (!$certificate->font_file) {
+            $certificate->font_file = self::DEFAULT_FONT;
         }
 
         $certificate->event_id = $request->event_id;
@@ -118,7 +120,9 @@ class CertificateController
             if ($certificate->background_image) {
                 EventStorage::delete($certificate->background_image);
             }
-            EventStorage::delete($certificate->font_file);
+            if ($certificate->font_file !== self::DEFAULT_FONT) {
+                EventStorage::delete($certificate->font_file);
+            }
 
             $certificate->delete();
 
@@ -153,7 +157,9 @@ class CertificateController
                 if ($certificate->background_image) {
                     EventStorage::delete($certificate->background_image);
                 }
-                EventStorage::delete($certificate->font_file);
+                if ($certificate->font_file !== self::DEFAULT_FONT) {
+                    EventStorage::delete($certificate->font_file);
+                }
             });
 
             Certificate::whereIn('id', $ids)->delete();

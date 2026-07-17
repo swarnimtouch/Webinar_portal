@@ -138,6 +138,13 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.feedback.index']
             ],
             [
+                'route' => route('admin.comments.index'),
+                'name' => 'Comments',
+                'icon' => 'bi-chat-left-text',
+                'child' => [],
+                'all_routes' => ['admin.comments.index']
+            ],
+            [
                 'route' => route('admin.poll'),
                 'name' => 'Polls',
                 'icon' => 'bi-bar-chart',
@@ -248,6 +255,13 @@ function getModules($user_type = 'admin'): array
                 'all_routes' => ['admin.feedback.index']
             ],
             [
+                'route' => route('admin.comments.index'),
+                'name' => 'Comments',
+                'icon' => 'bi-chat-left-text',
+                'child' => [],
+                'all_routes' => ['admin.comments.index']
+            ],
+            [
                 'route' => route('admin.user_poll_result'),
                 'name' => 'User Poll Answers',
                 'icon' => 'bi-patch-question',
@@ -316,6 +330,34 @@ function getModules($user_type = 'admin'): array
         ];
     }
 
+    if ($user_type === 'sub_admin' && !auth('admin')->user()?->event?->allow_sub_admin_settings) {
+        foreach ($module as &$item) {
+            if (($item['name'] ?? null) !== 'General Settings') {
+                continue;
+            }
+
+            $item['child'] = array_values(array_filter(
+                $item['child'],
+                fn (array $child) => !in_array('admin.event_setting', $child['all_routes'] ?? [], true)
+            ));
+            $item['all_routes'] = array_values(array_filter(
+                $item['all_routes'],
+                fn (string $route) => $route !== 'admin.event_setting'
+            ));
+        }
+        unset($item);
+    }
+
+    if ($user_type === 'sub_admin') {
+        $event = auth('admin')->user()?->event;
+        $module = array_values(array_filter($module, function (array $item) use ($event) {
+            if (($item['name'] ?? null) === 'Comments' && !$event?->enable_comments) return false;
+            if (($item['name'] ?? null) === 'Chat Log' && !$event?->enable_live_chat) return false;
+            if (($item['name'] ?? null) === 'Feedback' && !$event?->enable_feedback) return false;
+            return true;
+        }));
+    }
+
     return $module;
 }
 
@@ -336,6 +378,7 @@ function sub_admin_can_access_route(?string $routeName): bool
 
     $allowedRoutes = [
         'dashboard',
+        'dashboard.location_report.export',
         'profile',
         'profile.update',
         'password',
@@ -351,6 +394,7 @@ function sub_admin_can_access_route(?string $routeName): bool
         'event_setting',
         'user_attendance',
         'feedback.',
+        'comments.',
         'user_poll_result',
         'chat_log',
         'certificate_log',
@@ -592,6 +636,7 @@ function get_dynamic_fields()
             'attribute_id' => 1,
             'input_value' => null,
             'type' => 'default',
+            'login_with' => 1,
         ],
         [
             'index_no' => 4,

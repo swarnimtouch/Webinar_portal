@@ -17,7 +17,9 @@ class Poll extends Model
      */
     protected $fillable = [
         'question',
-        'answer',
+        'answers',
+        'interaction_type',
+        'rating_max',
         'status',
         'is_hidden'
     ];
@@ -29,6 +31,8 @@ class Poll extends Model
      */
     protected $casts = [
         'is_hidden' => 'boolean',
+        'answers' => 'array',
+        'rating_max' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];

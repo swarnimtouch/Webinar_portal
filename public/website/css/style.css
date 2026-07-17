@@ -317,6 +317,50 @@ main {
  letter-spacing: 0.5px;
 }
 
+.mobile-register-button {
+ display: none;
+}
+
+@media (max-width: 768px) {
+ .registration-header-button {
+  display: none;
+ }
+
+ .registration-info-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+ }
+
+ .registration-status-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--btn-gold);
+ }
+
+ .registration-status-row span {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+ }
+
+ .mobile-register-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 14px;
+  padding: 13px 24px;
+  font-size: 15px;
+  position: relative;
+  z-index: 2;
+ }
+}
+
 .content-grid {
  display: flex;
  gap: 40px;

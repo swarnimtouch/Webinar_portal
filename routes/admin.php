@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\{
     EventSettingController,
     UserAttendanceController,
     FeedbackController,
+    CommentsController,
     PollController,
     UserPollResultController,
     ChatLogController,
@@ -44,6 +45,8 @@ Route::controller(LoginController::class)->group(function () {
 Route::middleware(['auth:admin', 'sub_admin.menu'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/location-report/export', [DashboardController::class, 'exportLocationReport'])
+        ->name('dashboard.location_report.export');
 
     /*
     | Events
@@ -204,6 +207,14 @@ Route::middleware(['auth:admin', 'sub_admin.menu'])->group(function () {
         Route::get('feedback/datatable', 'datatable')->name('feedback.datatable');
         Route::get('feedback/export', 'export')->name('feedback.export');
 
+    });
+    Route::controller(CommentsController::class)->group(function () {
+        Route::get('comments', 'index')->name('comments.index');
+        Route::get('comments/export', 'export')->name('comments.export');
+        Route::get('comments/datatable', 'datatable')->name('comments.datatable');
+        Route::delete('comments/{comment}', 'delete')->name('comments.delete');
+        Route::post('comments/delete-multiple', 'deleteMultiple')->name('comments.deleteMultiple');
+        Route::post('comments/{comment}/toggle-status', 'toggleStatus')->name('comments.toggleStatus');
     });
 
     /*

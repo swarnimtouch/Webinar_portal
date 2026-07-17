@@ -9,9 +9,15 @@ use Illuminate\Support\Facades\Storage;
 
 class FeedbackController
 {
-    //
+    private function ensureEnabledForSubAdmin(): void
+    {
+        $user = auth()->user();
+        abort_if($user->type === 'sub_admin' && !$user->event?->enable_feedback, 403);
+    }
+
     public function index()
     {
+        $this->ensureEnabledForSubAdmin();
         $feedback = Feedback::with('event')->get()->unique('event_id')->values();
         return view('admin.feedback.index', [
             'feedback' => $feedback,
@@ -25,10 +31,12 @@ class FeedbackController
 
     public function delete($id)
     {
+        $this->ensureEnabledForSubAdmin();
+        $user = auth()->user();
+        $feedback = Feedback::query()
+            ->when($user->type === 'sub_admin', fn ($query) => $query->where('event_id', $user->event_id))
+            ->findOrFail($id);
         try {
-            $feedback = Feedback::findOrFail($id);
-
-
             $feedback->delete();
 
             return response()->json(['success' => true, 'message' => 'FeedBack deleted successfully']);
@@ -42,6 +50,7 @@ class FeedbackController
      */
     public function deleteMultiple(Request $request)
     {
+        $this->ensureEnabledForSubAdmin();
         try {
             $ids = $request->input('ids', []);
 
@@ -49,7 +58,9 @@ class FeedbackController
                 return response()->json(['success' => false, 'message' => 'No FeedBack selected'], 400);
             }
 
-            $feedBack = Feedback::whereIn('id', $ids)->get();
+            $feedBack = Feedback::whereIn('id', $ids)
+                ->when(auth()->user()->type === 'sub_admin', fn ($query) => $query->where('event_id', auth()->user()->event_id))
+                ->get();
 
             foreach ($feedBack as $feedBacks) {
 
@@ -65,6 +76,7 @@ class FeedbackController
 
     public function datatable(Request $request)
     {
+        $this->ensureEnabledForSubAdmin();
         $user = auth()->user();
 
         $query = Feedback::with(['user', 'event']);
@@ -130,6 +142,7 @@ class FeedbackController
 
     public function export(Request $request)
     {
+        $this->ensureEnabledForSubAdmin();
         $user = auth()->user();
         $isAdmin = $user->type === 'admin';
         $search = $request->get('search');

@@ -52,14 +52,23 @@ class PollController
     public function save(Request $request, $id = null)
     {
         $poll = $id ? Poll::findOrFail($id) : new Poll();
+        $interactionType = $request->input('interaction_type', 'single_choice');
 
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'event_id' => 'nullable|exists:events,id',
             'question' => 'required|string|min:5|max:500',
-            'answers' => 'required|array|min:2|max:10',
-            'answers.*' => 'required|string|min:1|max:255',
+            'interaction_type' => 'required|in:single_choice,multiple_choice,text,rating',
+            'rating_max' => 'nullable|required_if:interaction_type,rating|integer|min:3|max:10',
             'is_hidden' => 'nullable|boolean'
-        ], [
+        ];
+        if (in_array($interactionType, ['single_choice', 'multiple_choice'], true)) {
+            $rules['answers'] = 'required|array|min:2|max:10';
+            $rules['answers.*'] = 'required|string|min:1|max:255';
+        } else {
+            $rules['answers'] = 'nullable|array';
+        }
+
+        $validator = Validator::make($request->all(), $rules, [
             'answers.required' => 'Please provide at least 2 answers',
             'answers.min' => 'Minimum 2 answers are required',
             'answers.max' => 'Maximum 10 answers are allowed',
@@ -73,11 +82,11 @@ class PollController
                 ->withInput();
         }
 
-        $answers = array_values(array_filter($request->answers, function ($answer) {
+        $answers = array_values(array_filter($request->input('answers', []), function ($answer) {
             return !empty(trim($answer));
         }));
 
-        if (count($answers) < 2) {
+        if (in_array($interactionType, ['single_choice', 'multiple_choice'], true) && count($answers) < 2) {
             return redirect()
                 ->back()
                 ->withErrors(['answers' => 'Please provide at least 2 answers'])
@@ -85,11 +94,13 @@ class PollController
         }
         $poll->event_id = $request->event_id;
         $poll->question = $request->question;
-        $poll->answers = json_encode($answers);
+        $poll->interaction_type = $interactionType;
+        $poll->rating_max = $interactionType === 'rating' ? $request->integer('rating_max', 5) : 5;
+        $poll->answers = in_array($interactionType, ['single_choice', 'multiple_choice'], true) ? $answers : [];
         $poll->is_hidden = $request->has('is_hidden') ? 1 : 0;
         if ($poll->save()) {
-            if (!empty($answers)) {
-                $poll->poll_answers()->delete();
+            $poll->poll_answers()->delete();
+            if (in_array($interactionType, ['single_choice', 'multiple_choice'], true) && !empty($answers)) {
                 $formattedAnswers = collect($answers)->map(function ($answer) {
                     return ['answer' => $answer];
                 })->toArray();
@@ -247,13 +258,12 @@ class PollController
             ->get();
 
         $data = $polls->map(function ($poll) {
-
-            $answers = json_decode($poll->answers, true) ?? [];
-
             return [
                 'id' => $poll->id,
                 'event' => $poll->event->name ?? 'N/A',
                 'question' => $poll->question,
+                'interaction_type' => $poll->interaction_type,
+                'rating_max' => $poll->rating_max,
                 'answers' => $poll->poll_answers->pluck('answer')->toArray(),
                 'status' => $poll->status,
                 'created_at' => $poll->created_at->format('d M, Y'),

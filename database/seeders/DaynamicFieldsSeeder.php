@@ -36,6 +36,7 @@ class DaynamicFieldsSeeder extends Seeder
                 'attribute_id' => 1,
                 'input_value' => null,
                 'type' => 'default',
+                'login_with' => 1,
             ],
             [
                 'index_no' => 4,
@@ -109,4 +110,3 @@ class DaynamicFieldsSeeder extends Seeder
         }
     }
 }
-

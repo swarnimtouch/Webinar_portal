@@ -7,6 +7,9 @@ use App\Models\Feedback;
 use App\Models\Poll;
 use App\Models\UserAttendance;
 use App\Models\UserPollAnswer;
+use App\Models\Comment;
+use App\Models\CommentVote;
+use App\Events\CommentUpdated;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,6 +42,10 @@ class DashboardController
             'feedback' => $feedback,
             'resources' => $resources,
             'is_log_attendance' => $this->event->is_log_attendance ?? false,
+            'enable_live_chat' => (bool) $this->event->enable_live_chat,
+            'enable_comments' => (bool) $this->event->enable_comments,
+            'enable_polls' => (bool) $this->event->enable_polls,
+            'enable_feedback' => (bool) $this->event->enable_feedback,
             'title' => __('Dashboard'),
         ]);
     }
@@ -141,6 +148,7 @@ class DashboardController
 
     public function feedbackSave(Request $request)
     {
+        abort_unless($this->event->enable_feedback, 403);
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string',
@@ -164,8 +172,86 @@ class DashboardController
         ]);
     }
 
+    public function commentSave(Request $request)
+    {
+        abort_unless($this->event->enable_comments, 403);
+        $validated = $request->validate(['comment' => ['required', 'string', 'max:2000']]);
+        $comment = Comment::create([
+            'event_id' => $this->event->id,
+            'user_id' => Auth::guard('web')->id(),
+            'comment' => $validated['comment'],
+            'is_approved' => false,
+        ]);
+        return response()->json([
+            'status' => true,
+            'message' => 'Comment submitted and is waiting for approval.',
+            'comment' => $comment,
+        ]);
+    }
+
+    public function comments()
+    {
+        abort_unless($this->event->enable_comments, 403);
+        $userId = Auth::guard('web')->id();
+        $comments = Comment::query()
+            ->where('event_id', $this->event->id)
+            ->where(function ($query) use ($userId) {
+                $query->where('is_approved', true)
+                    ->orWhere(fn ($own) => $own->where('user_id', $userId)->where('is_approved', false));
+            })
+            ->with('user:id,name,first_name,last_name')
+            ->withCount('votes')
+            ->withExists(['votes as voted_by_me' => fn ($query) => $query->where('user_id', $userId)])
+            ->orderByDesc('votes_count')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (Comment $comment) => $this->commentPayload($comment));
+
+        return response()->json(['comments' => $comments]);
+    }
+
+    public function voteComment()
+    {
+        $comment = Comment::findOrFail(request()->route('comment'));
+        abort_unless($this->event->enable_comments, 403);
+        abort_unless($comment->event_id === $this->event->id && $comment->is_approved, 404);
+
+        CommentVote::firstOrCreate([
+            'comment_id' => $comment->id,
+            'user_id' => Auth::guard('web')->id(),
+        ]);
+
+        $comment->load('user:id,name,first_name,last_name')->loadCount('votes');
+        $payload = $this->commentPayload($comment, true);
+        try {
+            broadcast(new CommentUpdated($this->event->slug, 'upvoted', $payload))->toOthers();
+        } catch (\Throwable $exception) {
+            Log::warning('Comment upvote saved but realtime broadcast failed.', ['comment_id' => $comment->id]);
+        }
+
+        return response()->json(['status' => true, 'comment' => $payload]);
+    }
+
+    private function commentPayload(Comment $comment, ?bool $votedByMe = null): array
+    {
+        $name = trim(($comment->user?->first_name ?? '') . ' ' . ($comment->user?->last_name ?? ''))
+            ?: ($comment->user?->name ?: 'User');
+
+        return [
+            'id' => $comment->id,
+            'user_name' => $name,
+            'comment' => $comment->comment,
+            'is_approved' => (bool) $comment->is_approved,
+            'votes_count' => (int) ($comment->votes_count ?? 0),
+            'voted_by_me' => $votedByMe ?? (bool) ($comment->voted_by_me ?? false),
+            'created_at' => $comment->created_at?->toIso8601String(),
+            'time_ago' => $comment->created_at?->diffForHumans() ?? '',
+        ];
+    }
+
     public function getPoll()
     {
+        abort_unless($this->event->enable_polls, 403);
         $poll = Poll::where('status', 'active')
             ->CurrentEvent()
             ->withCount('votes')
@@ -183,19 +269,53 @@ class DashboardController
             ->where('user_id', Auth::guard('web')->id())
             ->first();
 
+        if ($poll->interaction_type === 'multiple_choice') {
+            $selections = $poll->votes()
+                ->pluck('answer')
+                ->flatMap(fn ($answer) => array_map('trim', explode(', ', (string) $answer)))
+                ->countBy();
+
+            $poll->poll_answers->each(function ($option) use ($selections) {
+                $option->setAttribute('user_voted_count', (int) $selections->get($option->answer, 0));
+            });
+        }
+
         return response()->json(['poll' => $poll, 'voted' => $vote]);
     }
 
     public function submitPoll(Request $request)
     {
-        $request->validate([
-            'poll_id' => 'required|exists:polls,id',
-            'answer_id' => 'required|exists:poll_answers,id',
-            'answer' => 'required',
-        ]);
+        abort_unless($this->event->enable_polls, 403);
+        $poll = Poll::where('event_id', $this->event->id)
+            ->where('status', 'active')->where('is_hidden', 0)
+            ->findOrFail($request->integer('poll_id'));
+
+        $rules = ['answer' => ['required', 'string', 'max:2000']];
+        if ($poll->interaction_type === 'single_choice') {
+            $rules['answer_id'] = ['required', 'integer'];
+        } elseif ($poll->interaction_type === 'multiple_choice') {
+            $rules['answer_ids'] = ['required', 'array', 'min:1'];
+            $rules['answer_ids.*'] = ['required', 'integer', 'distinct'];
+        } else {
+            $rules['answer_id'] = ['nullable'];
+        }
+        $validated = $request->validate($rules);
+
+        if ($poll->interaction_type === 'single_choice') {
+            $option = $poll->poll_answers()->findOrFail($validated['answer_id']);
+            $validated['answer'] = $option->answer;
+        } elseif ($poll->interaction_type === 'multiple_choice') {
+            $options = $poll->poll_answers()->whereIn('id', $validated['answer_ids'])->get();
+            abort_unless($options->count() === count($validated['answer_ids']), 422);
+            $validated['answer'] = $options->pluck('answer')->implode(', ');
+        } elseif ($poll->interaction_type === 'rating') {
+            $rating = filter_var($validated['answer'], FILTER_VALIDATE_INT);
+            abort_unless($rating !== false && $rating >= 1 && $rating <= $poll->rating_max, 422);
+            $validated['answer'] = (string) $rating;
+        }
 
         $alreadyVoted = UserPollAnswer::where('poll_id', $request->poll_id)
-            ->where('user_id', Auth::id())
+            ->where('user_id', Auth::guard('web')->id())
             ->exists();
 
         if ($alreadyVoted) {
@@ -204,9 +324,9 @@ class DashboardController
 
         UserPollAnswer::create([
             'poll_id' => $request->poll_id,
-            'user_id' => Auth::id(),
-            'answer' => $request->answer,
-            'answer_id' => $request->answer_id,
+            'user_id' => Auth::guard('web')->id(),
+            'answer' => $validated['answer'],
+            'answer_id' => $poll->interaction_type === 'single_choice' ? $validated['answer_id'] : null,
         ]);
 
         return response()->json(['status' => true, 'message' => 'Vote submitted successfully']);
@@ -219,12 +339,8 @@ class DashboardController
         $from = $this->event->active_user_from ? Carbon::parse($this->event->active_user_from, 'Asia/Kolkata') : null;
         $to = $this->event->active_user_to ? Carbon::parse($this->event->active_user_to, 'Asia/Kolkata') : null;
 
-        if ($from && $to && ($now->lt($from) || $now->gt($to))) return false;
-
-        $start = $this->event->start_time ? Carbon::parse($this->event->start_time, 'Asia/Kolkata') : null;
-        $end = $this->event->end_time ? Carbon::parse($this->event->end_time, 'Asia/Kolkata') : null;
-
-        if ($start && $end && ($now->lt($start) || $now->gt($end))) return false;
+        if ($from && $now->lt($from)) return false;
+        if ($to && $now->gt($to)) return false;
 
         return true;
     }

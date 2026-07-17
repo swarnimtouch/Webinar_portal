@@ -22,6 +22,7 @@ class ChatController
 
     public function getMessages(Request $request)
     {
+        abort_unless(app('event')->enable_live_chat, 403);
         $thread = Thread::where('event_id', $this->event->id)->first();
         $messages = collect([]);
 
@@ -46,6 +47,7 @@ class ChatController
 
     public function sendMessage(Request $request)
     {
+        abort_unless(app('event')->enable_live_chat, 403);
         $request->validate(['message' => 'required|string|max:1000']);
         $slug = $this->event->slug;
 

@@ -95,7 +95,7 @@
                                     Favicon
                                 </label>
                                 <div class="col-lg-8">
-                                    @if($event->getRawOriginal('favicon') && $event->getRawOriginal('favicon') !== null)
+                                    @if(true)
                                         <div class="mb-3 d-flex align-items-center gap-3">
                                             <img id="favicon-current"
                                                  src="{{$event->favicon}}"
@@ -146,7 +146,7 @@
                                     Logo
                                 </label>
                                 <div class="col-lg-8">
-                                    @if(isset($event->logo) && $event->getRawOriginal('logo') !== null)
+                                    @if(true)
                                         <div class="mb-3 d-flex align-items-center gap-3">
                                             <img id="logo-current"
                                                  src="{{ $event->logo }}"
@@ -460,15 +460,15 @@
                                 </div>
                             </div>
 
-                            <div id="attendance-date-fields" style="display:none;">
+                            <div id="active-user-date-fields" style="display:none;">
                                 <div class="row mb-6">
-                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Active From
-                                        Date</label>
+                                    <label class="col-lg-4 col-form-label required fw-bold fs-6">Active From Date</label>
                                     <div class="col-lg-8">
                                         <input type="text" name="active_user_from" id="active_user_from"
                                                class="form-control form-control-lg form-control-solid"
                                                placeholder="Active from"
                                                value="{{ old('active_user_from', isset($event->active_user_from) ? $event->active_user_from->format('d M Y H:i') : '') }}"/>
+                                        <div class="form-text">Active-user tracking starts from this date and time.</div>
                                     </div>
                                 </div>
                                 <div class="row mb-6">
@@ -478,8 +478,57 @@
                                                class="form-control form-control-lg form-control-solid"
                                                placeholder="Active to"
                                                value="{{ old('active_user_to', isset($event->active_user_to) ? $event->active_user_to->format('d M Y H:i') : '') }}"/>
+                                        <div class="form-text">Active-user tracking stops after this date and time.</div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="separator separator-dashed my-8"></div>
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-bold fs-6" for="allow_sub_admin_settings">Allow General Settings for Sub Admin?</label>
+                                <div class="col-lg-8">
+                                    <select class="form-select form-select-solid" name="allow_sub_admin_settings" id="allow_sub_admin_settings">
+                                        <option value="0" @selected((int) old('allow_sub_admin_settings', $event->allow_sub_admin_settings ?? 0) === 0)>No</option>
+                                        <option value="1" @selected((int) old('allow_sub_admin_settings', $event->allow_sub_admin_settings ?? 0) === 1)>Yes</option>
+                                    </select>
+                                    <div class="form-text">Controls access to the Settings page inside the Sub Admin's General Settings menu.</div>
+                                </div>
+                            </div>
+                            <div class="row mb-6" id="sub-admin-report-options">
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Allowed Report Data</label>
+                                <div class="col-lg-8">
+                                    <div class="row g-4">
+                                        @foreach([
+                                            'show_country_report' => 'Country-wise registered users',
+                                            'show_state_report' => 'State-wise registered users',
+                                            'show_city_report' => 'City-wise registered users',
+                                            'show_live_users' => 'Live users',
+                                        ] as $setting => $label)
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold" for="{{ $setting }}">{{ $label }}</label>
+                                                <select class="form-select form-select-solid" name="{{ $setting }}" id="{{ $setting }}">
+                                                    <option value="0" @selected((int) old($setting, $event->{$setting} ?? 0) === 0)>No</option>
+                                                    <option value="1" @selected((int) old($setting, $event->{$setting} ?? 0) === 1)>Yes</option>
+                                                </select>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="form-text mt-3">Only items set to Yes will be visible to this event's Sub Admin.</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Live Interaction</label>
+                                <div class="col-lg-8"><div class="row g-4">
+                                    @foreach(['enable_live_chat' => 'Enable Live Chat', 'enable_comments' => 'Enable Comments', 'enable_polls' => 'Enable Polls', 'enable_feedback' => 'Enable Feedback'] as $setting => $label)
+                                        <div class="col-md-6"><label class="form-label fw-bold">{{ $label }}</label>
+                                            <select class="form-select form-select-solid" name="{{ $setting }}">
+                                                <option value="0" @selected((int) old($setting, $event->{$setting} ?? in_array($setting, ['enable_live_chat', 'enable_polls', 'enable_feedback'], true)) === 0)>No</option>
+                                                <option value="1" @selected((int) old($setting, $event->{$setting} ?? in_array($setting, ['enable_live_chat', 'enable_polls', 'enable_feedback'], true)) === 1)>Yes</option>
+                                            </select>
+                                        </div>
+                                    @endforeach
+                                </div></div>
                             </div>
 
                             <div class="separator separator-dashed my-10"></div>
@@ -624,6 +673,16 @@
             });
 
             $('#player_type').select2({minimumResultsForSearch: Infinity});
+
+            const toggleActiveUserDates = () => {
+                $('#active-user-date-fields').toggle($('#is_log_attendance').is(':checked'));
+            };
+            toggleActiveUserDates();
+            $('#is_log_attendance').on('change', function () {
+                toggleActiveUserDates();
+                validator?.revalidateField('active_user_from');
+                validator?.revalidateField('active_user_to');
+            });
 
             const companySearchUrl = @json(route('admin.events.companies.search'));
             const companyStoreUrl = @json(route('admin.events.companies.store'));
@@ -829,12 +888,6 @@
 
             reindexResources();
 
-            const toggleAttendanceFields = () => {
-                $('#attendance-date-fields').toggle($('#is_log_attendance').is(':checked'));
-            };
-            toggleAttendanceFields();
-            $('#is_log_attendance').on('change', toggleAttendanceFields);
-
             const extractYouTubeData = (input) => {
                 if (!input) return null;
                 input = input.trim();
@@ -966,8 +1019,8 @@
                     favicon: {
                         validators: {
                             callback: {
-                                message: 'Favicon is required',
-                                callback: () => isEdit || document.getElementById('favicon_input').files.length > 0
+                                message: 'Please select a valid favicon image',
+                                callback: () => true
                             },
                             file: {
                                 extension: 'jpg,jpeg,png,webp',
@@ -981,8 +1034,8 @@
                     logo: {
                         validators: {
                             callback: {
-                                message: 'Logo is required',
-                                callback: () => isEdit || document.getElementById('logo_input').files.length > 0
+                                message: 'Please select a valid logo image',
+                                callback: () => true
                             },
                             file: {
                                 extension: 'jpg,jpeg,png,webp',
@@ -1043,9 +1096,9 @@
 
                     active_user_from: {
                         validators: {
-                            callback: {
-                                message: 'Active from date is required',
-                                callback: function () {
+                                callback: {
+                                    message: 'Active from date is required',
+                                    callback: function () {
                                     if (!$('#is_log_attendance').is(':checked')) return true;
                                     return $('#active_user_from').val() !== '';
                                 }
@@ -1055,9 +1108,9 @@
 
                     active_user_to: {
                         validators: {
-                            callback: {
-                                message: 'Active to date is required',
-                                callback: function (input) {
+                                callback: {
+                                    message: 'Active to date is required',
+                                    callback: function (input) {
                                     if (!$('#is_log_attendance').is(':checked')) return true;
                                     const from = $('#active_user_from').val();
                                     const to = input.value;
@@ -1079,11 +1132,6 @@
             });
 
             companySelect.on('change', () => validator.revalidateField('company_id'));
-
-            $('#is_log_attendance').on('change', () => {
-                validator.revalidateField('active_user_from');
-                validator.revalidateField('active_user_to');
-            });
 
             submitBtn.addEventListener('click', function (e) {
                 e.preventDefault();

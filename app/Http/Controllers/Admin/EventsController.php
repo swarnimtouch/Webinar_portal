@@ -72,14 +72,12 @@ class EventsController
                 'min:8',
             ],
             'favicon' => [
-                Rule::requiredIf(fn() => !$id),
-                'file',
+                'nullable', 'file',
                 'mimes:jpg,jpeg,png,webp',
                 'max:5120',
             ],
             'logo' => [
-                Rule::requiredIf(fn() => !$id),
-                'file',
+                'nullable', 'file',
                 'mimes:jpg,jpeg,png,webp',
                 'max:5120',
             ],
@@ -89,6 +87,8 @@ class EventsController
             'publish_date' => ['required', 'date'],
             'start_time' => ['required'],
             'end_time' => ['required'],
+            'active_user_from' => [Rule::requiredIf($request->boolean('is_log_attendance')), 'nullable', 'date'],
+            'active_user_to' => [Rule::requiredIf($request->boolean('is_log_attendance')), 'nullable', 'date', 'after:active_user_from'],
             'session_agenda' => ['nullable', 'array'],
             'session_agenda.*.time' => ['nullable', 'string', 'max:50'],
             'session_agenda.*.duration' => ['nullable', 'string', 'max:50'],
@@ -101,6 +101,15 @@ class EventsController
             'resource_title.*' => ['nullable', 'string', 'max:255'],
             'resource_file' => ['nullable', 'array'],
             'resource_file.*' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
+            'show_country_report' => ['nullable', 'boolean'],
+            'allow_sub_admin_settings' => ['nullable', 'boolean'],
+            'show_state_report' => ['nullable', 'boolean'],
+            'show_city_report' => ['nullable', 'boolean'],
+            'show_live_users' => ['nullable', 'boolean'],
+            'enable_live_chat' => ['nullable', 'boolean'],
+            'enable_comments' => ['nullable', 'boolean'],
+            'enable_polls' => ['nullable', 'boolean'],
+            'enable_feedback' => ['nullable', 'boolean'],
         ]);
 
         $company = Company::findOrFail($request->integer('company_id'));
@@ -146,9 +155,20 @@ class EventsController
         $event->publish_date = $request->publish_date ? Carbon::parse($request->publish_date)->format('Y-m-d') : null;
         $event->start_time = $request->start_time ? Carbon::parse($request->start_time)->format('Y-m-d H:i:s') : null;
         $event->end_time = $request->end_time ? Carbon::parse($request->end_time)->format('Y-m-d H:i:s') : null;
-        $event->active_user_from = $request->active_user_from ? Carbon::parse($request->active_user_from)->format('Y-m-d H:i:s') : null;
-        $event->active_user_to = $request->active_user_to ? Carbon::parse($request->active_user_to)->format('Y-m-d H:i:s') : null;
+        $event->active_user_from = $request->boolean('is_log_attendance') && $request->active_user_from
+            ? Carbon::parse($request->active_user_from)->format('Y-m-d H:i:s') : null;
+        $event->active_user_to = $request->boolean('is_log_attendance') && $request->active_user_to
+            ? Carbon::parse($request->active_user_to)->format('Y-m-d H:i:s') : null;
         $event->is_log_attendance = $request->is_log_attendance ?? 0;
+        $event->allow_sub_admin_settings = $request->boolean('allow_sub_admin_settings');
+        $event->show_country_report = $request->boolean('show_country_report');
+        $event->show_state_report = $request->boolean('show_state_report');
+        $event->show_city_report = $request->boolean('show_city_report');
+        $event->show_live_users = $request->boolean('show_live_users');
+        $event->enable_live_chat = $request->boolean('enable_live_chat');
+        $event->enable_comments = $request->boolean('enable_comments');
+        $event->enable_polls = $request->boolean('enable_polls');
+        $event->enable_feedback = $request->boolean('enable_feedback');
         $event->save();
 
         $subAdmin = $eventSubAdmin ?: new User();

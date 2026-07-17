@@ -54,6 +54,8 @@ class EventSettingController extends Controller
             'publish_date' => ['required', 'date'],
             'start_time' => ['required'],
             'end_time' => ['required'],
+            'active_user_from' => [Rule::requiredIf($request->boolean('is_log_attendance')), 'nullable', 'date'],
+            'active_user_to' => [Rule::requiredIf($request->boolean('is_log_attendance')), 'nullable', 'date', 'after:active_user_from'],
         ]);
 
         $event->name = $request->name ?? null;
@@ -82,9 +84,15 @@ class EventSettingController extends Controller
         $event->publish_date = $request->publish_date ? Carbon::parse($request->publish_date)->format('Y-m-d') : null;
         $event->start_time = $request->start_time ? Carbon::parse($request->start_time)->format('Y-m-d H:i:s') : null;
         $event->end_time = $request->end_time ? Carbon::parse($request->end_time)->format('Y-m-d H:i:s') : null;
-        $event->active_user_from = $request->active_user_from ? Carbon::parse($request->active_user_from)->format('Y-m-d H:i:s') : null;
-        $event->active_user_to = $request->active_user_to ? Carbon::parse($request->active_user_to)->format('Y-m-d H:i:s') : null;
+        $event->active_user_from = $request->boolean('is_log_attendance') && $request->active_user_from
+            ? Carbon::parse($request->active_user_from)->format('Y-m-d H:i:s') : null;
+        $event->active_user_to = $request->boolean('is_log_attendance') && $request->active_user_to
+            ? Carbon::parse($request->active_user_to)->format('Y-m-d H:i:s') : null;
         $event->is_log_attendance = $request->is_log_attendance ?? 0;
+        $event->enable_live_chat = $request->boolean('enable_live_chat');
+        $event->enable_comments = $request->boolean('enable_comments');
+        $event->enable_polls = $request->boolean('enable_polls');
+        $event->enable_feedback = $request->boolean('enable_feedback');
         $event->save();
         $isDynamicFieldsExist = DynamicFields::where('event_id', $event->id)->count();
         if ($isDynamicFieldsExist == 0) {

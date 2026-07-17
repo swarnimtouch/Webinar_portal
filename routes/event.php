@@ -23,6 +23,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/resources/{resourceId}/download', [DashboardController::class, 'downloadResource'])->name('resource.download');
     Route::post('/dashboard/attendance/update', [DashboardController::class, 'updateSessionTime'])->name('dashboard.attendance.update');
     Route::post('/feedback/save', [DashboardController::class, 'feedbackSave'])->name('feedback.save');
+    Route::post('/comments/save', [DashboardController::class, 'commentSave'])->name('comments.save');
+    Route::get('/comments', [DashboardController::class, 'comments'])->name('comments.list');
+    Route::post('/comments/{comment}/vote', [DashboardController::class, 'voteComment'])->name('comments.vote');
     Route::get('/poll', [DashboardController::class, 'getPoll'])->name('poll');
     Route::post('/poll/vote', [DashboardController::class, 'submitPoll'])->name('poll.vote');
     Route::get('/chat/messages', [ChatController::class, 'getMessages'])->name('chat.messages');

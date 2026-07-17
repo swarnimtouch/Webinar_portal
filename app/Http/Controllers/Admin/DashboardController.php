@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Events;
+use App\Models\Comment;
 use App\Models\Feedback;
 use App\Models\Poll;
 use App\Models\Thread;
@@ -10,6 +11,7 @@ use App\Models\User;
 use App\Models\UserAttendance;
 use App\Models\UserPollAnswer;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -42,6 +44,7 @@ class DashboardController extends Controller
             'votes' => (clone $votes)->count(),
             'voters' => (clone $votes)->distinct('user_id')->count('user_id'),
             'feedback' => $scope(Feedback::query())->count(),
+            'comments' => $scope(Comment::query())->count(),
             'chat_threads' => $scope(Thread::query())->count(),
         ];
 
@@ -59,6 +62,19 @@ class DashboardController extends Controller
         });
 
         $recentUsers = (clone $users)->with('event:id,name')->latest()->limit(8)->get();
+        $assignedEvent = $isSubAdmin ? Events::find($eventId) : null;
+        $locationReports = collect(['country', 'state', 'city'])
+            ->filter(fn (string $dimension) => $isSubAdmin && $assignedEvent?->{"show_{$dimension}_report"})
+            ->mapWithKeys(function (string $dimension) use ($users) {
+                $rows = (clone $users)
+                    ->selectRaw("COALESCE(NULLIF(TRIM({$dimension}), ''), 'Not specified') as location, COUNT(*) as total")
+                    ->groupBy('location')
+                    ->orderByDesc('total')
+                    ->orderBy('location')
+                    ->get();
+
+                return [$dimension => $rows];
+            });
         $eventRows = $scope(Events::query(), 'id')->latest()->get()->map(function ($event) use ($liveCutoff) {
             $eventUsers = User::where('type', 'doctor')->where('event_id', $event->id);
             $eventAttendance = UserAttendance::whereHas('user', fn ($query) => $query->where('event_id', $event->id));
@@ -78,11 +94,46 @@ class DashboardController extends Controller
             'title' => __('Dashboard'),
             'breadcrumb' => breadcrumb([__('Dashboard') => route('admin.dashboard')]),
             'isSubAdmin' => $isSubAdmin,
-            'assignedEvent' => $isSubAdmin ? Events::find($eventId) : null,
+            'assignedEvent' => $assignedEvent,
             'stats' => $stats,
             'chart' => $chart,
             'recentUsers' => $recentUsers,
             'eventRows' => $eventRows,
+            'locationReports' => $locationReports,
+        ]);
+    }
+
+    public function exportLocationReport(Request $request)
+    {
+        $authUser = auth()->user();
+        abort_unless($authUser->type === 'sub_admin' && $authUser->event_id, 403);
+
+        $dimension = $request->string('dimension')->lower()->value();
+        abort_unless(in_array($dimension, ['country', 'state', 'city'], true), 404);
+
+        $event = Events::findOrFail($authUser->event_id);
+        abort_unless($event->{"show_{$dimension}_report"}, 403);
+
+        $rows = User::query()
+            ->where('type', 'doctor')
+            ->where('event_id', $event->id)
+            ->selectRaw("COALESCE(NULLIF(TRIM({$dimension}), ''), 'Not specified') as location, COUNT(*) as total")
+            ->groupBy('location')
+            ->orderByDesc('total')
+            ->orderBy('location')
+            ->get();
+
+        $escape = fn ($value) => '"' . str_replace('"', '""', (string) $value) . '"';
+        $csv = [ucfirst($dimension) . ',Registered Users'];
+        foreach ($rows as $row) {
+            $csv[] = $escape($row->location) . ',' . $row->total;
+        }
+
+        $filename = "{$dimension}_wise_registered_users_" . now()->format('Y-m-d') . '.csv';
+
+        return response("\xEF\xBB\xBF" . implode("\n", $csv), 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }
 }

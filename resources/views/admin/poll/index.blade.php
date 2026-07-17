@@ -156,6 +156,7 @@
                                     <th>Event</th>
                                 @endif
                                 <th>Question</th>
+                                <th>Type</th>
                                 <th>Answers</th>
                                 <th>Created At</th>
                                 <th>Status</th>
@@ -200,7 +201,7 @@
                         }
                     }
                 },
-                order: [[4, 'desc']],
+                order: [[isAdmin ? 5 : 4, 'desc']],
                 columns: [
                     {
                         data: 'id',
@@ -216,9 +217,19 @@
                         render: q => `<span class="fw-bold text-gray-800">${q}</span>`
                     },
                     {
+                        data: 'interaction_type',
+                        orderable: false,
+                        render: value => {
+                            const labels = {single_choice: 'Single Choice', multiple_choice: 'Multiple Choice', text: 'Text Response', rating: 'Rating'};
+                            return `<span class="badge badge-light-info">${labels[value] || 'Single Choice'}</span>`;
+                        }
+                    },
+                    {
                         data: 'answers',
                         orderable: false,
-                        render: answers => {
+                        render: (answers, type, row) => {
+                            if (!answers.length && row.interaction_type === 'text') return `<span class="text-muted">Open response</span>`;
+                            if (!answers.length && row.interaction_type === 'rating') return `<span class="text-muted">1 to ${row.rating_max}</span>`;
                             if (!answers.length) return `<span class="badge badge-light-warning">No answers</span>`;
                             let html = `<div class="d-flex flex-column gap-1">`;
                             answers.slice(0, 2).forEach(a => {

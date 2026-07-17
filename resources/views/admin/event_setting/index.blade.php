@@ -269,7 +269,7 @@
                                 </div>
                             </div>
 
-                            <div id="attendance-date-fields" style="display: none;">
+                            <div id="active-user-date-fields" style="display: none;">
                                 <div class="row mb-6">
                                     <label class="col-lg-4 col-form-label required fw-bold fs-6">Active From
                                         Date</label>
@@ -289,6 +289,19 @@
                                                value="{{ old('active_user_to', isset($event->active_user_to) ? $event->active_user_to->format('d M Y H:i') : '') }}"/>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">Live Interaction</label>
+                                <div class="col-lg-8"><div class="row g-4">
+                                    @foreach(['enable_live_chat' => 'Enable Live Chat', 'enable_comments' => 'Enable Comments', 'enable_polls' => 'Enable Polls', 'enable_feedback' => 'Enable Feedback'] as $setting => $label)
+                                        <div class="col-md-6"><label class="form-label fw-bold">{{ $label }}</label>
+                                            <select class="form-select form-select-solid" name="{{ $setting }}">
+                                                <option value="0" @selected((int) old($setting, $event->{$setting} ?? in_array($setting, ['enable_live_chat', 'enable_polls', 'enable_feedback'], true)) === 0)>No</option>
+                                                <option value="1" @selected((int) old($setting, $event->{$setting} ?? in_array($setting, ['enable_live_chat', 'enable_polls', 'enable_feedback'], true)) === 1)>Yes</option>
+                                            </select>
+                                        </div>
+                                    @endforeach
+                                </div></div>
                             </div>
                         </form>
                     </div>
@@ -362,6 +375,16 @@
 
             $('#player_type').select2({minimumResultsForSearch: Infinity});
 
+            const toggleActiveUserDates = () => {
+                $('#active-user-date-fields').toggle($('#is_log_attendance').is(':checked'));
+            };
+            toggleActiveUserDates();
+            $('#is_log_attendance').on('change', function () {
+                toggleActiveUserDates();
+                validator.revalidateField('active_user_from');
+                validator.revalidateField('active_user_to');
+            });
+
             $('#domain').on('input', function () {
                 $(this).val(
                     $(this).val()
@@ -372,12 +395,6 @@
                         .replace(/^-|-$/g, '')
                 );
             });
-
-            const toggleAttendanceFields = () => {
-                $('#attendance-date-fields').toggle($('#is_log_attendance').is(':checked'));
-            };
-            toggleAttendanceFields();
-            $('#is_log_attendance').on('change', toggleAttendanceFields);
 
             const extractYouTubeData = (input) => {
                 if (!input) return null;
@@ -609,11 +626,6 @@
                     trigger: new FormValidation.plugins.Trigger(),
                     bootstrap5: new FormValidation.plugins.Bootstrap5({rowSelector: '.row'})
                 }
-            });
-
-            $('#is_log_attendance').on('change', () => {
-                validator.revalidateField('active_user_from');
-                validator.revalidateField('active_user_to');
             });
 
             submitBtn.addEventListener('click', function (e) {

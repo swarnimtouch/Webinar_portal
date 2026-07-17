@@ -16,17 +16,26 @@ class Events extends Model
         'active_user_from' => 'datetime',
         'active_user_to' => 'datetime',
         'is_log_attendance' => 'boolean',
+        'allow_sub_admin_settings' => 'boolean',
+        'show_country_report' => 'boolean',
+        'show_state_report' => 'boolean',
+        'show_city_report' => 'boolean',
+        'show_live_users' => 'boolean',
+        'enable_live_chat' => 'boolean',
+        'enable_comments' => 'boolean',
+        'enable_polls' => 'boolean',
+        'enable_feedback' => 'boolean',
         'session_agenda' => 'array',
     ];
 
     public function getFaviconAttribute($value)
     {
-        return !empty($value) ? EventStorage::url($value, 'events/' . $value) : asset('assets/media/no_image.png');
+        return !empty($value) ? EventStorage::url($value, 'events/' . $value) : asset('storage/site_settings/favicon.png');
     }
 
     public function getLogoAttribute($value)
     {
-        return !empty($value) ? EventStorage::url($value, 'events/' . $value) : asset('assets/media/no_image.png');
+        return !empty($value) ? EventStorage::url($value, 'events/' . $value) : asset('storage/site_settings/favicon.png');
     }
 
     public function scopeActive($query)
