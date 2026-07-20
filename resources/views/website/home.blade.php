@@ -26,15 +26,13 @@
                             <i class="fa-regular fa-calendar"></i>
                             <div class="info-text">
                                 <span>
-                                    {{ app('event')->start_time
-                                        ? \Carbon\Carbon::parse(app('event')->start_time)->format('j F, Y')
-                                        : '' }}
-                                    @if(app('event')->start_time && app('event')->end_time)
-                                        -
+                                    @if(app('event')->start_time)
+                                        {{ \Carbon\Carbon::parse(app('event')->start_time)->format('j F, Y') }}
                                     @endif
-                                    {{ app('event')->end_time
-                                        ? \Carbon\Carbon::parse(app('event')->end_time)->format('j F, Y')
-                                        : '' }}
+                                    @if(app('event')->end_time)
+                                        @if(app('event')->start_time) - @endif
+                                        {{ \Carbon\Carbon::parse(app('event')->end_time)->format('j F, Y') }}
+                                    @endif
                                 </span>
                                 <small>Summit Date</small>
                             </div>

@@ -464,7 +464,7 @@
                             </div>
 
                             <div class="row mb-6">
-                                <label class="col-lg-4 col-form-label required fw-bold fs-6">End Datetime</label>
+                                <label class="col-lg-4 col-form-label fw-bold fs-6">End Datetime</label>
                                 <div class="col-lg-8">
                                     <input type="text" name="end_time" id="end_time"
                                            class="form-control form-control-lg form-control-solid"
@@ -1125,13 +1125,12 @@
 
                     end_time: {
                         validators: {
-                            notEmpty: {message: 'End time is required'},
                             callback: {
                                 message: 'End time must be after start time',
                                 callback: function (input) {
                                     const start = $('#start_time').val();
                                     const end = input.value;
-                                    if (!end) return false;
+                                    if (!end) return true;
                                     if (start && new Date(end) <= new Date(start)) {
                                         return {valid: false, message: 'End time must be after start time'};
                                     }
