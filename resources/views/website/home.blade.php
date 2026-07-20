@@ -263,6 +263,7 @@
                                 if(isset($input_value['source']) && !empty($input_value['source'])){
                                     $source_value = isset($input_value['value'])?$input_value['value']:'id';
                                     $source_label = isset($input_value['label'])?$input_value['label']:'name';
+                                    if($field->field_name !== 'country' || $field->field_name !== 'state' || $field->field_name !== 'city')
                                     $source = \Illuminate\Support\Facades\DB::table($input_value['source'])->select('*')->get();
                                 }
                             }

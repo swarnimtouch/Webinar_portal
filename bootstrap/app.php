@@ -24,8 +24,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->name('company.local.')
                 ->where([
                     'company' => '[a-z0-9\-]+',
-                    // Do not let /{event}/{endpoint} URLs (for example
-                    // /test/dashboard) get interpreted as /{company}/{event}.
                     'slug' => $eventEndpointPattern,
                 ])
                 ->middleware(['event','web'])
@@ -40,8 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->middleware(['event','web'])
                 ->group(base_path('routes/event.php'));
 
-            // Keep the generic route after the company-domain route. Otherwise
-            // /{slug} can match on every host and bypass company isolation.
+
             Route::prefix('{slug}')
                 ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
                 ->middleware(['event','web'])
