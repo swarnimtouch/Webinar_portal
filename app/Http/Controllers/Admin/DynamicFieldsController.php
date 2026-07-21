@@ -66,6 +66,10 @@ class DynamicFieldsController extends Controller
                         'label' => $fieldData['label'] ?? '',
                         'is_required' => $fieldData['is_required'] ?? 0,
                         'status' => $fieldData['status'] ?? 'inactive',
+                        'icon' => $fieldData['icon'] ?? null,
+                        'html_class' => in_array($fieldData['html_class'] ?? '', ['half', 'full'], true)
+                            ? $fieldData['html_class']
+                            : 'half',
                     ]);
                 }
             }
@@ -104,6 +108,8 @@ class DynamicFieldsController extends Controller
             'attribute_id' => ['required', Rule::exists('attributes', 'id')->where('status', 'active')],
             'options' => ['nullable', 'string'],
             'is_required' => ['nullable', 'boolean'],
+            'icon' => ['nullable', 'string', 'max:100'],
+            'display_width' => ['required', Rule::in(['half', 'full'])],
         ]);
 
         $attribute = Attribute::findOrFail($data['attribute_id']);
@@ -132,6 +138,8 @@ class DynamicFieldsController extends Controller
             'label' => $data['label'],
             'attribute_id' => $attribute->id,
             'input_value' => $inputValue,
+            'icon' => $data['icon'] ?? 'fa-solid fa-pen',
+            'html_class' => $data['display_width'],
             'is_required' => $request->boolean('is_required'),
             'type' => 'custom',
             'status' => 'active',

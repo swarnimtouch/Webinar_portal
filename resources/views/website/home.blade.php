@@ -230,13 +230,7 @@
                     @foreach($register_fields as $field)
 
                         @php
-                            $total_fields = count($register_fields);
-                            $rowIndex = floor($loop->index / 2);
-                            $fields_in_this_row = min(2, $total_fields - ($rowIndex * 2));
-                            $col_class = 'col-md-6';
-                            if ($fields_in_this_row == 1) {
-                              $col_class = 'col-md-12';
-                            }
+                            $col_class = $field->html_class === 'full' ? 'col-md-12' : 'col-md-6';
 
                             $options = is_array(json_decode($field->input_value, true))
                              ? json_decode($field->input_value, true)
@@ -250,7 +244,7 @@
                                 'city' => 'fa-solid fa-city', 'gender' => 'fa-solid fa-venus-mars',
                                 'address' => 'fa-solid fa-location-dot', 'date_of_birth' => 'fa-solid fa-calendar',
                             ];
-                            $icon_class = $fieldIcons[$field->field_name] ?? 'fa-solid fa-pen';
+                            $icon_class = $field->icon ?: ($fieldIcons[$field->field_name] ?? 'fa-solid fa-pen');
                             $input_value = json_decode($field->input_value,true);
                             $source = [];
                             $source_value = '';

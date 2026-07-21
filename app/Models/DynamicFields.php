@@ -14,6 +14,7 @@ class DynamicFields extends Model
         'attribute_id',
         'input_value',
         'html_class',
+        'icon',
         'is_required',
         'type',
         'status',

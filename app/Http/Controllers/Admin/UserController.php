@@ -16,25 +16,29 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $authUser = auth()->user();
+        $selectedEventId = $authUser->type === 'sub_admin' ? $authUser->event_id : $request->integer('event');
 
         $dynamicFields = DynamicFields::where('status', 'active')
             ->when($authUser->type === 'sub_admin', fn($q) => $q->where('event_id', $authUser->event_id))
+            ->when($authUser->type === 'admin' && $selectedEventId, fn($q) => $q->where('event_id', $selectedEventId))
+            ->when($authUser->type === 'admin' && !$selectedEventId, fn($q) => $q->where('type', '!=', 'custom'))
             ->orderBy('index_no')
             ->get()
-            ->when($authUser->type !== 'sub_admin', fn($c) => $c->unique('field_name'));
+            ->when($authUser->type === 'admin' && !$selectedEventId, fn($c) => $c->unique('field_name'));
 
         $excludeColumns = ['password'];
         $validDynamicFields = $dynamicFields->reject(fn ($field) => in_array($field->field_name, $excludeColumns))->values();
 
         $users = User::where('type', 'doctor')->get();
-        $user = User::with('event')->get()->unique('event_id')->values();
+        $user = Events::orderBy('name')->get();
         return view('admin.users.index', [
             'users' => $users,
             'user' => $user,
             'valid_dynamic_fields' => $validDynamicFields,
+            'selected_event_id' => $selectedEventId,
             'title' => __('Users'),
             'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index')])
         ]);
@@ -257,6 +261,8 @@ class UserController extends Controller
                 ->get();
         } else {
             $activeFields = DynamicFields::where('status', 'active')
+                ->when($request->filled('event'), fn ($q) => $q->where('event_id', $request->event))
+                ->when(!$request->filled('event'), fn ($q) => $q->where('type', '!=', 'custom'))
                 ->orderBy('index_no')
                 ->get()
                 ->unique('field_name');
@@ -360,6 +366,8 @@ class UserController extends Controller
         if ($isAdmin) {
             $activeFields = DynamicFields::where('status', 'active')
                 ->where('field_name', '!=', 'password')
+                ->when($request->filled('event'), fn ($q) => $q->where('event_id', $request->event))
+                ->when(!$request->filled('event'), fn ($q) => $q->where('type', '!=', 'custom'))
                 ->orderBy('index_no')
                 ->get()
                 ->unique('field_name');
@@ -395,10 +403,9 @@ class UserController extends Controller
             ? array_merge(['Event'], $dynamicHeaders)
             : $dynamicHeaders;
 
-        $rows = [];
-        $rows[] = implode(',', $headers);
-
         $esc = fn($val) => '"' . str_replace('"', '""', (string)($val ?? '')) . '"';
+        $rows = [];
+        $rows[] = implode(',', array_map($esc, $headers));
 
         foreach ($query as $user) {
             $row = [];

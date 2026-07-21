@@ -65,8 +65,8 @@
 
                                                     <option></option>
                                                     @foreach($user as $users)
-                                                        <option value="{{ $users->event_id }}">
-                                                            {{ optional($users->event)->name ?? 'N/A' }}
+                                                        <option value="{{ $users->id }}" @selected($selected_event_id == $users->id)>
+                                                            {{ $users->name }}
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -230,8 +230,7 @@
                         data: d => {
                             d.search = $('[data-kt-user-table-filter="search"]').val();
                             if (isAdmin) {
-                                const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
-                                if (eventEl) d.event = eventEl.value;
+                                d.event = @json($selected_event_id);
                             }
                         }
                     },
@@ -301,7 +300,7 @@
                     const searchValue = $('[data-kt-user-table-filter="search"]').val();
                     if (searchValue) url.searchParams.set('search', searchValue);
                     if (isAdmin) {
-                        const eventValue = document.querySelector('[data-kt-user-table-filter="event"]')?.value;
+                        const eventValue = @json($selected_event_id);
                         if (eventValue) url.searchParams.set('event', eventValue);
                     }
 
@@ -451,18 +450,17 @@
                     document
                         .querySelector('[data-kt-user-table-filter="filter"]')
                         ?.addEventListener('click', function () {
-                            userTable.draw();
+                            const eventId = document.querySelector('[data-kt-user-table-filter="event"]')?.value;
+                            const url = new URL(@json(route('admin.user.index')), window.location.origin);
+                            if (eventId) url.searchParams.set('event', eventId);
+                            window.location.href = url.toString();
                         });
 
                     // ✅ ADD THIS — Reset filter
                     document
                         .querySelector('[data-kt-user-table-filter="reset"]')
                         ?.addEventListener('click', function () {
-                            const eventEl = document.querySelector('[data-kt-user-table-filter="event"]');
-                            if (eventEl) {
-                                $(eventEl).val(null).trigger('change'); // clears Select2 properly
-                            }
-                            userTable.draw();
+                            window.location.href = @json(route('admin.user.index'));
                         });
                 }
             };

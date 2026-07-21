@@ -59,6 +59,7 @@
                             <input type="hidden" name="event_id" value="{{ $selectedEventId }}">
                             <input type="hidden" name="order_data" id="order-data">
 
+                            <div class="table-responsive">
                             <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_Dynamic_fields">
                                 <thead>
                                 <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
@@ -66,6 +67,8 @@
                                     <th class="min-w-125px">Index</th>
                                     <th class="min-w-150px">Field Name</th>
                                     <th class="min-w-150px">Label</th>
+                                    <th class="min-w-150px">Icon</th>
+                                    <th class="min-w-125px">Width</th>
                                     <th class="min-w-150px">Required</th>
                                     <th class="min-w-150px">Status</th>
                                     <th class="min-w-150px">Login With</th>
@@ -83,14 +86,6 @@
                                                     {{ $loop->iteration }}
                                                 </span>
                                         </td>
-                                        <td>
-                                            @if($field->type === 'custom')
-                                                <button type="button" class="btn btn-sm btn-light-danger delete-field" data-id="{{ $field->id }}">Delete</button>
-                                            @else
-                                                —
-                                            @endif
-                                        </td>
-
                                         <td>{{ $field->field_name }}</td>
 
                                         <td>
@@ -98,6 +93,38 @@
                                                    name="fields[{{ $field->id }}][label]"
                                                    value="{{ $field->label }}"
                                                    class="form-control form-control-sm">
+                                        </td>
+
+                                        <td>
+                                            @php
+                                                $defaultIcons = [
+                                                    'first_name' => 'fa-solid fa-user', 'last_name' => 'fa-solid fa-user',
+                                                    'email' => 'fa-solid fa-envelope', 'mobile_number' => 'fa-solid fa-phone',
+                                                    'country' => 'fa-solid fa-earth-asia', 'state' => 'fa-solid fa-map',
+                                                    'city' => 'fa-solid fa-building', 'password' => 'fa-solid fa-lock',
+                                                ];
+                                                $currentIcon = $field->icon ?: ($defaultIcons[$field->field_name] ?? 'fa-solid fa-pen');
+                                            @endphp
+                                            <select name="fields[{{ $field->id }}][icon]" class="form-select form-select-sm">
+                                                @foreach([
+                                                    'fa-solid fa-pen' => 'Pencil', 'fa-solid fa-user' => 'User',
+                                                    'fa-solid fa-envelope' => 'Email', 'fa-solid fa-phone' => 'Phone',
+                                                    'fa-solid fa-lock' => 'Lock', 'fa-solid fa-map' => 'Map',
+                                                    'fa-solid fa-building' => 'Building', 'fa-solid fa-briefcase' => 'Work',
+                                                    'fa-solid fa-location-dot' => 'Location', 'fa-solid fa-earth-asia' => 'Globe',
+                                                    'fa-solid fa-calendar' => 'Calendar', 'fa-solid fa-list' => 'List',
+                                                    'fa-solid fa-heart' => 'Heart', 'fa-solid fa-circle-question' => 'Question'
+                                                ] as $icon => $iconLabel)
+                                                    <option value="{{ $icon }}" @selected($currentIcon === $icon)>{{ $iconLabel }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+
+                                        <td>
+                                            <select name="fields[{{ $field->id }}][html_class]" class="form-select form-select-sm">
+                                                <option value="half" @selected(($field->html_class ?: 'half') === 'half')>Half</option>
+                                                <option value="full" @selected($field->html_class === 'full')>Full</option>
+                                            </select>
                                         </td>
 
                                         <td>
@@ -155,10 +182,17 @@
                                                 —
                                             @endif
                                         </td>
+                                        <td>
+                                            @if($field->type === 'custom')
+                                                <button type="button" class="btn btn-sm btn-light-danger delete-field" data-id="{{ $field->id }}">Delete</button>
+                                            @else
+                                                —
+                                            @endif
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center py-5">
+                                        <td colspan="10" class="text-center py-5">
                                             @if(auth()->user()->type === 'admin' && !$selectedEventId)
                                                 Please select an event to view fields.
                                             @else
@@ -169,6 +203,7 @@
                                 @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </form>
                     </div>
 
@@ -193,6 +228,10 @@
                         <div class="mb-5"><label class="form-label required">Label</label><input name="label" value="{{ old('label') }}" class="form-control" required></div>
                         <div class="mb-5"><label class="form-label">Field name</label><input name="field_name" value="{{ old('field_name') }}" class="form-control" placeholder="Generated from label"><div class="form-text">Lowercase letters, numbers and underscores only.</div></div>
                         <div class="mb-5"><label class="form-label required">Input type</label><select name="attribute_id" id="new-field-type" class="form-select" required><option value="">Select input type</option>@foreach($attributes as $attribute)<option value="{{ $attribute->id }}" data-type="{{ $attribute->type }}" @selected(old('attribute_id') == $attribute->id)>{{ $attribute->name }}</option>@endforeach</select></div>
+                        <div class="row mb-5">
+                            <div class="col-6"><label class="form-label">Icon</label><select name="icon" class="form-select">@foreach(['fa-solid fa-pen'=>'Pencil','fa-solid fa-user'=>'User','fa-solid fa-envelope'=>'Email','fa-solid fa-phone'=>'Phone','fa-solid fa-lock'=>'Lock','fa-solid fa-building'=>'Building','fa-solid fa-briefcase'=>'Work','fa-solid fa-location-dot'=>'Location','fa-solid fa-map'=>'Map','fa-solid fa-earth-asia'=>'Globe','fa-solid fa-calendar'=>'Calendar','fa-solid fa-list'=>'List','fa-solid fa-heart'=>'Heart','fa-solid fa-circle-question'=>'Question'] as $icon => $iconLabel)<option value="{{ $icon }}" @selected(old('icon') === $icon)>{{ $iconLabel }}</option>@endforeach</select></div>
+                            <div class="col-6"><label class="form-label required">Display width</label><select name="display_width" class="form-select" required><option value="half" @selected(old('display_width', 'half') === 'half')>Half width</option><option value="full" @selected(old('display_width') === 'full')>Full width</option></select></div>
+                        </div>
                         <div class="mb-5 d-none" id="new-field-options"><label class="form-label required">Options</label><textarea name="options" class="form-control" rows="4" placeholder="One option per line">{{ old('options') }}</textarea></div>
                         <label class="form-check form-switch"><input type="checkbox" class="form-check-input" name="is_required" value="1" @checked(old('is_required'))><span class="form-check-label">Required</span></label>
                     </div>
