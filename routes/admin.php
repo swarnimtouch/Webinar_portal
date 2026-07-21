@@ -176,6 +176,8 @@ Route::middleware(['auth:admin', 'sub_admin.menu'])->group(function () {
     Route::controller(DynamicFieldsController::class)->group(function () {
         Route::get('dynamic_fields', 'index')->name('dynamic_fields');
         Route::post('dynamic_fields/save', 'save')->name('dynamic_fields.save');
+        Route::post('dynamic_fields/create', 'store')->name('dynamic_fields.store');
+        Route::delete('dynamic_fields/{id}', 'destroy')->name('dynamic_fields.destroy');
     });
 
     /*
