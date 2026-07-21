@@ -214,7 +214,7 @@
     <div id="registerModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-title-row">
-                <h2>Doctor Registration</h2>
+                <h2>Registration</h2>
                 <span class="close-modal-btn close-register-btn">×</span>
             </div>
             <form method="POST" action="{{ event_route('register') }}" id="registerForm"
