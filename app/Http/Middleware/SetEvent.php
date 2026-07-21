@@ -17,8 +17,8 @@ class SetEvent
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $slug = $request->route('slug')
-            ?? $request->header('X-Event-Slug');
+        $slug = strtolower($request->route('slug'))
+            ?? strtolower($request->header('X-Event-Slug'));
 
         $companySlug = $request->route('company');
         $baseDomain = strtolower(config('app.event_base_domain', 'doctorly.in'));
