@@ -9,7 +9,7 @@
 
         $field_mapping = ['mobile_number' => 'mobile'];
         $dbField_name  = $field_mapping[$field_name] ?? $field_name;
-        $value         = old($dbField_name, isset($user) ? ($user->$dbField_name ?? '') : '');
+        $value         = old($dbField_name, isset($user) ? ($user->dynamicValue($field) ?? '') : '');
     @endphp
 
     <div class="row mb-6">
@@ -94,6 +94,9 @@
                         $source_lbl     = $input_config['label']      ?? 'name';
                         $dependsOn      = $input_config['depends_on'] ?? null;
                         $source_items   = collect();
+                        $static_options = $input_config['options'] ?? (
+                            !$source_table && is_array($input_config) ? $input_config : []
+                        );
                         $parentIsActive = false;
                         $parentValue    = '';
 
@@ -174,6 +177,13 @@
                                 {{ $item->{$source_lbl} }}
                             </option>
                         @endforeach
+                        @foreach($static_options as $optionKey => $option)
+                            @php
+                                $optionValue = is_array($option) ? ($option['value'] ?? $optionKey) : $optionKey;
+                                $optionLabel = is_array($option) ? ($option['label'] ?? $optionValue) : $option;
+                            @endphp
+                            <option value="{{ $optionValue }}" @selected($value == $optionValue)>{{ $optionLabel }}</option>
+                        @endforeach
                     </select>
                     @break
 
@@ -185,16 +195,16 @@
                 @case('file')
                     <input type="file" name="{{ $dbField_name }}"
                            class="form-control form-control-lg form-control-solid"/>
-                    @if(isset($user) && $user->$dbField_name)
+                    @if(isset($user) && $value)
                         <div class="form-text">
-                            Current file: <a href="{{ Storage::url($user->$dbField_name) }}" target="_blank">View</a>
+                            Current file: <a href="{{ Storage::url($value) }}" target="_blank">View</a>
                         </div>
                     @endif
                     @break
 
                 @case('checkbox')
                     @php
-                        $options       = $input_config['options'] ?? [];
+                        $options       = $input_config['options'] ?? (is_array($input_config) ? $input_config : []);
                         $checkedValues = is_array($value) ? $value : array_filter(explode(',', $value));
                     @endphp
                     @forelse($options as $option)
@@ -218,7 +228,7 @@
 
                 @case('radio')
                     @php
-                        $options = $input_config['options'] ?? [];
+                        $options = $input_config['options'] ?? (is_array($input_config) ? $input_config : []);
                     @endphp
                     @forelse($options as $option)
                         @php

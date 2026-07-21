@@ -5,6 +5,12 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container-xxl">
                 <div class="card">
+                    @if(session('success'))
+                        <div class="alert alert-success m-6 mb-0">{{ session('success') }}</div>
+                    @endif
+                    @if($errors->any())
+                        <div class="alert alert-danger m-6 mb-0">{{ $errors->first() }}</div>
+                    @endif
                     <div class="card-header border-0 pt-6">
                         <div class="card-title">
                             @if(auth()->user()->type === 'admin')
@@ -37,7 +43,13 @@
                         </div>
 
                         <div class="card-toolbar">
-                            <div class="d-flex justify-content-end"></div>
+                            <div class="d-flex justify-content-end">
+                                @if($selectedEventId)
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-field-modal">
+                                        Add Dynamic Field
+                                    </button>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -57,6 +69,7 @@
                                     <th class="min-w-150px">Required</th>
                                     <th class="min-w-150px">Status</th>
                                     <th class="min-w-150px">Login With</th>
+                                    <th class="min-w-80px">Action</th>
                                 </tr>
                                 </thead>
 
@@ -69,6 +82,13 @@
                                                 <span class="badge bg-secondary index-badge">
                                                     {{ $loop->iteration }}
                                                 </span>
+                                        </td>
+                                        <td>
+                                            @if($field->type === 'custom')
+                                                <button type="button" class="btn btn-sm btn-light-danger delete-field" data-id="{{ $field->id }}">Delete</button>
+                                            @else
+                                                —
+                                            @endif
                                         </td>
 
                                         <td>{{ $field->field_name }}</td>
@@ -138,7 +158,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-5">
+                                        <td colspan="8" class="text-center py-5">
                                             @if(auth()->user()->type === 'admin' && !$selectedEventId)
                                                 Please select an event to view fields.
                                             @else
@@ -161,6 +181,26 @@
             </div>
         </div>
     </div>
+
+    @if($selectedEventId)
+        <div class="modal fade" id="add-field-modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <form class="modal-content" method="POST" action="{{ route('admin.dynamic_fields.store') }}">
+                    @csrf
+                    <input type="hidden" name="event_id" value="{{ $selectedEventId }}">
+                    <div class="modal-header"><h2 class="modal-title">Add Dynamic Field</h2><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        <div class="mb-5"><label class="form-label required">Label</label><input name="label" value="{{ old('label') }}" class="form-control" required></div>
+                        <div class="mb-5"><label class="form-label">Field name</label><input name="field_name" value="{{ old('field_name') }}" class="form-control" placeholder="Generated from label"><div class="form-text">Lowercase letters, numbers and underscores only.</div></div>
+                        <div class="mb-5"><label class="form-label required">Input type</label><select name="attribute_id" id="new-field-type" class="form-select" required><option value="">Select input type</option>@foreach($attributes as $attribute)<option value="{{ $attribute->id }}" data-type="{{ $attribute->type }}" @selected(old('attribute_id') == $attribute->id)>{{ $attribute->name }}</option>@endforeach</select></div>
+                        <div class="mb-5 d-none" id="new-field-options"><label class="form-label required">Options</label><textarea name="options" class="form-control" rows="4" placeholder="One option per line">{{ old('options') }}</textarea></div>
+                        <label class="form-check form-switch"><input type="checkbox" class="form-check-input" name="is_required" value="1" @checked(old('is_required'))><span class="form-check-label">Required</span></label>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Add Field</button></div>
+                </form>
+            </div>
+        </div>
+    @endif
 @endsection
 
 @push('scripts')
@@ -291,11 +331,29 @@
             }
         }
 
+        function initFieldActions() {
+            const type = document.getElementById('new-field-type');
+            const options = document.getElementById('new-field-options');
+            const toggleOptions = () => options?.classList.toggle('d-none', !['select', 'radio', 'checkbox'].includes(type?.selectedOptions[0]?.dataset.type));
+            type?.addEventListener('change', toggleOptions);
+            toggleOptions();
+
+            document.querySelectorAll('.delete-field').forEach(button => button.addEventListener('click', function () {
+                Swal.fire({text: 'Delete this field and all saved answers?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Delete'}).then(result => {
+                    if (!result.isConfirmed) return;
+                    fetch('{{ route('admin.dynamic_fields.destroy', ':id') }}'.replace(':id', this.dataset.id) + '?event_id={{ $selectedEventId }}', {
+                        method: 'DELETE', headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json'}
+                    }).then(response => { if (!response.ok) throw new Error(); location.reload(); }).catch(() => toastr.error('Unable to delete field.'));
+                });
+            }));
+        }
+
         KTUtil.onDOMContentLoaded(function () {
             KTDaynamicFieldList.init();
             initSortable();
             initSaveButton();
             initEventSelector();
+            initFieldActions();
         });
     </script>
 @endpush

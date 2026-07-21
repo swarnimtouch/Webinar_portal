@@ -323,6 +323,15 @@
                                                     value="{{ $optionLabel }}" data-id="{{ $optionId }}"
                                                     @selected($selectedValue === $optionLabel)>{{ $optionLabel }}</option>
                                             @endforeach
+                                            @if(collect($source)->isEmpty())
+                                                @foreach($options as $key => $option)
+                                                    @php
+                                                        $optionValue = is_array($option) ? ($option['value'] ?? $key) : $key;
+                                                        $optionLabel = is_array($option) ? ($option['label'] ?? $optionValue) : $option;
+                                                    @endphp
+                                                    <option value="{{ $optionValue }}" @selected(old($field->field_name) == $optionValue)>{{ $optionLabel }}</option>
+                                                @endforeach
+                                            @endif
                                         </select>
                                         @break('select')
                                     @case('checkbox')

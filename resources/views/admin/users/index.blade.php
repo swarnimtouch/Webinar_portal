@@ -300,6 +300,10 @@
                     const url = new URL('{{ route("admin.user.export") }}', window.location.origin);
                     const searchValue = $('[data-kt-user-table-filter="search"]').val();
                     if (searchValue) url.searchParams.set('search', searchValue);
+                    if (isAdmin) {
+                        const eventValue = document.querySelector('[data-kt-user-table-filter="event"]')?.value;
+                        if (eventValue) url.searchParams.set('event', eventValue);
+                    }
 
                     fetch(url.toString(), {
                         method: 'GET',

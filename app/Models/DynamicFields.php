@@ -18,7 +18,8 @@ class DynamicFields extends Model
         'type',
         'status',
         'is_profile_field',
-        'login_with'
+        'login_with',
+        'event_id',
     ];
 
     public function attribute_data()
@@ -29,5 +30,10 @@ class DynamicFields extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    public function values()
+    {
+        return $this->hasMany(UserDynamicFieldValue::class, 'dynamic_field_id');
     }
 }

@@ -152,7 +152,7 @@
                                             ];
 
                                             $dbField_name = $field_mapping[$field_name] ?? $field_name;
-                                            $value = $user->$dbField_name;
+                                            $value = $user->dynamicValue($field);
                                         @endphp
 
                                         @if(in_array($field_name, ['first_name', 'last_name']))
@@ -181,7 +181,11 @@
                                                 <div class="fw-bold text-gray-600 mb-2">{{ $field->label }}:</div>
                                                 <div class="fw-bolder fs-6 text-gray-800">
                                                     @if(!empty($value))
-                                                        {{ $value }}
+                                                        @if($field->attribute_data?->type === 'file')
+                                                            <a href="{{ Storage::url($value) }}" target="_blank">View file</a>
+                                                        @else
+                                                            {{ $value }}
+                                                        @endif
                                                     @else
                                                         —
                                                     @endif
@@ -210,4 +214,3 @@
         <!--end::Post-->
     </div>
 @endsection
-

@@ -14,6 +14,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -144,7 +145,7 @@ class HomeController
     public function register(Request $request)
     {
         $event = app('event');
-        $fields = DynamicFields::Active()->where('event_id', $event->id)->get();
+        $fields = DynamicFields::with('attribute_data')->Active()->where('event_id', $event->id)->get();
 
         $rules = [];
 
@@ -163,8 +164,11 @@ class HomeController
                     'email',
                     Rule::unique('users', 'email')->where('event_id', $event->id),
                 ];
-            } elseif ($field->is_required == 1) {
-                $rules[$field->field_name] = 'required';
+            } else {
+                $rule = [$required];
+                if ($field->attribute_data?->type === 'date') $rule[] = 'date';
+                if ($field->attribute_data?->type === 'file') array_push($rule, 'file', 'max:5120');
+                $rules[$field->field_name] = $rule;
             }
         }
 
@@ -178,7 +182,7 @@ class HomeController
             ], 422);
         }
 
-        $data = $request->except('_token');
+        $data = $validator->validated();
 
         // India/Gujarat are only dependency defaults used to populate child
         // dropdowns. A location value is persisted only when that field is active.
@@ -201,11 +205,32 @@ class HomeController
             $data['password'] = Hash::make($data['password']);
         }
 
+        $userColumns = Schema::getColumnListing('users');
+        $mapping = ['mobile_number' => 'mobile', 'alternative_mobile_number' => 'alternative_mobile'];
+        $userData = collect($data)->mapWithKeys(fn ($value, $name) => [$mapping[$name] ?? $name => $value])
+            ->only($userColumns)->all();
+
         $user = new User();
-        $user->fill($data);
+        $user->fill($userData);
         $user->type = 'doctor';
         $user->event_id = $event->id;
         $user->save();
+
+        foreach ($fields as $field) {
+            $column = $mapping[$field->field_name] ?? $field->field_name;
+            if (in_array($column, $userColumns, true) || $field->field_name === 'password') continue;
+
+            $value = $request->input($field->field_name);
+            if ($request->hasFile($field->field_name)) {
+                $value = $request->file($field->field_name)->store('dynamic-fields', 'public');
+            } elseif (is_array($value)) {
+                $value = implode(', ', $value);
+            }
+            $user->dynamicFieldValues()->updateOrCreate(
+                ['dynamic_field_id' => $field->id],
+                ['value' => $value]
+            );
+        }
 
         Auth::guard('web')->login($user);
 

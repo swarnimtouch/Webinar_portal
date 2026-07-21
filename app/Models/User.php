@@ -103,4 +103,21 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserAttendance::class, 'user_id');
     }
+
+    public function dynamicFieldValues()
+    {
+        return $this->hasMany(UserDynamicFieldValue::class);
+    }
+
+    public function dynamicValue(DynamicFields $field): mixed
+    {
+        $mapping = ['mobile_number' => 'mobile', 'alternative_mobile_number' => 'alternative_mobile'];
+        $column = $mapping[$field->field_name] ?? $field->field_name;
+
+        if (array_key_exists($column, $this->getAttributes())) {
+            return $this->getAttribute($column);
+        }
+
+        return $this->dynamicFieldValues->firstWhere('dynamic_field_id', $field->id)?->value;
+    }
 }

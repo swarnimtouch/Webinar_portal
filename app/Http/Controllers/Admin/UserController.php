@@ -26,13 +26,8 @@ class UserController extends Controller
             ->get()
             ->when($authUser->type !== 'sub_admin', fn($c) => $c->unique('field_name'));
 
-        $usersColumns = Schema::getColumnListing('users');
         $excludeColumns = ['password'];
-
-        $validDynamicFields = $dynamicFields->filter(function ($field) use ($usersColumns, $excludeColumns) {
-            return !in_array($field->field_name, $excludeColumns)
-                && in_array($field->field_name, $usersColumns);
-        })->values();
+        $validDynamicFields = $dynamicFields->reject(fn ($field) => in_array($field->field_name, $excludeColumns))->values();
 
         $users = User::where('type', 'doctor')->get();
         $user = User::with('event')->get()->unique('event_id')->values();
@@ -48,7 +43,7 @@ class UserController extends Controller
     public function addEditForm($id = null)
     {
         $authUser = auth()->user();
-        $user = $id ? User::findOrFail($id) : null;
+        $user = $id ? User::with('dynamicFieldValues')->findOrFail($id) : null;
         $events = Events::get();
 
         $fieldsQuery = DynamicFields::with('attribute_data')
@@ -139,6 +134,21 @@ class UserController extends Controller
         $request->validate($rules, $messages);
 
         $data = $request->except(['_token', '_method', 'avatar_removed', 'has_existing_avatar']);
+        $userColumns = Schema::getColumnListing('users');
+        $customValues = [];
+        foreach ($activeFields as $field) {
+            $column = $fieldMapping[$field->field_name] ?? $field->field_name;
+            if (!in_array($column, $userColumns, true) && $field->field_name !== 'password') {
+                $value = $request->input($field->field_name);
+                if ($request->hasFile($field->field_name)) {
+                    $value = $request->file($field->field_name)->store('dynamic-fields', 'public');
+                } elseif (is_array($value)) {
+                    $value = implode(', ', $value);
+                }
+                $customValues[$field->id] = $value;
+                unset($data[$field->field_name]);
+            }
+        }
 
         $activeFieldNames = $activeFields->pluck('field_name');
         foreach (['country', 'state', 'city'] as $locationField) {
@@ -184,9 +194,13 @@ class UserController extends Controller
         $data['event_id'] = $eventId;
 
         if ($user) {
-            $user->update($data);
+            $user->update(collect($data)->only($userColumns)->all());
         } else {
-            User::create($data);
+            $user = User::create(collect($data)->only($userColumns)->all());
+        }
+
+        foreach ($customValues as $fieldId => $value) {
+            $user->dynamicFieldValues()->updateOrCreate(['dynamic_field_id' => $fieldId], ['value' => $value]);
         }
 
         return redirect()->route('admin.user.index')->with('success', 'User Saved Successfully');
@@ -194,11 +208,11 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with('dynamicFieldValues')->findOrFail($id);
 
         $activeFields = DynamicFields::where('status', 'active')
             ->orderBy('index_no')
-            ->get();
+            ->where('event_id', $user->event_id)->get();
 
         return view('admin.users.show', ['user' => $user, 'active_fields' => $activeFields, 'title' => __('Users'), 'breadcrumb' => breadcrumb([__('Users') => route('admin.user.index'), 'User Details' => ''])]);
     }
@@ -248,20 +262,9 @@ class UserController extends Controller
                 ->unique('field_name');
         }
 
-        $userTableColumns = \Schema::getColumnListing('users');
-
-        $validDynamicFields = $activeFields->filter(function ($field) use ($userTableColumns) {
-            return in_array($field->field_name, $userTableColumns);
-        })->values();
-
-        $select = ['id', 'event_id'];
-        foreach ($validDynamicFields as $field) {
-            if (!in_array($field->field_name, $select)) {
-                $select[] = $field->field_name;
-            }
-        }
-
-        $query = User::with('event')->select($select)->where('type', 'doctor');
+        $validDynamicFields = $activeFields->reject(fn ($field) => $field->field_name === 'password')->values();
+        $userTableColumns = Schema::getColumnListing('users');
+        $query = User::with(['event', 'dynamicFieldValues.field'])->where('type', 'doctor');
 
         if ($authUser->type === 'sub_admin') {
             $query->where('event_id', $authUser->event_id);
@@ -269,10 +272,12 @@ class UserController extends Controller
 
         if ($request->search) {
             $search = $request->search;
-            $query->where(function ($q) use ($validDynamicFields, $search) {
+            $query->where(function ($q) use ($validDynamicFields, $search, $userTableColumns) {
                 foreach ($validDynamicFields as $field) {
-                    $q->orWhere($field->field_name, 'LIKE', "%$search%");
+                    $column = $field->field_name === 'mobile_number' ? 'mobile' : $field->field_name;
+                    if (in_array($column, $userTableColumns, true)) $q->orWhere($column, 'LIKE', "%$search%");
                 }
+                $q->orWhereHas('dynamicFieldValues', fn ($values) => $values->where('value', 'LIKE', "%$search%"));
             });
         }
         if ($request->filled('event')) {
@@ -284,9 +289,16 @@ class UserController extends Controller
             ->skip($request->start)
             ->take($request->length)
             ->get()
-            ->map(function ($user) {
+            ->map(function ($user) use ($validDynamicFields, $userTableColumns) {
                 $row = $user->toArray();
                 $row['event_name'] = $user->event->name ?? '-';
+                foreach ($validDynamicFields as $field) {
+                    $column = $field->field_name === 'mobile_number' ? 'mobile' : $field->field_name;
+                    $eventField = in_array($column, $userTableColumns, true) || $field->event_id == $user->event_id
+                        ? $field
+                        : $user->dynamicFieldValues->first(fn ($value) => $value->field?->field_name === $field->field_name)?->field;
+                    $row[$field->field_name] = $eventField ? $user->dynamicValue($eventField) : null;
+                }
                 return $row;
             });
 
@@ -360,24 +372,19 @@ class UserController extends Controller
         }
 
         $userTableColumns = Schema::getColumnListing('users');
-        $validDynamicFields = $activeFields->filter(fn($f) => in_array($f->field_name, $userTableColumns))->values();
+        $validDynamicFields = $activeFields->values();
 
-        $select = ['id', 'event_id'];
-        foreach ($validDynamicFields as $field) {
-            if (!in_array($field->field_name, $select)) {
-                $select[] = $field->field_name;
-            }
-        }
-
-        $query = User::with('event')
-            ->select($select)
+        $query = User::with(['event', 'dynamicFieldValues.field'])
             ->where('type', 'doctor')
             ->when(!$isAdmin, fn($q) => $q->where('event_id', $authUser->event_id))
-            ->when($search, function ($q) use ($validDynamicFields, $search) {
-                $q->where(function ($inner) use ($validDynamicFields, $search) {
+            ->when($request->filled('event'), fn ($q) => $q->where('event_id', $request->event))
+            ->when($search, function ($q) use ($validDynamicFields, $search, $userTableColumns) {
+                $q->where(function ($inner) use ($validDynamicFields, $search, $userTableColumns) {
                     foreach ($validDynamicFields as $field) {
-                        $inner->orWhere($field->field_name, 'LIKE', "%{$search}%");
+                        $column = $field->field_name === 'mobile_number' ? 'mobile' : $field->field_name;
+                        if (in_array($column, $userTableColumns, true)) $inner->orWhere($column, 'LIKE', "%{$search}%");
                     }
+                    $inner->orWhereHas('dynamicFieldValues', fn ($values) => $values->where('value', 'LIKE', "%{$search}%"));
                 });
             })
             ->get();
@@ -401,7 +408,11 @@ class UserController extends Controller
             }
 
             foreach ($validDynamicFields as $field) {
-                $row[] = $esc($user->{$field->field_name} ?? 'N/A');
+                $column = $field->field_name === 'mobile_number' ? 'mobile' : $field->field_name;
+                $eventField = in_array($column, $userTableColumns, true) || $field->event_id == $user->event_id
+                    ? $field
+                    : $user->dynamicFieldValues->first(fn ($value) => $value->field?->field_name === $field->field_name)?->field;
+                $row[] = $esc($eventField ? ($user->dynamicValue($eventField) ?? 'N/A') : 'N/A');
             }
 
             $rows[] = implode(',', $row);
