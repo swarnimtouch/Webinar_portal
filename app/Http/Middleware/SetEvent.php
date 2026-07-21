@@ -17,8 +17,21 @@ class SetEvent
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $slug = strtolower($request->route('slug'))
-            ?? strtolower($request->header('X-Event-Slug'));
+        $routeSlug = $request->route('slug');
+        $slug = strtolower((string) ($routeSlug ?? $request->header('X-Event-Slug', '')));
+
+        if (is_string($routeSlug) && $routeSlug !== $slug) {
+            $segments = $request->segments();
+            $slugIndex = $request->route('company') !== null ? 1 : 0;
+            $segments[$slugIndex] = $slug;
+
+            $canonicalUrl = $request->getSchemeAndHttpHost() . '/' . implode('/', $segments);
+            if ($request->getQueryString()) {
+                $canonicalUrl .= '?' . $request->getQueryString();
+            }
+
+            return redirect()->to($canonicalUrl, 308);
+        }
 
         $companySlug = $request->route('company');
         $baseDomain = strtolower(config('app.event_base_domain', 'doctorly.in'));

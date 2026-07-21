@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
         then: function () {
-            $eventEndpointPattern = '^(?!(?:admin|dashboard|login|register|logout|get-countries|get-states|get-cities|resources|feedback|poll|chat|comments|raise-hand|hand-status|attendance|certificate)(?:/|$))[a-z0-9\-]+$';
+            $eventEndpointPattern = '^(?!(?:admin|dashboard|login|register|logout|get-countries|get-states|get-cities|resources|feedback|poll|chat|comments|raise-hand|hand-status|attendance|certificate)(?:/|$))[A-Za-z0-9\-]+$';
 
             Route::middleware(['web'])->prefix('admin')
                 ->name('admin.')
@@ -33,14 +33,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('{slug}')
                 ->name('event.live.')
                 ->where([
-                    'slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$',
+                    'slug' => '^(?!admin$|admin/|admin$|admin-)[A-Za-z0-9\-]+$',
                 ])
                 ->middleware(['event','web'])
                 ->group(base_path('routes/event.php'));
 
 
             Route::prefix('{slug}')
-                ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[a-z0-9\-]+$'])
+                ->where(['slug' => '^(?!admin$|admin/|admin$|admin-)[A-Za-z0-9\-]+$'])
                 ->middleware(['event','web'])
                 ->group(base_path('routes/event.php'));
 
