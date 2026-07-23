@@ -54,6 +54,7 @@ class EventsController
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email'],
             'phone' => ['required', 'string', 'max:255'],
+            'theme_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'admin_email' => [
                 'required',
                 'email',
@@ -133,6 +134,7 @@ class EventsController
         $event->name = $request->name ?? null;
         $event->email = $request->email ?? null;
         $event->phone = $request->phone ?? null;
+        $event->theme_color = strtolower($request->theme_color);
         $event->description = $request->description ?? null;
         $event->session_agenda = collect($request->input('session_agenda', []))
             ->filter(fn($item) => filled($item['title'] ?? null))

@@ -36,6 +36,7 @@ class EventSettingController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email'],
             'phone' => ['required', 'string', 'max:255'],
+            'theme_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'favicon' => [
                 Rule::requiredIf(fn() => !$id),
                 'file',
@@ -61,6 +62,7 @@ class EventSettingController extends Controller
         $event->name = $request->name ?? null;
         $event->email = $request->email ?? null;
         $event->phone = $request->phone ?? null;
+        $event->theme_color = strtolower($request->theme_color);
         $event->description = $request->description ?? null;
 
         if ($request->hasFile('favicon')) {

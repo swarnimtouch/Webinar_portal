@@ -24,6 +24,20 @@
           rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
+    @php($eventThemeColor = app('event')->theme_color ?: '#b639a1')
+    <style>
+        :root {
+            --event-theme-color: {{ $eventThemeColor }};
+            --btn-gold: var(--event-theme-color);
+            --btn-gold-dark: color-mix(in srgb, var(--event-theme-color) 82%, black);
+            --btn-gold-shadow: color-mix(in srgb, var(--event-theme-color) 45%, transparent);
+            --btn-gold-shadow-hover: color-mix(in srgb, var(--event-theme-color) 60%, transparent);
+            --bg-body: color-mix(in srgb, var(--event-theme-color) 12%, white);
+            --bg-hover: color-mix(in srgb, var(--event-theme-color) 7%, white);
+            --accent-blue: var(--event-theme-color);
+        }
+    </style>
+
     @stack('styles')
 </head>
 

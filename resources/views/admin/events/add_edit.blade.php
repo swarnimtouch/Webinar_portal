@@ -90,6 +90,23 @@
                             </div>
 
                             <div class="row mb-6">
+                                <label class="col-lg-4 col-form-label required fw-bold fs-6" for="theme_color">
+                                    Home Page Theme Color
+                                </label>
+                                <div class="col-lg-8">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input type="color" name="theme_color" id="theme_color"
+                                               class="form-control form-control-color"
+                                               value="{{ old('theme_color', $event->theme_color ?? '#b639a1') }}"
+                                               oninput="document.getElementById('theme_color_value').textContent = this.value"
+                                               title="Choose the event theme color">
+                                        <code id="theme_color_value">{{ old('theme_color', $event->theme_color ?? '#b639a1') }}</code>
+                                    </div>
+                                    <div class="form-text">Applied to buttons, icons, borders, highlights, and the tinted home-page background for this event.</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-6">
                                 <label
                                     class="col-lg-4 col-form-label fw-bold fs-6 {{ !isset($event->id) ? 'required' : '' }}">
                                     Favicon
