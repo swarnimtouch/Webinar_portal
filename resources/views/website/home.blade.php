@@ -716,7 +716,7 @@
                 const sliderData = window.sliderData || [];
                 let slideIndex = 0;
                 let slideInterval;
-                const slideDuration = 3000;
+                const slideDuration = 6000;
 
                 if ($track.length === 0 || sliderData.length === 0) return;
 
